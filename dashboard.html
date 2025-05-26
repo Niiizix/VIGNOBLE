@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Marlowe Vineyard Intranet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="dashboard.html" class="logo">
+                <i class="fas fa-shield-alt"></i>
+                Marlowe Intranet
+            </a>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="#inventaire">Inventaire</a></li>
+                <li><a href="#commandes">Commandes</a></li>
+                <li><a href="#rapports">Rapports</a></li>
+                <li><a href="#" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero hero-intranet">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="hero-content">
+            <h1>Espace Intranet</h1>
+            <p class="subtitle">Bienvenue dans l'administration</p>
+            <p>Accédez aux outils de gestion, statistiques et rapports de Marlowe Vineyard.</p>
+        </div>
+    </section>
+
+    <!-- Dashboard Widgets -->
+    <section class="quick-info">
+        <div class="info-container">
+            <div class="info-card">
+                <i class="fas fa-chart-line activity-icon success"></i>
+                <h3>Ventes du Mois</h3>
+                <p class="widget-value success">$47,320</p>
+                <p>+12% par rapport au mois dernier</p>
+                <div class="widget-subtitle">
+                    <small>156 bouteilles vendues</small>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <i class="fas fa-wine-bottle activity-icon primary"></i>
+                <h3>Stock Disponible</h3>
+                <p class="widget-value primary">1,247</p>
+                <p>bouteilles en stock</p>
+                <div class="widget-subtitle">
+                    <small>Réassort prévu jeudi</small>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <i class="fas fa-users activity-icon info"></i>
+                <h3>Réservations</h3>
+                <p class="widget-value info">23</p>
+                <p>visites cette semaine</p>
+                <div class="widget-subtitle">
+                    <small>8 en attente de confirmation</small>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <i class="fas fa-star activity-icon warning"></i>
+                <h3>Avis Clients</h3>
+                <p class="widget-value warning">4.8/5</p>
+                <p>Note moyenne ce mois</p>
+                <div class="widget-subtitle">
+                    <small>34 nouveaux avis</small>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <i class="fas fa-exclamation-triangle activity-icon danger"></i>
+                <h3>Alertes</h3>
+                <p class="widget-value danger">3</p>
+                <p>notifications importantes</p>
+                <div class="widget-subtitle">
+                    <small>Stock faible sur 2 produits</small>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <i class="fas fa-calendar-check activity-icon purple"></i>
+                <h3>Événements</h3>
+                <p class="widget-value purple">7</p>
+                <p>événements planifiés</p>
+                <div class="widget-subtitle">
+                    <small>Prochain: Dégustation VIP</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="quick-actions-container">
+            <h2 class="cta-title">Actions Rapides</h2>
+            
+            <div class="quick-actions-grid">
+                <button class="cta-button btn-success">
+                    <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>
+                    Nouvelle Commande
+                </button>
+                
+                <button class="cta-button btn-info">
+                    <i class="fas fa-file-alt" style="margin-right: 0.5rem;"></i>
+                    Générer Rapport
+                </button>
+                
+                <button class="cta-button btn-warning">
+                    <i class="fas fa-envelope" style="margin-right: 0.5rem;"></i>
+                    Envoyer Newsletter
+                </button>
+                
+                <button class="cta-button btn-purple">
+                    <i class="fas fa-cog" style="margin-right: 0.5rem;"></i>
+                    Paramètres
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="activity-section">
+        <div class="activity-container">
+            <h2 class="cta-title">Activité Récente</h2>
+            
+            <div class="activity-list">
+                <div class="activity-item">
+                    <i class="fas fa-shopping-cart activity-icon success"></i>
+                    <div class="activity-content">
+                        <div class="activity-title">Nouvelle commande #2547</div>
+                        <div class="activity-description">Vincent Dubois - 6 bouteilles Marlowe Rouge</div>
+                    </div>
+                    <div class="activity-time">Il y a 15 min</div>
+                </div>
+                
+                <div class="activity-item">
+                    <i class="fas fa-calendar activity-icon info"></i>
+                    <div class="activity-content">
+                        <div class="activity-title">Réservation visite premium</div>
+                        <div class="activity-description">Marie Leclerc - Samedi 14h00</div>
+                    </div>
+                    <div class="activity-time">Il y a 1h</div>
+                </div>
+                
+                <div class="activity-item">
+                    <i class="fas fa-star activity-icon warning"></i>
+                    <div class="activity-content">
+                        <div class="activity-title">Nouvel avis 5 étoiles</div>
+                        <div class="activity-description">"Excellente dégustation, service impeccable !"</div>
+                    </div>
+                    <div class="activity-time">Il y a 3h</div>
+                </div>
+                
+                <div class="activity-item">
+                    <i class="fas fa-truck activity-icon purple"></i>
+                    <div class="activity-content">
+                        <div class="activity-title">Livraison effectuée</div>
+                        <div class="activity-description">Commande #2544 - 12 bouteilles Premium</div>
+                    </div>
+                    <div class="activity-time">Il y a 5h</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de la déconnexion
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Créer une notification de confirmation personnalisée
+                const confirmNotification = notify.info(
+                    'Confirmation de déconnexion', 
+                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                    10000
+                );
+                
+                // Ajouter des boutons de confirmation
+                const notificationContent = confirmNotification.querySelector('.notification-content');
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '1rem';
+                buttonsDiv.style.display = 'flex';
+                buttonsDiv.style.gap = '0.5rem';
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'cta-button btn-warning';
+                confirmBtn.style.fontSize = '0.8rem';
+                confirmBtn.style.padding = '0.5rem 1rem';
+                confirmBtn.textContent = 'Déconnexion';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cta-button btn-secondary';
+                cancelBtn.style.fontSize = '0.8rem';
+                cancelBtn.style.padding = '0.5rem 1rem';
+                cancelBtn.textContent = 'Annuler';
+                
+                buttonsDiv.appendChild(cancelBtn);
+                buttonsDiv.appendChild(confirmBtn);
+                notificationContent.appendChild(buttonsDiv);
+                
+                // Gestion des clics
+                confirmBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
+                    setTimeout(() => {
+                        window.location.href = 'accueil.html';
+                    }, 1000);
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                });
+            });
+
+            // Animation d'entrée pour les widgets
+            const widgets = document.querySelectorAll('.info-card');
+            widgets.forEach((widget, index) => {
+                widget.style.opacity = '0';
+                widget.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    widget.style.transition = 'all 0.6s ease';
+                    widget.style.opacity = '1';
+                    widget.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // Simulation de données en temps réel
+            function updateStats() {
+                const salesElement = document.querySelector('.info-card:first-child p[style*="2rem"]');
+                if (salesElement) {
+                    const currentSales = parseInt(salesElement.textContent.replace('$', '').replace(',', ''));
+                    const newSales = currentSales + Math.floor(Math.random() * 100);
+                    salesElement.textContent = '$' + newSales.toLocaleString();
+                }
+            }
+
+            // Mettre à jour les stats toutes les 30 secondes
+            setInterval(updateStats, 30000);
+
+            console.log('Dashboard Marlowe Vineyard chargé avec succès!');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Marlowe Vineyard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="accueil.html" class="logo">
+                <i class="fas fa-grape-cluster"></i>
+                Marlowe Vineyard
+            </a>
+            <ul class="nav-menu">
+                <li><a href="accueil.html">Accueil</a></li>
+                <li><a href="vins.html">Nos Vins</a></li>
+                <li><a href="visite.html">Visite</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html" class="login-btn active">
+                    <i class="fas fa-sign-in-alt"></i> Connexion
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Login Section -->
+    <section class="login-container">
+        <!-- Floating bubbles -->
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-shield-alt login-icon"></i>
+                <h1 class="login-title">Accès Intranet</h1>
+                <p class="login-subtitle">Connectez-vous pour accéder à l'espace privé</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="login-form">
+                <div>
+                    <label class="form-label">
+                        <i class="fas fa-user" style="margin-right: 0.5rem; color: #8B5A9F;"></i>
+                        Nom d'utilisateur
+                    </label>
+                    <input type="text" id="username" required class="form-input" placeholder="Entrez votre nom">
+                </div>
+                
+                <div>
+                    <label class="form-label">
+                        <i class="fas fa-key" style="margin-right: 0.5rem; color: #8B5A9F;"></i>
+                        Code d'accès
+                    </label>
+                    <input type="password" id="accessCode" required class="form-input" placeholder="Entrez votre code">
+                </div>
+
+                <!-- Attempts Counter -->
+                <div id="attemptsInfo" class="attempts-info">
+                    <span id="attemptsLeft">3</span> tentative(s) restante(s)
+                </div>
+                
+                <button type="submit" id="loginButton" class="cta-button" style="border: none; cursor: pointer; width: 100%; margin-top: 1rem;">
+                    <i class="fas fa-sign-in-alt" style="margin-right: 0.5rem;"></i>
+                    Se connecter
+                </button>
+            </form>
+
+            <!-- Help Text -->
+            <div class="login-help">
+                <p>
+                    <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+                    Besoin d'aide ?
+                </p>
+                <a href="contact.html">Contactez l'administrateur</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Marlowe Vineyard - Tous droits réservés | Los Santos, San Andreas</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Variables globales pour le système de login
+        let loginAttempts = 0;
+        let maxAttempts = 3;
+        let isTimedOut = false;
+        let timeoutDuration = 60; // 1 minute en secondes
+
+        // Codes d'accès valides (nom: code)
+        const validCredentials = {
+            'admin': 'MW2025',
+            'manager': 'VINE123',
+            'marlowe': 'GRAPE456',
+            'vincent': 'WINE789',
+            'sophie': 'CELLAR321'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('username');
+            const accessCodeInput = document.getElementById('accessCode');
+            const attemptsInfo = document.getElementById('attemptsInfo');
+            const attemptsLeft = document.getElementById('attemptsLeft');
+            const loginButton = document.getElementById('loginButton');
+
+            // Gestion de la soumission du formulaire
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                attemptLogin();
+            });
+
+            // Validation avec la touche Entrée
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !isTimedOut) {
+                    e.preventDefault();
+                    attemptLogin();
+                }
+            });
+
+            function attemptLogin() {
+                if (isTimedOut) return;
+
+                const username = usernameInput.value.trim().toLowerCase();
+                const accessCode = accessCodeInput.value.trim();
+
+                // Vérification des identifiants
+                if (validCredentials[username] && validCredentials[username] === accessCode) {
+                    // Connexion réussie
+                    showSuccess();
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    // Échec de connexion
+                    loginAttempts++;
+                    const remainingAttempts = maxAttempts - loginAttempts;
+                    
+                    if (remainingAttempts > 0) {
+                        showError(`Identifiants incorrects. ${remainingAttempts} tentative(s) restante(s).`);
+                        attemptsLeft.textContent = remainingAttempts;
+                        
+                        // Animation d'erreur
+                        loginForm.style.animation = 'shake 0.5s ease-in-out';
+                        setTimeout(() => {
+                            loginForm.style.animation = '';
+                        }, 500);
+                    } else {
+                        // Timeout
+                        initiateTimeout();
+                    }
+                    
+                    // Vider les champs
+                    accessCodeInput.value = '';
+                    accessCodeInput.focus();
+                }
+            }
+
+            function showError(message) {
+                notify.error('Erreur de connexion', message);
+            }
+
+            function showSuccess() {
+                notify.success('Connexion réussie !', 'Redirection vers l\'intranet...');
+                loginButton.innerHTML = '<i class="fas fa-check" style="margin-right: 0.5rem;"></i>Connexion réussie !';
+                loginButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            }
+
+            function initiateTimeout() {
+                isTimedOut = true;
+                loginAttempts = 0;
+                
+                notify.warning('Trop de tentatives', 'Veuillez patienter 60 secondes avant de réessayer.');
+                
+                attemptsInfo.style.display = 'none';
+                
+                loginButton.disabled = true;
+                loginButton.innerHTML = '<i class="fas fa-lock" style="margin-right: 0.5rem;"></i>Bloqué';
+                loginButton.style.opacity = '0.5';
+                loginButton.style.cursor = 'not-allowed';
+                
+                usernameInput.disabled = true;
+                accessCodeInput.disabled = true;
+
+                // Compte à rebours avec notifications
+                let countdown = timeoutDuration;
+                
+                const timer = setInterval(() => {
+                    countdown--;
+                    
+                    // Notification de countdown à intervalles
+                    if (countdown === 30 || countdown === 10) {
+                        notify.info('Compte à rebours', `${countdown} secondes restantes`);
+                    }
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        resetLogin();
+                        notify.success('Timeout terminé', 'Vous pouvez maintenant vous reconnecter.');
+                    }
+                }, 1000);
+            }
+
+            function resetLogin() {
+                isTimedOut = false;
+                loginAttempts = 0;
+                
+                attemptsInfo.style.display = 'block';
+                attemptsLeft.textContent = maxAttempts;
+                
+                loginButton.disabled = false;
+                loginButton.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.5rem;"></i>Se connecter';
+                loginButton.style.opacity = '1';
+                loginButton.style.cursor = 'pointer';
+                loginButton.style.background = 'linear-gradient(135deg, #8B5A9F, #9370DB)';
+                
+                usernameInput.disabled = false;
+                accessCodeInput.disabled = false;
+                usernameInput.focus();
+            }
+
+            // Focus automatique sur le premier champ
+            usernameInput.focus();
+
+            // Animation de shake pour les erreurs
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    75% { transform: translateX(10px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

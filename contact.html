@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Marlowe Vineyard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="accueil.html" class="logo">
+                <i class="fas fa-grape-cluster"></i>
+                Marlowe Vineyard
+            </a>
+            <ul class="nav-menu">
+                <li><a href="accueil.html">Accueil</a></li>
+                <li><a href="vins.html">Nos Vins</a></li>
+                <li><a href="visite.html">Visite</a></li>
+                <li><a href="contact.html" class="active">Contact</a></li>
+                <li><a href="login.html" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Connexion
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="hero-content">
+            <h1>Nous Contacter</h1>
+            <p class="subtitle">Restons en contact</p>
+            <p>Notre équipe est à votre disposition pour répondre à toutes vos questions et vous accompagner dans vos projets.</p>
+        </div>
+    </section>
+
+    <!-- Contact Info Section -->
+    <section class="quick-info">
+        <div class="info-container">
+            <div class="info-card">
+                <i class="fas fa-phone"></i>
+                <h3>Téléphone</h3>
+                <p>Pour toute question, commande ou réservation, n'hésitez pas à nous appeler.</p>
+                <div class="price">
+                    +1 (555) MARLOWE<br>
+                    +1 (555) 627-5693
+                </div>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-envelope"></i>
+                <h3>Email</h3>
+                <p>Écrivez-nous pour toute demande d'information ou de devis personnalisé.</p>
+                <div class="price">
+                    contact@marlowevineyard.com<br>
+                    reservations@marlowevineyard.com
+                </div>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Adresse</h3>
+                <p>Rendez-nous visite dans notre domaine situé au cœur des collines de Vinewood.</p>
+                <div class="price">
+                    1247 Vinewood Hills Drive<br>
+                    Los Santos, San Andreas 90210
+                </div>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-clock"></i>
+                <h3>Horaires de Contact</h3>
+                <p>Notre service client est disponible aux horaires suivants pour vous renseigner.</p>
+                <div class="price">
+                    Lun-Ven: 9h - 18h<br>
+                    Sam-Dim: 10h - 17h
+                </div>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-shipping-fast"></i>
+                <h3>Livraison</h3>
+                <p>Nous livrons dans tout Los Santos et ses environs. Service express disponible.</p>
+                <div class="price">
+                    Livraison standard: 24-48h<br>
+                    Express: 4-6h
+                </div>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-handshake"></i>
+                <h3>Partenariats</h3>
+                <p>Restaurants, hôtels, événements : contactez notre équipe commerciale pour vos projets professionnels.</p>
+                <div class="price">
+                    pro@marlowevineyard.com<br>
+                    +1 (555) 627-5694
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section class="contact-form-section">
+        <div class="contact-form-container">
+            <div class="contact-form-header">
+                <h2 class="cta-title">Envoyez-nous un message</h2>
+                <p class="cta-text">Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.</p>
+            </div>
+            
+            <form class="contact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Prénom *</label>
+                        <input type="text" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nom *</label>
+                        <input type="text" required class="form-input">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" required class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Téléphone</label>
+                    <input type="tel" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Sujet</label>
+                    <select class="form-select">
+                        <option>Commande de vins</option>
+                        <option>Réservation visite</option>
+                        <option>Événement privé</option>
+                        <option>Partenariat professionnel</option>
+                        <option>Autre demande</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Message *</label>
+                    <textarea required rows="5" class="form-textarea" placeholder="Décrivez votre demande..."></textarea>
+                </div>
+                
+                <div class="form-submit">
+                    <button type="submit" class="cta-button">Envoyer le message</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Marlowe Vineyard - Tous droits réservés | Los Santos, San Andreas</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

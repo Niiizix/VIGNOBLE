@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaire - Marlowe Vineyard Intranet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="dashboard.html" class="logo">
+                <i class="fas fa-shield-alt"></i>
+                Marlowe Intranet
+            </a>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="inventaire.html" class="active">Inventaire</a></li>
+                <li><a href="#commandes">Commandes</a></li>
+                <li><a href="#rapports">Rapports</a></li>
+                <li><a href="#" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero hero-intranet">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="hero-content">
+            <h1>Gestion de l'Inventaire</h1>
+            <p class="subtitle">Matières premières & Bouteilles</p>
+            <p>Gérez efficacement vos stocks de matières premières et vos bouteilles prêtes à la vente.</p>
+        </div>
+    </section>
+
+    <!-- Inventory Sections -->
+    <section class="inventory-section">
+        <div class="inventory-container">
+            
+            <!-- Matières Premières -->
+            <div class="inventory-category">
+                <div class="category-header">
+                    <h2><i class="fas fa-seedling"></i> Matières Premières</h2>
+                    <button class="cta-button btn-success inventory-action-btn" data-category="matieres" data-action="add">
+                        <i class="fas fa-plus"></i> Ajouter au Stock
+                    </button>
+                    <button class="cta-button btn-warning inventory-action-btn" data-category="matieres" data-action="remove">
+                        <i class="fas fa-minus"></i> Retirer du Stock
+                    </button>
+                </div>
+                
+                <div class="inventory-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Stock Actuel</th>
+                                <th>Unité</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matieres-table">
+                            <tr>
+                                <td><strong>Raisins Cabernet Sauvignon</strong></td>
+                                <td class="stock-value">2,450</td>
+                                <td>kg</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Raisins Chardonnay</strong></td>
+                                <td class="stock-value">1,890</td>
+                                <td>kg</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Levures Sèches</strong></td>
+                                <td class="stock-value">45</td>
+                                <td>sachets</td>
+                                <td><span class="status-badge status-warning">Stock Faible</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Soufre</strong></td>
+                                <td class="stock-value">78</td>
+                                <td>kg</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bouchons Liège Premium</strong></td>
+                                <td class="stock-value">15,680</td>
+                                <td>unités</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Étiquettes Marlowe</strong></td>
+                                <td class="stock-value">2,340</td>
+                                <td>unités</td>
+                                <td><span class="status-badge status-warning">Stock Faible</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bouteilles -->
+            <div class="inventory-category">
+                <div class="category-header">
+                    <h2><i class="fas fa-wine-bottle"></i> Bouteilles Finies</h2>
+                    <button class="cta-button btn-success inventory-action-btn" data-category="bouteilles" data-action="add">
+                        <i class="fas fa-plus"></i> Ajouter au Stock
+                    </button>
+                    <button class="cta-button btn-warning inventory-action-btn" data-category="bouteilles" data-action="remove">
+                        <i class="fas fa-minus"></i> Retirer du Stock
+                    </button>
+                </div>
+                
+                <div class="inventory-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Stock Actuel</th>
+                                <th>Prix Unitaire</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bouteilles-table">
+                            <tr>
+                                <td><strong>Marlowe Rouge Reserve</strong></td>
+                                <td class="stock-value">456</td>
+                                <td>$450</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Marlowe Blanc Premium</strong></td>
+                                <td class="stock-value">298</td>
+                                <td>$380</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Marlowe Prestige</strong></td>
+                                <td class="stock-value">67</td>
+                                <td>$850</td>
+                                <td><span class="status-badge status-warning">Stock Faible</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Marlowe Rosé</strong></td>
+                                <td class="stock-value">234</td>
+                                <td>$320</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Marlowe Vintage</strong></td>
+                                <td class="stock-value">23</td>
+                                <td>$1,200</td>
+                                <td><span class="status-badge status-critical">Stock Critique</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Coffret Dégustation</strong></td>
+                                <td class="stock-value">89</td>
+                                <td>$1,800</td>
+                                <td><span class="status-badge status-good">Bon Stock</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal pour gestion stock -->
+    <div id="stockModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Modifier le Stock</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <form id="stockForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Produit</label>
+                    <select id="productSelect" class="form-select" required>
+                        <option value="">Sélectionnez un produit</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" id="quantityLabel">Quantité à ajouter</label>
+                    <input type="number" id="quantityInput" class="form-input" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Commentaire (optionnel)</label>
+                    <textarea id="commentInput" class="form-textarea" rows="3" placeholder="Motif de la modification..."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="cta-button btn-secondary" id="cancelBtn">Annuler</button>
+                    <button type="submit" class="cta-button btn-success" id="confirmBtn">Confirmer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Données de stock simulées
+        const stockData = {
+            matieres: {
+                'Raisins Cabernet Sauvignon': { stock: 2450, unit: 'kg' },
+                'Raisins Chardonnay': { stock: 1890, unit: 'kg' },
+                'Levures Sèches': { stock: 45, unit: 'sachets' },
+                'Soufre': { stock: 78, unit: 'kg' },
+                'Bouchons Liège Premium': { stock: 15680, unit: 'unités' },
+                'Étiquettes Marlowe': { stock: 2340, unit: 'unités' }
+            },
+            bouteilles: {
+                'Marlowe Rouge Reserve': { stock: 456, price: '$450' },
+                'Marlowe Blanc Premium': { stock: 298, price: '$380' },
+                'Marlowe Prestige': { stock: 67, price: '$850' },
+                'Marlowe Rosé': { stock: 234, price: '$320' },
+                'Marlowe Vintage': { stock: 23, price: '$1,200' },
+                'Coffret Dégustation': { stock: 89, price: '$1,800' }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('stockModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const productSelect = document.getElementById('productSelect');
+            const quantityInput = document.getElementById('quantityInput');
+            const quantityLabel = document.getElementById('quantityLabel');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const stockForm = document.getElementById('stockForm');
+            
+            let currentCategory = '';
+            let currentAction = '';
+
+            // Gestion des boutons d'action
+            document.querySelectorAll('.inventory-action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentCategory = this.dataset.category;
+                    currentAction = this.dataset.action;
+                    
+                    // Mise à jour du modal
+                    modalTitle.textContent = currentAction === 'add' ? 'Ajouter au Stock' : 'Retirer du Stock';
+                    quantityLabel.textContent = currentAction === 'add' ? 'Quantité à ajouter' : 'Quantité à retirer';
+                    confirmBtn.textContent = currentAction === 'add' ? 'Ajouter' : 'Retirer';
+                    confirmBtn.className = currentAction === 'add' ? 'cta-button btn-success' : 'cta-button btn-warning';
+                    
+                    // Remplir la liste déroulante
+                    productSelect.innerHTML = '<option value="">Sélectionnez un produit</option>';
+                    Object.keys(stockData[currentCategory]).forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product;
+                        option.textContent = product;
+                        productSelect.appendChild(option);
+                    });
+                    
+                    // Ouvrir le modal
+                    modal.style.display = 'flex';
+                });
+            });
+
+            // Fermer le modal
+            document.querySelector('.modal-close').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Fermer le modal en cliquant à l'extérieur
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Gestion du formulaire
+            stockForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const product = productSelect.value;
+                const quantity = parseInt(quantityInput.value);
+                const comment = document.getElementById('commentInput').value;
+                
+                if (!product || !quantity) {
+                    notify.error('Erreur de saisie', 'Veuillez remplir tous les champs obligatoires.');
+                    return;
+                }
+                
+                // Modifier le stock
+                if (currentAction === 'add') {
+                    stockData[currentCategory][product].stock += quantity;
+                    notify.success('Stock mis à jour', `${quantity} unité(s) ajoutée(s) pour ${product}`);
+                } else {
+                    const newStock = stockData[currentCategory][product].stock - quantity;
+                    if (newStock < 0) {
+                        notify.error('Stock insuffisant', `Stock actuel: ${stockData[currentCategory][product].stock} unité(s)`);
+                        return;
+                    }
+                    stockData[currentCategory][product].stock = newStock;
+                    notify.warning('Stock retiré', `${quantity} unité(s) retirée(s) pour ${product}`);
+                }
+                
+                // Mettre à jour l'affichage
+                updateStockDisplay(currentCategory, product);
+                
+                // Fermer le modal et réinitialiser le formulaire
+                modal.style.display = 'none';
+                stockForm.reset();
+            });
+
+            // Fonction pour mettre à jour l'affichage du stock
+            function updateStockDisplay(category, product) {
+                const tableId = category + '-table';
+                const table = document.getElementById(tableId);
+                const rows = table.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const productCell = row.querySelector('td:first-child strong');
+                    if (productCell && productCell.textContent === product) {
+                        const stockCell = row.querySelector('.stock-value');
+                        const statusCell = row.querySelector('.status-badge');
+                        const newStock = stockData[category][product].stock;
+                        
+                        // Mettre à jour le stock
+                        stockCell.textContent = newStock.toLocaleString();
+                        
+                        // Mettre à jour le statut
+                        let statusClass = 'status-good';
+                        let statusText = 'Bon Stock';
+                        
+                        if (newStock < 50) {
+                            statusClass = 'status-critical';
+                            statusText = 'Stock Critique';
+                        } else if (newStock < 100) {
+                            statusClass = 'status-warning';
+                            statusText = 'Stock Faible';
+                        }
+                        
+                        statusCell.className = 'status-badge ' + statusClass;
+                        statusCell.textContent = statusText;
+                        
+                        // Animation du changement
+                        stockCell.style.background = '#28a745';
+                        stockCell.style.color = 'white';
+                        setTimeout(() => {
+                            stockCell.style.background = '';
+                            stockCell.style.color = '';
+                        }, 1000);
+                    }
+                });
+            }
+
+            // Gestion de la déconnexion
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Créer une notification de confirmation personnalisée
+                const confirmNotification = notify.info(
+                    'Confirmation de déconnexion', 
+                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                    10000
+                );
+                
+                // Ajouter des boutons de confirmation
+                const notificationContent = confirmNotification.querySelector('.notification-content');
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '1rem';
+                buttonsDiv.style.display = 'flex';
+                buttonsDiv.style.gap = '0.5rem';
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'cta-button btn-warning';
+                confirmBtn.style.fontSize = '0.8rem';
+                confirmBtn.style.padding = '0.5rem 1rem';
+                confirmBtn.textContent = 'Déconnexion';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cta-button btn-secondary';
+                cancelBtn.style.fontSize = '0.8rem';
+                cancelBtn.style.padding = '0.5rem 1rem';
+                cancelBtn.textContent = 'Annuler';
+                
+                buttonsDiv.appendChild(cancelBtn);
+                buttonsDiv.appendChild(confirmBtn);
+                notificationContent.appendChild(buttonsDiv);
+                
+                // Gestion des clics
+                confirmBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
+                    setTimeout(() => {
+                        window.location.href = 'accueil.html';
+                    }, 1000);
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                });
+            });
+
+            console.log('Page Inventaire chargée avec succès!');
+        });
+    </script>
+</body>
+</html>
