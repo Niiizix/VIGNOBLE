@@ -959,23 +959,49 @@
 
         // Attendre que le script principal soit chargé
         function initConfigPage() {
+            console.log('🔄 Initialisation de la page de configuration...');
+            
             if (!window.dbManager || !window.dbManager.waitForReady) {
+                console.log('⏳ En attente du DatabaseManager...');
                 setTimeout(initConfigPage, 100);
                 return;
             }
             
+            console.log('📊 DatabaseManager trouvé, attente de l\'initialisation...');
+            
             window.dbManager.waitForReady().then(async () => {
+                console.log('✅ DatabaseManager prêt, chargement des données...');
+                
                 // Charger toutes les données depuis la DB
                 await loadAllData();
                 
+                console.log('🔧 Initialisation des gestionnaires d\'événements...');
+                
                 // Initialiser les gestionnaires d'événements
-                setupUserManagement();
-                setupThresholds();
-                setupNotifications();
-                setupSystem();
-                setupLogout();
-
-                console.log('✅ Page Configuration chargée avec données DB !');
+                try {
+                    setupUserManagement();
+                    console.log('✅ setupUserManagement terminé');
+                    
+                    setupThresholds();
+                    console.log('✅ setupThresholds terminé');
+                    
+                    setupNotifications();
+                    console.log('✅ setupNotifications terminé');
+                    
+                    setupSystem();
+                    console.log('✅ setupSystem terminé');
+                    
+                    setupLogout();
+                    console.log('✅ setupLogout terminé');
+                    
+                    console.log('✅ Page Configuration chargée avec données DB !');
+                } catch (setupError) {
+                    console.error('❌ Erreur lors de l\'initialisation des gestionnaires:', setupError);
+                    if (window.notify) {
+                        window.notify.error('Erreur', 'Problème lors de l\'initialisation de l\'interface.');
+                    }
+                }
+                
             }).catch(error => {
                 console.error('❌ Erreur lors de l\'initialisation:', error);
                 if (window.notify) {
@@ -984,7 +1010,11 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', initConfigPage);
+        // Démarrer l'initialisation quand le DOM est prêt
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM chargé, démarrage de l\'initialisation...');
+            initConfigPage();
+        });
 
         // === GESTION DES NOTIFICATIONS ===
         function setupNotifications() {
