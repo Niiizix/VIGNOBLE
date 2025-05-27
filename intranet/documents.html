@@ -428,7 +428,7 @@
                 });
                 
                 // Totaux
-                const totalsY = 330;
+                const totalsY = 335;
                 
                 // Sous-total
                 firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
@@ -444,7 +444,7 @@
                 // Total
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 467, y: totalsY - 65, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 465, y: totalsY - 70, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 // Date
