@@ -412,20 +412,55 @@ async function tryLoadDefaultTemplate() {
             username: localStorage.getItem('marlowe_discord_username') || 'Marlowe Vineyard'
         };
 
-        // === FONCTION NETTOYAGE CARACTÈRES ===
+        // === FONCTION NETTOYAGE CARACTÈRES ULTRA-AGRESSIVE ===
         function cleanTextForPDF(text) {
             if (!text) return '';
             
+            // Conversion ultra-agressive vers ASCII pur
+            let cleaned = text
+                .toString() // S'assurer que c'est une string
+                .normalize('NFD') // Décomposer les accents
+                .replace(/[\u0300-\u036f]/g, '') // Supprimer tous les accents
+                
+                // Remplacements de caractères problématiques
+                .replace(/[àáâãäåā]/gi, 'a')
+                .replace(/[èéêëē]/gi, 'e')
+                .replace(/[ìíîïī]/gi, 'i')
+                .replace(/[òóôõöøō]/gi, 'o')
+                .replace(/[ùúûüū]/gi, 'u')
+                .replace(/[ñ]/gi, 'n')
+                .replace(/[ç]/gi, 'c')
+                .replace(/[ý]/gi, 'y')
+                
+                // Symboles et ponctuation
+                .replace(/[€]/g, 'EUR')
+                .replace(/[£]/g, 'GBP')
+                .replace(/[¥]/g, 'JPY')
+                .replace(/[°]/g, 'deg')
+                .replace(/[%]/g, 'pct')
+                
+                // Tous types de tirets et traits d'union
+                .replace(/[–—−‒]/g, '-')
+                .replace(/[''‚‛]/g, "'")
+                .replace(/[""„‟]/g, '"')
+                .replace(/[…]/g, '...')
+                
+                // Supprimer TOUS les caractères non-ASCII (brutal mais efficace)
+                .replace(/[^\x20-\x7E]/g, '?');
+            
+            console.log(`Nettoyage: "${text}" -> "${cleaned}"`);
+            return cleaned;
+        }
+
+        // Alternative : fonction de nettoyage encore plus simple
+        function ultraCleanTextForPDF(text) {
+            if (!text) return '';
+            
+            // Ne garder QUE les caractères ASCII basiques
             return text
-                .normalize('NFD') // Décompose les caractères accentués
-                .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
-                .replace(/[€]/g, 'EUR') // Remplace € par EUR
-                .replace(/[°]/g, 'deg') // Remplace ° par deg
-                .replace(/[–—]/g, '-') // Remplace tirets longs
-                .replace(/['']/g, "'") // Remplace apostrophes spéciales
-                .replace(/[""]/g, '"') // Remplace guillemets spéciaux
-                .replace(/[…]/g, '...') // Remplace points de suspension
-                .replace(/[^\x00-\x7F]/g, '?'); // Remplace autres caractères non-ASCII par ?
+                .toString()
+                .replace(/[^a-zA-Z0-9\s\.,;:!?()\-+=/]/g, '?')
+                .trim();
         }
 
         // === TEMPLATE PDF ===
@@ -438,43 +473,85 @@ async function tryLoadDefaultTemplate() {
             }
             
             try {
+                // Mode debug : afficher toutes les données avant traitement
+                console.log('=== DEBUG DONNÉES AVANT NETTOYAGE ===');
+                console.log('Numéro devis:', JSON.stringify(devisData.numeroDevis));
+                console.log('Client nom:', JSON.stringify(devisData.client.nom));
+                console.log('Client adresse:', JSON.stringify(devisData.client.adresse));
+                console.log('Client email:', JSON.stringify(devisData.client.email));
+                console.log('Client téléphone:', JSON.stringify(devisData.client.telephone));
+                console.log('Produits:', JSON.stringify(devisData.produits));
+                
                 // Cloner le template
                 const pdfDoc = await PDFLib.PDFDocument.load(await templatePDF.save());
                 const pages = pdfDoc.getPages();
                 const firstPage = pages[0];
                 
-                // Polices
-                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-                const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                // Polices - essayer différentes polices
+                let font, boldFont;
+                try {
+                    font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+                    boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                    console.log('✅ Polices Helvetica chargées');
+                } catch (fontError) {
+                    console.log('❌ Erreur Helvetica, essai avec Courier');
+                    font = await pdfDoc.embedFont(PDFLib.StandardFonts.Courier);
+                    boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.CourierBold);
+                }
                 
                 // === COORDONNÉES AJUSTÉES SELON TON TEMPLATE ===
                 
-                // Numéro de devis (dans la zone dorée, ajusté)
-                firstPage.drawText(cleanTextForPDF(devisData.numeroDevis), {
-                    x: 240, // Ajusté plus à droite dans la zone dorée
-                    y: 695, // Ajusté selon la hauteur de la zone dorée
-                    size: 14,
-                    font: boldFont,
-                    color: PDFLib.rgb(1, 1, 1) // Blanc pour le header
-                });
+                // Test avec UNE SEULE ligne de texte d'abord
+                try {
+                    console.log('Test écriture numéro devis...');
+                    const cleanedDevisNumber = ultraCleanTextForPDF(devisData.numeroDevis);
+                    console.log('Numéro nettoyé:', JSON.stringify(cleanedDevisNumber));
+                    
+                    firstPage.drawText(cleanedDevisNumber, {
+                        x: 240,
+                        y: 695,
+                        size: 14,
+                        font: boldFont,
+                        color: PDFLib.rgb(1, 1, 1)
+                    });
+                    console.log('✅ Numéro devis écrit avec succès');
+                } catch (error) {
+                    console.log('❌ Erreur numéro devis:', error.message);
+                    throw new Error('Erreur sur le numéro de devis: ' + error.message);
+                }
                 
-                // Informations client (sous "Client:")
-                const clientY = 460; // Ajusté selon ton template
-                firstPage.drawText(cleanTextForPDF(devisData.client.nom), {
-                    x: 77, // Légèrement indenté sous "Client:"
-                    y: clientY,
-                    size: 11,
-                    font: boldFont,
-                    color: PDFLib.rgb(0, 0, 0)
-                });
+                // Test nom client
+                try {
+                    console.log('Test écriture nom client...');
+                    const cleanedClientName = ultraCleanTextForPDF(devisData.client.nom);
+                    console.log('Nom nettoyé:', JSON.stringify(cleanedClientName));
+                    
+                    firstPage.drawText(cleanedClientName, {
+                        x: 77,
+                        y: 460,
+                        size: 11,
+                        font: boldFont,
+                        color: PDFLib.rgb(0, 0, 0)
+                    });
+                    console.log('✅ Nom client écrit avec succès');
+                } catch (error) {
+                    console.log('❌ Erreur nom client:', error.message);
+                    throw new Error('Erreur sur le nom client: ' + error.message);
+                }
                 
-                // Adresse client (multi-lignes)
+                // Si on arrive ici, on continue avec le reste...
+                console.log('✅ Tests basiques OK, continuation...');
+                
+                // Adresse client (avec nettoyage ligne par ligne)
                 if (devisData.client.adresse) {
                     const addressLines = devisData.client.adresse.split('\n');
                     addressLines.forEach((line, index) => {
-                        firstPage.drawText(cleanTextForPDF(line), {
+                        const cleanedLine = ultraCleanTextForPDF(line);
+                        console.log(`Adresse ligne ${index}:`, JSON.stringify(cleanedLine));
+                        
+                        firstPage.drawText(cleanedLine, {
                             x: 77,
-                            y: clientY - 20 - (index * 15),
+                            y: 460 - 20 - (index * 15),
                             size: 10,
                             font: font,
                             color: PDFLib.rgb(0, 0, 0)
@@ -483,10 +560,11 @@ async function tryLoadDefaultTemplate() {
                 }
                 
                 // Email et téléphone
-                let infoY = clientY - 20 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
+                let infoY = 460 - 20 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
                 
                 if (devisData.client.email) {
-                    firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
+                    const cleanedEmail = ultraCleanTextForPDF(`Email: ${devisData.client.email}`);
+                    firstPage.drawText(cleanedEmail, {
                         x: 77,
                         y: infoY - 10,
                         size: 10,
@@ -497,7 +575,8 @@ async function tryLoadDefaultTemplate() {
                 }
                 
                 if (devisData.client.telephone) {
-                    firstPage.drawText(cleanTextForPDF(`Tel: ${devisData.client.telephone}`), {
+                    const cleanedPhone = ultraCleanTextForPDF(`Tel: ${devisData.client.telephone}`);
+                    firstPage.drawText(cleanedPhone, {
                         x: 77,
                         y: infoY - 10,
                         size: 10,
@@ -507,41 +586,45 @@ async function tryLoadDefaultTemplate() {
                 }
                 
                 // === PRODUITS DANS LE TABLEAU ===
-                let productY = 350; // Position ajustée selon ton template
+                let productY = 350;
                 
                 devisData.produits.forEach((produit, index) => {
-                    const currentY = productY - (index * 20); // Espacement ajusté
+                    const currentY = productY - (index * 20);
                     
-                    // Nom du produit (colonne Description)
-                    firstPage.drawText(cleanTextForPDF(produit.nom), {
-                        x: 77, // Aligné avec les colonnes du tableau
+                    // Nom du produit
+                    const cleanedProductName = ultraCleanTextForPDF(produit.nom);
+                    firstPage.drawText(cleanedProductName, {
+                        x: 77,
                         y: currentY,
                         size: 10,
                         font: font,
                         color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Prix unitaire (colonne Prix unitaire) - nettoyage du symbole €
-                    firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
-                        x: 310, // Ajusté selon la colonne Prix unitaire
+                    // Prix unitaire
+                    const cleanedPrice = ultraCleanTextForPDF(`${produit.prix} EUR`);
+                    firstPage.drawText(cleanedPrice, {
+                        x: 310,
                         y: currentY,
                         size: 10,
                         font: font,
                         color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Quantité (colonne Quantité)
-                    firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
-                        x: 470, // Ajusté selon la colonne Quantité
+                    // Quantité
+                    const cleanedQuantity = ultraCleanTextForPDF(produit.quantite.toString());
+                    firstPage.drawText(cleanedQuantity, {
+                        x: 470,
                         y: currentY,
                         size: 10,
                         font: font,
                         color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Total (colonne Total HT) - nettoyage du symbole €
-                    firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
-                        x: 640, // Ajusté selon la colonne Total HT
+                    // Total
+                    const cleanedTotal = ultraCleanTextForPDF(`${produit.total} EUR`);
+                    firstPage.drawText(cleanedTotal, {
+                        x: 640,
                         y: currentY,
                         size: 10,
                         font: font,
@@ -549,49 +632,57 @@ async function tryLoadDefaultTemplate() {
                     });
                 });
                 
-                // === TOTAUX (zone droite) ===
-                const totalsY = 200; // Position ajustée selon la zone des totaux
+                // === TOTAUX ===
+                const totalsY = 200;
                 
-                // Sous-total (à droite de "Sous-Total")
-                firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
-                    x: 710, // Position à droite pour aligner avec les valeurs
-                    y: totalsY + 40, // Ajusté selon la ligne Sous-Total
+                // Sous-total
+                const cleanedSubtotal = ultraCleanTextForPDF(`${devisData.totaux.sousTotal} EUR`);
+                firstPage.drawText(cleanedSubtotal, {
+                    x: 710,
+                    y: totalsY + 40,
                     size: 11,
                     font: font,
                     color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // TVA (à droite de "TVA (21%)")
-                firstPage.drawText(cleanTextForPDF(`${devisData.totaux.tva.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} EUR`), {
+                // TVA - conversion spéciale pour éviter les décimales françaises
+                const tvaValue = Math.round(devisData.totaux.tva * 100) / 100; // Arrondir à 2 décimales
+                const cleanedTVA = ultraCleanTextForPDF(`${tvaValue} EUR`);
+                firstPage.drawText(cleanedTVA, {
                     x: 710,
-                    y: totalsY + 20, // Ajusté selon la ligne TVA
+                    y: totalsY + 20,
                     size: 11,
                     font: font,
                     color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total final (dans la zone dorée)
-                firstPage.drawText(cleanTextForPDF(`${devisData.totaux.total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} EUR`), {
+                // Total final
+                const totalValue = Math.round(devisData.totaux.total * 100) / 100;
+                const cleanedTotal = ultraCleanTextForPDF(`${totalValue} EUR`);
+                firstPage.drawText(cleanedTotal, {
                     x: 710,
-                    y: totalsY - 10, // Ajusté pour la zone dorée "Total"
+                    y: totalsY - 10,
                     size: 12,
                     font: boldFont,
-                    color: PDFLib.rgb(0, 0, 0) // Noir car le fond doré est clair
+                    color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Date signature (dans le cadre signature)
-                const today = new Date().toLocaleDateString('fr-FR');
-                firstPage.drawText(cleanTextForPDF(today), {
-                    x: 570, // Ajusté selon la position "Date:" dans le cadre
-                    y: 85, // Ajusté selon la zone signature
+                // Date signature
+                const today = new Date().toLocaleDateString('en-US'); // Format US pour éviter les problèmes
+                const cleanedDate = ultraCleanTextForPDF(today);
+                firstPage.drawText(cleanedDate, {
+                    x: 570,
+                    y: 85,
                     size: 10,
                     font: font,
                     color: PDFLib.rgb(0, 0, 0)
                 });
                 
+                console.log('✅ PDF généré avec succès !');
                 return pdfDoc;
                 
             } catch (error) {
+                console.log('❌ Erreur détaillée:', error);
                 throw new Error('Erreur lors de la modification du template: ' + error.message);
             }
         }
