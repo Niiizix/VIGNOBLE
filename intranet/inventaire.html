@@ -254,70 +254,131 @@
         }
 
         function updateTable(category) {
-            const tbody = document.getElementById(category + '-table');
-            const data = inventoryData[category] || {};
+        const tbody = document.getElementById(category + '-table');
+        const data = inventoryData[category] || {};
+        
+        tbody.innerHTML = '';
+        
+        if (Object.keys(data).length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
+                        Aucun produit dans cette catégorie. Cliquez sur "Ajouter Produit" pour commencer.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+    
+        Object.entries(data).forEach(([productId, product]) => {
+            const row = document.createElement('tr');
             
-            tbody.innerHTML = '';
+            // Calculer le statut
+            const thresholds = getStockThresholds ? getStockThresholds()[category] : {
+                critical: category === 'matieres' ? 50 : 30,
+                warning: category === 'matieres' ? 100 : 75
+            };
+    
+            let statusClass = 'status-good';
+            let statusText = 'Bon Stock';
             
-            if (Object.keys(data).length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
-                            Aucun produit dans cette catégorie. Cliquez sur "Ajouter Produit" pour commencer.
-                        </td>
-                    </tr>
-                `;
-                return;
+            if (product.stock < thresholds.critical) {
+                statusClass = 'status-critical';
+                statusText = 'Stock Critique';
+            } else if (product.stock < thresholds.warning) {
+                statusClass = 'status-warning';
+                statusText = 'Stock Faible';
             }
-
-            Object.entries(data).forEach(([productId, product]) => {
-                const row = document.createElement('tr');
+    
+            if (category === 'matieres') {
+                row.innerHTML = `
+                    <td><strong>${product.name}</strong></td>
+                    <td class="stock-value">${product.stock.toLocaleString()}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn-small btn-danger delete-product-btn" 
+                                data-category="${category}" 
+                                data-product-id="${productId}"
+                                title="Supprimer ce produit">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <td><strong>${product.name}</strong></td>
+                    <td class="stock-value">${product.stock.toLocaleString()}</td>
+                    <td>$${product.price.toLocaleString()}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn-small btn-danger delete-product-btn" 
+                                data-category="${category}" 
+                                data-product-id="${productId}"
+                                title="Supprimer ce produit">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            }
+            
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Assure-toi que removeProduct est bien définie globalement (en dehors de DOMContentLoaded) :
+    function removeProduct(category, productId) {
+        const product = inventoryData[category] && inventoryData[category][productId];
+        if (!product) {
+            console.error('Produit non trouvé:', category, productId);
+            return;
+        }
+    
+        if (window.notify) {
+            const confirmNotification = window.notify.warning(
+                'Supprimer le produit', 
+                `Voulez-vous vraiment supprimer "${product.name}" ?`, 
+                10000
+            );
+            
+            const notificationContent = confirmNotification.querySelector('.notification-content');
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.marginTop = '1rem';
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.gap = '0.5rem';
+            
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'cta-button btn-danger';
+            confirmBtn.style.fontSize = '0.8rem';
+            confirmBtn.style.padding = '0.5rem 1rem';
+            confirmBtn.textContent = 'Supprimer';
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'cta-button btn-secondary';
+            cancelBtn.style.fontSize = '0.8rem';
+            cancelBtn.style.padding = '0.5rem 1rem';
+            cancelBtn.textContent = 'Annuler';
+            
+            buttonsDiv.appendChild(cancelBtn);
+            buttonsDiv.appendChild(confirmBtn);
+            notificationContent.appendChild(buttonsDiv);
+            
+            confirmBtn.addEventListener('click', () => {
+                window.notify.remove(confirmNotification);
                 
-                // Calculer le statut
-                const thresholds = getStockThresholds ? getStockThresholds()[category] : {
-                    critical: category === 'matieres' ? 50 : 30,
-                    warning: category === 'matieres' ? 100 : 75
-                };
-
-                let statusClass = 'status-good';
-                let statusText = 'Bon Stock';
-                
-                if (product.stock < thresholds.critical) {
-                    statusClass = 'status-critical';
-                    statusText = 'Stock Critique';
-                } else if (product.stock < thresholds.warning) {
-                    statusClass = 'status-warning';
-                    statusText = 'Stock Faible';
-                }
-
-                if (category === 'matieres') {
-                    row.innerHTML = `
-                        <td><strong>${product.name}</strong></td>
-                        <td class="stock-value">${product.stock.toLocaleString()}</td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td>
-                            <button class="btn-small btn-danger" onclick="removeProduct('${category}', '${productId}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                const success = window.dbManager.removeProduct(category, productId);
+                if (success) {
+                    loadInventory(); // Recharger les données
+                    window.notify.success('Produit supprimé', `${product.name} a été supprimé de l'inventaire.`);
                 } else {
-                    row.innerHTML = `
-                        <td><strong>${product.name}</strong></td>
-                        <td class="stock-value">${product.stock.toLocaleString()}</td>
-                        <td>${product.price.toLocaleString()}</td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td>
-                            <button class="btn-small btn-danger" onclick="removeProduct('${category}', '${productId}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                    window.notify.error('Erreur', 'Impossible de supprimer le produit.');
                 }
-                
-                tbody.appendChild(row);
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                window.notify.remove(confirmNotification);
             });
         }
+    }
 
         function setupEventListeners() {
             // Boutons d'action
@@ -381,6 +442,8 @@
                     const btn = e.target.closest('.delete-product-btn');
                     const category = btn.dataset.category;
                     const productId = btn.dataset.productId;
+                    
+                    console.log('Tentative de suppression:', category, productId);
                     removeProduct(category, productId);
                 }
             });
