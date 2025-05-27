@@ -441,10 +441,17 @@
                     x: 467, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total
+                // Total - ALIGNÉ À DROITE DE LA BULLE JAUNE
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
-                firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 455, y: totalsY - 70, size: 12, font: boldFont, color: PDFLib.rgb(1, 1, 1)
+                const totalText = cleanTextForPDF(`${totalFormatted} EUR`);
+                const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 12);
+                const rightEdgeOfBubble = 570; // Position droite de la bulle jaune
+                firstPage.drawText(totalText, {
+                    x: rightEdgeOfBubble - totalTextWidth - 10, // 10px de marge depuis le bord droit
+                    y: totalsY - 70, 
+                    size: 12, 
+                    font: boldFont, 
+                    color: PDFLib.rgb(1, 1, 1)
                 });
                 
                 // Date
