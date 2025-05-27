@@ -45,43 +45,7 @@
         </div>
     </section>
 
-    <!-- Modal Configuration Discord -->
-    <div id="discordConfigModal" class="modal-devis" style="display: none;">
-        <div class="modal-devis-content" style="max-width: 600px;">
-            <div class="modal-devis-header" style="background: #7289da;">
-                <h3><i class="fab fa-discord"></i> Configuration Discord</h3>
-                <span class="modal-close" onclick="closeDiscordConfig()">&times;</span>
-            </div>
-            <div class="modal-devis-body">
-                <div class="devis-section">
-                    <h4><i class="fas fa-cog"></i> Webhook Discord</h4>
-                    <p>Configurez l'envoi automatique des devis sur votre serveur Discord :</p>
-                    
-                    <div class="form-group">
-                        <label class="form-label">URL du Webhook Discord *</label>
-                        <input type="url" id="webhookUrl" class="form-input" 
-                               placeholder="https://discord.com/api/webhooks/YOUR_WEBHOOK_URL">
-                        <small style="color: #6c757d;">Pour créer un webhook : Paramètres du serveur > Intégrations > Webhooks > Nouveau Webhook</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Nom d'affichage (optionnel)</label>
-                        <input type="text" id="discordUsername" class="form-input" 
-                               value="Marlowe Vineyard" placeholder="Nom affiché sur Discord">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-devis-footer">
-                <button type="button" class="cta-button btn-secondary" onclick="closeDiscordConfig()">Annuler</button>
-                <button type="button" class="cta-button" style="background: #7289da;" onclick="testDiscordWebhook()">
-                    <i class="fas fa-paper-plane"></i> Tester Webhook
-                </button>
-                <button type="button" class="cta-button btn-success" onclick="saveDiscordConfig()">
-                    <i class="fas fa-save"></i> Sauvegarder
-                </button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Modal Devis -->
     <div id="devisModal" class="modal-devis">
@@ -180,9 +144,7 @@
                 <div class="category-header">
                     <h2><i class="fas fa-user-tie"></i> Documents Clients</h2>
                     <p>Créez tous vos documents commerciaux destinés aux clients</p>
-                    <button class="cta-button" style="background: #7289da; margin-top: 10px;" onclick="openDiscordConfig()">
-                        <i class="fab fa-discord"></i> Configurer Discord
-                    </button>
+
                     <div id="templateStatus" style="margin-top: 15px; text-align: center;"></div>
                 </div>
                 
@@ -322,10 +284,9 @@
     <script src="../script.js"></script>
     <script>
         // === CONFIGURATION DISCORD ===
-        let discordConfig = {
-            webhookUrl: localStorage.getItem('marlowe_webhook_url') || '',
-            username: localStorage.getItem('marlowe_discord_username') || 'Marlowe Vineyard'
-        };
+        // REMPLACEZ 'VOTRE_WEBHOOK_URL_ICI' par votre vraie URL de webhook Discord
+        const DISCORD_WEBHOOK_URL = 'https://l.webhook.party/hook/p8GEvGjZOXrEAnlh9Czg9Tc0iTQBwifuEMuxxUSXDviB6TigfRf2602NP8WKvfbOKbznpmCc84gFdsh3ReH%2BnwfMPy%2FQuxLaSOKoEhONeF2Sa%2BdlaQeZIF8HnyhTdm%2F139Gp1ZQNINg2u5wL4iv3Gnf4vhyNTH6f2v%2BeDX4gF2wk4Ggtz1JckA7wL2zzdEzp7kngu9sT97mMpEQ7hSGib3GfUgQ3XE4yHljVjprjK2vKD1WrJrbkCigxZhM5evlSs0rWFg4vxjo9ytsVdHnbv%2BXF%2FcNb%2BY9c%2Foyj0WNqRrV7WDawmXYGA7%2B1iwKAMhPxDJvGwfytR64FeOoSQdEEfHlk4wKErY6S4Cdvq3FHsDpfrF2Kr3vByaujn%2BhjOUxk51U%2Bf10knUI%3D/O39Ms6oV6RQnZDds';
+        const DISCORD_USERNAME = 'Marlowe Vineyard';
 
         // === TEMPLATE PDF ===
         let templatePDF = null;
@@ -423,7 +384,7 @@
                     
                     // Total HT
                     firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
-                        x: 457, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 467, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
                 
@@ -441,11 +402,11 @@
                     x: 467, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total
+                // Total - ALIGNÉ À DROITE DE LA BULLE JAUNE
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 const totalText = cleanTextForPDF(`${totalFormatted} EUR`);
                 const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 12);
-                const rightEdgeOfBubble = 520; // Position droite de la bulle jaune
+                const rightEdgeOfBubble = 570; // Position droite de la bulle jaune
                 firstPage.drawText(totalText, {
                     x: rightEdgeOfBubble - totalTextWidth - 10, // 10px de marge depuis le bord droit
                     y: totalsY - 70, 
@@ -500,8 +461,8 @@
 
         // === ENVOI DISCORD ===
         async function sendToDiscord(pdfBlob, devisData) {
-            if (!discordConfig.webhookUrl) {
-                throw new Error('URL de webhook Discord non configurée');
+            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
+                throw new Error('Webhook Discord non configuré dans le code');
             }
             
             const formData = new FormData();
@@ -521,13 +482,13 @@
             const payload = {
                 content: "📋 **Nouveau devis généré !**",
                 embeds: [embed],
-                username: discordConfig.username
+                username: DISCORD_USERNAME
             };
             
             formData.append('payload_json', JSON.stringify(payload));
             formData.append('file', pdfBlob, `Devis-${devisData.numeroDevis}.pdf`);
             
-            const response = await fetch(discordConfig.webhookUrl, {
+            const response = await fetch(DISCORD_WEBHOOK_URL, {
                 method: 'POST',
                 body: formData
             });
@@ -580,66 +541,7 @@
         let productCounter = 0;
         let devisData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
 
-        // Configuration Discord
-        function openDiscordConfig() {
-            document.getElementById('discordConfigModal').style.display = 'flex';
-            document.getElementById('webhookUrl').value = discordConfig.webhookUrl;
-            document.getElementById('discordUsername').value = discordConfig.username;
-        }
 
-        function closeDiscordConfig() {
-            document.getElementById('discordConfigModal').style.display = 'none';
-        }
-
-        function saveDiscordConfig() {
-            const webhookUrl = document.getElementById('webhookUrl').value.trim();
-            const username = document.getElementById('discordUsername').value.trim() || 'Marlowe Vineyard';
-            
-            discordConfig.webhookUrl = webhookUrl;
-            discordConfig.username = username;
-            
-            localStorage.setItem('marlowe_webhook_url', webhookUrl);
-            localStorage.setItem('marlowe_discord_username', username);
-            
-            notify.success('Configuration sauvegardée', 'Les paramètres Discord ont été mis à jour');
-            closeDiscordConfig();
-        }
-
-        async function testDiscordWebhook() {
-            const webhookUrl = document.getElementById('webhookUrl').value.trim();
-            
-            if (!webhookUrl) {
-                notify.error('URL manquante', 'Veuillez entrer une URL de webhook');
-                return;
-            }
-            
-            try {
-                const testPayload = {
-                    content: "🧪 **Test Marlowe Vineyard**",
-                    embeds: [{
-                        title: "✅ Webhook configuré !",
-                        description: "Le système de devis est connecté.",
-                        color: 0x8B5A9F,
-                        timestamp: new Date().toISOString()
-                    }],
-                    username: document.getElementById('discordUsername').value || 'Marlowe Vineyard'
-                };
-                
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(testPayload)
-                });
-                
-                if (response.ok) {
-                    notify.success('Test réussi !', 'Vérifiez votre channel Discord');
-                } else {
-                    throw new Error(`Erreur ${response.status}`);
-                }
-            } catch (error) {
-                notify.error('Test échoué', error.message);
-            }
-        }
 
         function openDevisForm() {
             document.getElementById('devisModal').style.display = 'flex';
@@ -906,12 +808,6 @@
             
             if (!templatePDF) {
                 notify.error('Template manquant', 'Template PDF non chargé.');
-                return;
-            }
-            
-            if (!discordConfig.webhookUrl) {
-                notify.warning('Discord non configuré', 'Configurez Discord d\'abord.');
-                openDiscordConfig();
                 return;
             }
             
