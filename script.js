@@ -87,11 +87,12 @@ const notify = new NotificationSystem();
 
 /**
  * DB Manager - Gestionnaire de base de données pour Marlowe Vineyard
- * Lecture seule depuis DB.json (pas de localStorage pour la sécurité)
+ * Lecture seule pour les utilisateurs, sauvegarde pour l'inventaire uniquement
  */
 class DatabaseManager {
     constructor() {
         this.DB_VERSION = '1.0';
+        this.INVENTORY_KEY = 'marlowe_inventory';
         this.data = {};
         this.isReady = false;
         
@@ -104,12 +105,16 @@ class DatabaseManager {
      */
     async init() {
         try {
-            // Charger les données depuis DB.json uniquement
+            // Charger les données depuis DB.json
             await this.loadFromJSON();
             
+            // Initialiser l'inventaire localStorage (vide au début)
+            this.initInventory();
+            
             this.isReady = true;
-            console.log('✅ Database Manager initialisé avec succès (lecture seule)');
+            console.log('✅ Database Manager initialisé avec succès');
             console.log('📊 Données chargées:', this.data);
+            console.log('📦 Inventaire localStorage prêt');
             
             // Mettre à jour la configuration globale
             this.updateGlobalConfig();
@@ -138,6 +143,50 @@ class DatabaseManager {
         } catch (error) {
             console.error('⚠️ Erreur lors du chargement de DB.json:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Initialise l'inventaire localStorage
+     */
+    initInventory() {
+        try {
+            const storedInventory = localStorage.getItem(this.INVENTORY_KEY);
+            if (!storedInventory) {
+                // Créer un inventaire vide
+                const emptyInventory = {
+                    matieres: {},
+                    bouteilles: {}
+                };
+                this.data.inventory = emptyInventory;
+                this.saveInventoryToStorage();
+                console.log('📦 Inventaire vide initialisé');
+            } else {
+                const parsed = JSON.parse(storedInventory);
+                this.data.inventory = parsed.inventory;
+                console.log('📦 Inventaire chargé depuis localStorage');
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de l\'initialisation inventaire:', error);
+            this.data.inventory = { matieres: {}, bouteilles: {} };
+        }
+    }
+
+    /**
+     * Sauvegarde l'inventaire dans localStorage
+     */
+    saveInventoryToStorage() {
+        try {
+            const inventoryData = {
+                inventory: this.data.inventory,
+                lastUpdate: new Date().toISOString()
+            };
+            localStorage.setItem(this.INVENTORY_KEY, JSON.stringify(inventoryData));
+            console.log('💾 Inventaire sauvegardé avec succès');
+            return true;
+        } catch (error) {
+            console.error('❌ Erreur lors de la sauvegarde inventaire:', error);
+            return false;
         }
     }
 
@@ -180,7 +229,7 @@ class DatabaseManager {
     }
 
     // ============================================
-    // GESTION DE L'INVENTAIRE
+    // GESTION DE L'INVENTAIRE (avec sauvegarde)
     // ============================================
 
     /**
@@ -188,6 +237,81 @@ class DatabaseManager {
      */
     getInventory() {
         return this.data.inventory || { matieres: {}, bouteilles: {} };
+    }
+
+    /**
+     * Met à jour le stock d'un produit
+     */
+    updateStock(category, productId, newStock) {
+        if (!this.data.inventory) this.data.inventory = { matieres: {}, bouteilles: {} };
+        if (!this.data.inventory[category]) this.data.inventory[category] = {};
+
+        if (this.data.inventory[category][productId]) {
+            this.data.inventory[category][productId].stock = newStock;
+            const saved = this.saveInventoryToStorage();
+            if (saved) {
+                console.log(`📦 Stock mis à jour: ${productId} = ${newStock}`);
+            }
+            return saved;
+        }
+        return false;
+    }
+
+    /**
+     * Ajoute un nouveau produit à l'inventaire
+     */
+    addProduct(category, productId, productData) {
+        if (!this.data.inventory) this.data.inventory = { matieres: {}, bouteilles: {} };
+        if (!this.data.inventory[category]) this.data.inventory[category] = {};
+
+        this.data.inventory[category][productId] = productData;
+        const saved = this.saveInventoryToStorage();
+        if (saved) {
+            console.log(`📦 Produit ajouté: ${productId}`, productData);
+        }
+        return saved;
+    }
+
+    /**
+     * Supprime un produit de l'inventaire
+     */
+    removeProduct(category, productId) {
+        if (this.data.inventory?.[category]?.[productId]) {
+            delete this.data.inventory[category][productId];
+            const saved = this.saveInventoryToStorage();
+            if (saved) {
+                console.log(`📦 Produit supprimé: ${productId}`);
+            }
+            return saved;
+        }
+        return false;
+    }
+
+    /**
+     * Exporte l'inventaire mis à jour
+     */
+    exportInventory() {
+        const inventoryData = {
+            inventory: this.data.inventory,
+            lastUpdate: new Date().toISOString(),
+            version: this.DB_VERSION
+        };
+
+        const blob = new Blob([JSON.stringify(inventoryData, null, 2)], {
+            type: 'application/json'
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `marlowe_inventory_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log('📤 Inventaire exporté avec succès');
+        return true;
     }
 
     // ============================================
