@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventaire - Marlowe Vineyard Intranet</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <nav class="nav-container">
-            <a href="dashboard.html" class="logo">
+            <a href="../index.html" class="logo">
                 <i class="fas fa-shield-alt"></i>
                 Marlowe Intranet
             </a>
@@ -19,7 +19,8 @@
                 <li><a href="dashboard.html">Dashboard</a></li>
                 <li><a href="inventaire.html" class="active">Inventaire</a></li>
                 <li><a href="#commandes">Commandes</a></li>
-                <li><a href="#rapports">Rapports</a></li>
+                <li><a href="documents.html">Documents</a></li>
+                <li><a href="configuration.html">Configuration</a></li>
                 <li><a href="#" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </a></li>
@@ -214,7 +215,7 @@
         <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="../script.js"></script>
     <script>
         // Données de stock simulées
         const stockData = {
@@ -341,14 +342,20 @@
                         // Mettre à jour le stock
                         stockCell.textContent = newStock.toLocaleString();
                         
-                        // Mettre à jour le statut
+                        // Obtenir les seuils configurés (avec valeurs par défaut si pas de config)
+                        const thresholds = getStockThresholds ? getStockThresholds()[category] : {
+                            critical: category === 'matieres' ? 50 : 30,
+                            warning: category === 'matieres' ? 100 : 75
+                        };
+                        
+                        // Mettre à jour le statut selon les seuils configurés
                         let statusClass = 'status-good';
                         let statusText = 'Bon Stock';
                         
-                        if (newStock < 50) {
+                        if (newStock < thresholds.critical) {
                             statusClass = 'status-critical';
                             statusText = 'Stock Critique';
-                        } else if (newStock < 100) {
+                        } else if (newStock < thresholds.warning) {
                             statusClass = 'status-warning';
                             statusText = 'Stock Faible';
                         }
@@ -366,6 +373,24 @@
                     }
                 });
             }
+
+            // Fonction pour initialiser les statuts de stock selon la configuration
+            function initializeStockStatuses() {
+                const thresholds = getStockThresholds ? getStockThresholds() : {
+                    matieres: { critical: 50, warning: 100 },
+                    bouteilles: { critical: 30, warning: 75 }
+                };
+
+                // Mettre à jour tous les statuts existants
+                ['matieres', 'bouteilles'].forEach(category => {
+                    Object.keys(stockData[category]).forEach(product => {
+                        updateStockDisplay(category, product);
+                    });
+                });
+            }
+
+            // Initialiser les statuts au chargement
+            initializeStockStatuses();
 
             // Gestion de la déconnexion
             document.getElementById('logoutBtn').addEventListener('click', function(e) {
@@ -406,7 +431,7 @@
                     notify.remove(confirmNotification);
                     notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
                     setTimeout(() => {
-                        window.location.href = 'accueil.html';
+                        window.location.href = '../index.html';
                     }, 1000);
                 });
                 

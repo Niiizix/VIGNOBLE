@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration - Marlowe Vineyard Intranet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-shield-alt"></i>
+                Marlowe Intranet
+            </a>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="inventaire.html">Inventaire</a></li>
+                <li><a href="#commandes">Commandes</a></li>
+                <li><a href="documents.html">Documents</a></li>
+                <li><a href="configuration.html" class="active">Configuration</a></li>
+                <li><a href="#" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero hero-intranet">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="hero-content">
+            <h1>Configuration Système</h1>
+            <p class="subtitle">Paramètres de l'intranet</p>
+            <p>Configurez les paramètres globaux et les seuils de fonctionnement de votre intranet.</p>
+        </div>
+    </section>
+
+    <!-- Configuration Sections -->
+    <section class="config-section">
+        <div class="config-container">
+            
+            <!-- Seuils de Stock -->
+            <div class="config-category">
+                <div class="config-header">
+                    <h2><i class="fas fa-chart-bar"></i> Seuils de Stock</h2>
+                    <p>Configurez les niveaux de stock qui déterminent les alertes dans l'inventaire</p>
+                </div>
+                
+                <div class="config-content">
+                    <div class="config-grid">
+                        <!-- Matières Premières -->
+                        <div class="config-item">
+                            <h3><i class="fas fa-seedling"></i> Matières Premières</h3>
+                            <div class="threshold-config">
+                                <div class="threshold-item">
+                                    <label class="form-label">
+                                        <span class="status-indicator status-critical"></span>
+                                        Stock Critique (en-dessous)
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" id="critical-matieres" class="form-input" value="50" min="0">
+                                        <span class="input-suffix">unités</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="threshold-item">
+                                    <label class="form-label">
+                                        <span class="status-indicator status-warning"></span>
+                                        Stock Faible (entre critique et faible)
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" id="warning-matieres" class="form-input" value="100" min="0">
+                                        <span class="input-suffix">unités</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="threshold-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Au-dessus de 100 unités = <strong>Bon Stock</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouteilles -->
+                        <div class="config-item">
+                            <h3><i class="fas fa-wine-bottle"></i> Bouteilles Finies</h3>
+                            <div class="threshold-config">
+                                <div class="threshold-item">
+                                    <label class="form-label">
+                                        <span class="status-indicator status-critical"></span>
+                                        Stock Critique (en-dessous)
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" id="critical-bouteilles" class="form-input" value="30" min="0">
+                                        <span class="input-suffix">bouteilles</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="threshold-item">
+                                    <label class="form-label">
+                                        <span class="status-indicator status-warning"></span>
+                                        Stock Faible (entre critique et faible)
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" id="warning-bouteilles" class="form-input" value="75" min="0">
+                                        <span class="input-suffix">bouteilles</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="threshold-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Au-dessus de 75 bouteilles = <strong>Bon Stock</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-actions">
+                        <button type="button" class="cta-button btn-secondary" id="resetThresholds">
+                            <i class="fas fa-undo"></i> Réinitialiser
+                        </button>
+                        <button type="button" class="cta-button btn-success" id="saveThresholds">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications (préparation future) -->
+            <div class="config-category">
+                <div class="config-header">
+                    <h2><i class="fas fa-bell"></i> Notifications</h2>
+                    <p>Paramètres des notifications et alertes système</p>
+                </div>
+                
+                <div class="config-content">
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <h3><i class="fas fa-clock"></i> Durée d'affichage</h3>
+                            <div class="threshold-config">
+                                <div class="threshold-item">
+                                    <label class="form-label">Durée par défaut des notifications</label>
+                                    <div class="input-group">
+                                        <input type="number" id="notification-duration" class="form-input" value="4" min="1" max="10">
+                                        <span class="input-suffix">secondes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-item">
+                            <h3><i class="fas fa-volume-up"></i> Alertes sonores</h3>
+                            <div class="threshold-config">
+                                <div class="threshold-item">
+                                    <label class="form-label">
+                                        <input type="checkbox" id="sound-notifications" checked>
+                                        Activer les alertes sonores
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-actions">
+                        <button type="button" class="cta-button btn-secondary" id="resetNotifications">
+                            <i class="fas fa-undo"></i> Réinitialiser
+                        </button>
+                        <button type="button" class="cta-button btn-success" id="saveNotifications">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Système (préparation future) -->
+            <div class="config-category">
+                <div class="config-header">
+                    <h2><i class="fas fa-cogs"></i> Système</h2>
+                    <p>Paramètres généraux du système</p>
+                </div>
+                
+                <div class="config-content">
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <h3><i class="fas fa-users"></i> Sessions utilisateurs</h3>
+                            <div class="threshold-config">
+                                <div class="threshold-item">
+                                    <label class="form-label">Durée de session (inactivité)</label>
+                                    <div class="input-group">
+                                        <input type="number" id="session-timeout" class="form-input" value="60" min="15" max="480">
+                                        <span class="input-suffix">minutes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-item">
+                            <h3><i class="fas fa-palette"></i> Thème</h3>
+                            <div class="threshold-config">
+                                <div class="threshold-item">
+                                    <label class="form-label">Mode d'affichage</label>
+                                    <select class="form-select" id="theme-mode">
+                                        <option value="light">Clair</option>
+                                        <option value="dark">Sombre</option>
+                                        <option value="auto">Automatique</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-actions">
+                        <button type="button" class="cta-button btn-secondary" id="resetSystem">
+                            <i class="fas fa-undo"></i> Réinitialiser
+                        </button>
+                        <button type="button" class="cta-button btn-success" id="saveSystem">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script>
+        // Configuration globale (synchronisée avec window.globalConfig)
+        const configData = window.globalConfig || {
+            thresholds: {
+                matieres: {
+                    critical: 50,
+                    warning: 100
+                },
+                bouteilles: {
+                    critical: 30,
+                    warning: 75
+                }
+            },
+            notifications: {
+                duration: 4,
+                soundEnabled: true
+            },
+            system: {
+                sessionTimeout: 60,
+                theme: 'light'
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charger les valeurs actuelles
+            loadConfiguration();
+
+            // Gestion des seuils de stock
+            document.getElementById('saveThresholds').addEventListener('click', function() {
+                const criticalMatieres = parseInt(document.getElementById('critical-matieres').value);
+                const warningMatieres = parseInt(document.getElementById('warning-matieres').value);
+                const criticalBouteilles = parseInt(document.getElementById('critical-bouteilles').value);
+                const warningBouteilles = parseInt(document.getElementById('warning-bouteilles').value);
+
+                // Validation
+                if (criticalMatieres >= warningMatieres) {
+                    notify.error('Erreur de configuration', 'Le seuil critique doit être inférieur au seuil de stock faible.');
+                    return;
+                }
+
+                if (criticalBouteilles >= warningBouteilles) {
+                    notify.error('Erreur de configuration', 'Le seuil critique doit être inférieur au seuil de stock faible.');
+                    return;
+                }
+
+                // Sauvegarder
+                configData.thresholds.matieres.critical = criticalMatieres;
+                configData.thresholds.matieres.warning = warningMatieres;
+                configData.thresholds.bouteilles.critical = criticalBouteilles;
+                configData.thresholds.bouteilles.warning = warningBouteilles;
+
+                // Synchroniser avec la configuration globale
+                window.updateGlobalConfig(configData);
+
+                // Mettre à jour les infos
+                updateThresholdInfo();
+
+                notify.success('Configuration sauvegardée', 'Les nouveaux seuils de stock ont été appliqués à tout l\'intranet.');
+            });
+
+            document.getElementById('resetThresholds').addEventListener('click', function() {
+                const confirmNotification = notify.warning(
+                    'Confirmation de réinitialisation', 
+                    'Êtes-vous sûr de vouloir réinitialiser les seuils aux valeurs par défaut ?', 
+                    10000
+                );
+                
+                const notificationContent = confirmNotification.querySelector('.notification-content');
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '1rem';
+                buttonsDiv.style.display = 'flex';
+                buttonsDiv.style.gap = '0.5rem';
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'cta-button btn-warning';
+                confirmBtn.style.fontSize = '0.8rem';
+                confirmBtn.style.padding = '0.5rem 1rem';
+                confirmBtn.textContent = 'Réinitialiser';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cta-button btn-secondary';
+                cancelBtn.style.fontSize = '0.8rem';
+                cancelBtn.style.padding = '0.5rem 1rem';
+                cancelBtn.textContent = 'Annuler';
+                
+                buttonsDiv.appendChild(cancelBtn);
+                buttonsDiv.appendChild(confirmBtn);
+                notificationContent.appendChild(buttonsDiv);
+                
+                confirmBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                    
+                    configData.thresholds.matieres.critical = 50;
+                    configData.thresholds.matieres.warning = 100;
+                    configData.thresholds.bouteilles.critical = 30;
+                    configData.thresholds.bouteilles.warning = 75;
+                    
+                    // Synchroniser avec la configuration globale
+                    window.updateGlobalConfig(configData);
+                    
+                    loadConfiguration();
+                    notify.info('Configuration réinitialisée', 'Les seuils ont été remis aux valeurs par défaut.');
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                });
+            });
+
+            // Gestion des notifications
+            document.getElementById('saveNotifications').addEventListener('click', function() {
+                const duration = parseInt(document.getElementById('notification-duration').value);
+                const soundEnabled = document.getElementById('sound-notifications').checked;
+
+                configData.notifications.duration = duration;
+                configData.notifications.soundEnabled = soundEnabled;
+
+                // Synchroniser avec la configuration globale
+                window.updateGlobalConfig(configData);
+
+                notify.success('Configuration sauvegardée', 'Les paramètres de notification ont été mis à jour.');
+            });
+
+            document.getElementById('resetNotifications').addEventListener('click', function() {
+                const confirmNotification = notify.warning(
+                    'Confirmation de réinitialisation', 
+                    'Réinitialiser les paramètres de notification aux valeurs par défaut ?', 
+                    10000
+                );
+                
+                const notificationContent = confirmNotification.querySelector('.notification-content');
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '1rem';
+                buttonsDiv.style.display = 'flex';
+                buttonsDiv.style.gap = '0.5rem';
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'cta-button btn-warning';
+                confirmBtn.style.fontSize = '0.8rem';
+                confirmBtn.style.padding = '0.5rem 1rem';
+                confirmBtn.textContent = 'Réinitialiser';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cta-button btn-secondary';
+                cancelBtn.style.fontSize = '0.8rem';
+                cancelBtn.style.padding = '0.5rem 1rem';
+                cancelBtn.textContent = 'Annuler';
+                
+                buttonsDiv.appendChild(cancelBtn);
+                buttonsDiv.appendChild(confirmBtn);
+                notificationContent.appendChild(buttonsDiv);
+                
+                confirmBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                    
+                    configData.notifications.duration = 4;
+                    configData.notifications.soundEnabled = true;
+                    
+                    // Synchroniser avec la configuration globale
+                    window.updateGlobalConfig(configData);
+                    
+                    loadConfiguration();
+                    notify.info('Configuration réinitialisée', 'Les paramètres de notification ont été remis par défaut.');
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                });
+            });
+
+            // Gestion du système
+            document.getElementById('saveSystem').addEventListener('click', function() {
+                const sessionTimeout = parseInt(document.getElementById('session-timeout').value);
+                const theme = document.getElementById('theme-mode').value;
+
+                configData.system.sessionTimeout = sessionTimeout;
+                configData.system.theme = theme;
+
+                // Synchroniser avec la configuration globale
+                window.updateGlobalConfig(configData);
+
+                notify.success('Configuration sauvegardée', 'Les paramètres système ont été mis à jour.');
+            });
+
+            document.getElementById('resetSystem').addEventListener('click', function() {
+                const confirmNotification = notify.warning(
+                    'Confirmation de réinitialisation', 
+                    'Réinitialiser les paramètres système aux valeurs par défaut ?', 
+                    10000
+                );
+                
+                const notificationContent = confirmNotification.querySelector('.notification-content');
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '1rem';
+                buttonsDiv.style.display = 'flex';
+                buttonsDiv.style.gap = '0.5rem';
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'cta-button btn-warning';
+                confirmBtn.style.fontSize = '0.8rem';
+                confirmBtn.style.padding = '0.5rem 1rem';
+                confirmBtn.textContent = 'Réinitialiser';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cta-button btn-secondary';
+                cancelBtn.style.fontSize = '0.8rem';
+                cancelBtn.style.padding = '0.5rem 1rem';
+                cancelBtn.textContent = 'Annuler';
+                
+                buttonsDiv.appendChild(cancelBtn);
+                buttonsDiv.appendChild(confirmBtn);
+                notificationContent.appendChild(buttonsDiv);
+                
+                confirmBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                    
+                    configData.system.sessionTimeout = 60;
+                    configData.system.theme = 'light';
+                    
+                    // Synchroniser avec la configuration globale
+                    window.updateGlobalConfig(configData);
+                    
+                    loadConfiguration();
+                    notify.info('Configuration réinitialisée', 'Les paramètres système ont été remis par défaut.');
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                });
+            });
+
+            // Mise à jour automatique des infos lors de la saisie
+            document.getElementById('warning-matieres').addEventListener('input', updateThresholdInfo);
+            document.getElementById('warning-bouteilles').addEventListener('input', updateThresholdInfo);
+
+            // Gestion de la déconnexion
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const confirmNotification = notify.info(
+                    'Confirmation de déconnexion', 
+                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                    10000
+                );
+                
+                const notificationContent = confirmNotification.querySelector('.notification-content');
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '1rem';
+                buttonsDiv.style.display = 'flex';
+                buttonsDiv.style.gap = '0.5rem';
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'cta-button btn-warning';
+                confirmBtn.style.fontSize = '0.8rem';
+                confirmBtn.style.padding = '0.5rem 1rem';
+                confirmBtn.textContent = 'Déconnexion';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cta-button btn-secondary';
+                cancelBtn.style.fontSize = '0.8rem';
+                cancelBtn.style.padding = '0.5rem 1rem';
+                cancelBtn.textContent = 'Annuler';
+                
+                buttonsDiv.appendChild(cancelBtn);
+                buttonsDiv.appendChild(confirmBtn);
+                notificationContent.appendChild(buttonsDiv);
+                
+                confirmBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 1000);
+                });
+                
+                cancelBtn.addEventListener('click', () => {
+                    notify.remove(confirmNotification);
+                });
+            });
+
+            function loadConfiguration() {
+                // Charger les seuils
+                document.getElementById('critical-matieres').value = configData.thresholds.matieres.critical;
+                document.getElementById('warning-matieres').value = configData.thresholds.matieres.warning;
+                document.getElementById('critical-bouteilles').value = configData.thresholds.bouteilles.critical;
+                document.getElementById('warning-bouteilles').value = configData.thresholds.bouteilles.warning;
+
+                // Charger les notifications
+                document.getElementById('notification-duration').value = configData.notifications.duration;
+                document.getElementById('sound-notifications').checked = configData.notifications.soundEnabled;
+
+                // Charger le système
+                document.getElementById('session-timeout').value = configData.system.sessionTimeout;
+                document.getElementById('theme-mode').value = configData.system.theme;
+
+                updateThresholdInfo();
+            }
+
+            function updateThresholdInfo() {
+                const warningMatieres = document.getElementById('warning-matieres').value;
+                const warningBouteilles = document.getElementById('warning-bouteilles').value;
+
+                // Mettre à jour les infos textuelles
+                const matieresInfo = document.querySelector('.config-item:first-child .threshold-info span');
+                const bouteillesInfo = document.querySelector('.config-item:last-child .threshold-info span');
+
+                matieresInfo.innerHTML = `Au-dessus de ${warningMatieres} unités = <strong>Bon Stock</strong>`;
+                bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles} bouteilles = <strong>Bon Stock</strong>`;
+            }
+
+            console.log('Page Configuration chargée avec succès!');
+        });
+    </script>
+</body>
+</html>

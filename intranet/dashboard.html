@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Marlowe Vineyard Intranet</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <nav class="nav-container">
-            <a href="dashboard.html" class="logo">
+            <a href="../index.html" class="logo">
                 <i class="fas fa-shield-alt"></i>
                 Marlowe Intranet
             </a>
             <ul class="nav-menu">
                 <li><a href="dashboard.html" class="active">Dashboard</a></li>
-                <li><a href="#inventaire">Inventaire</a></li>
+                <li><a href="inventaire.html">Inventaire</a></li>
                 <li><a href="#commandes">Commandes</a></li>
-                <li><a href="#rapports">Rapports</a></li>
+                <li><a href="documents.html">Documents</a></li>
+                <li><a href="configuration.html">Configuration</a></li>
                 <li><a href="#" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </a></li>
@@ -186,7 +187,7 @@
         <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="../script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Gestion de la déconnexion
@@ -230,7 +231,7 @@
                     notify.remove(confirmNotification);
                     notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
                     setTimeout(() => {
-                        window.location.href = 'accueil.html';
+                        window.location.href = '../index.html';
                     }, 1000);
                 });
                 

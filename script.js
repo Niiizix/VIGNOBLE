@@ -85,6 +85,41 @@ class NotificationSystem {
 // Initialiser le système de notifications globalement
 const notify = new NotificationSystem();
 
+// Configuration globale par défaut (peut être surchargée par la page de configuration)
+window.globalConfig = {
+    thresholds: {
+        matieres: {
+            critical: 50,
+            warning: 100
+        },
+        bouteilles: {
+            critical: 30,
+            warning: 75
+        }
+    },
+    notifications: {
+        duration: 4,
+        soundEnabled: true
+    },
+    system: {
+        sessionTimeout: 60,
+        theme: 'light'
+    }
+};
+
+// Fonctions globales pour accéder à la configuration
+window.getStockThresholds = function() {
+    return window.globalConfig.thresholds;
+};
+
+window.getConfiguration = function() {
+    return window.globalConfig;
+};
+
+window.updateGlobalConfig = function(newConfig) {
+    window.globalConfig = { ...window.globalConfig, ...newConfig };
+};
+
 // Header scroll effect
 window.addEventListener('scroll', function() {
     const header = document.querySelector('.header');
