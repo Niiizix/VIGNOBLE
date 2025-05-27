@@ -1278,9 +1278,10 @@
                     bouteilles: { critical: criticalBouteilles, warning: warningBouteilles }
                 };
 
-                const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
+                configData.thresholds = newThresholds;
+                const saved = saveDataToLocalStorage();
+                
                 if (saved) {
-                    configData.thresholds = newThresholds;
                     updateThresholdInfo();
                     notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
                 } else {
