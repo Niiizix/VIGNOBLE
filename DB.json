@@ -14,7 +14,7 @@
       "cfo - Directeur financier (accès administratif)",
       "ceo - PDG (accès complet à tout)"
     ],
-    "notes": "Les champs supprimés: status, lastLogin, description, department, manager, notes, address, hireDate, salary"
+    "notes": "L'inventaire est géré en localStorage uniquement, pas dans ce fichier"
   },
   "system": {
     "grades": {
@@ -88,24 +88,6 @@
       "grade": "ceo",
       "password": "MW2025",
       "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
-    }
-  },
-  "inventory": {
-    "matieres": {
-      "raisins_cabernet": { "stock": 2450, "unit": "kg", "name": "Raisins Cabernet Sauvignon" },
-      "raisins_chardonnay": { "stock": 1890, "unit": "kg", "name": "Raisins Chardonnay" },
-      "levures_seches": { "stock": 45, "unit": "sachets", "name": "Levures Sèches" },
-      "soufre": { "stock": 78, "unit": "kg", "name": "Soufre" },
-      "bouchons_liege": { "stock": 15680, "unit": "unités", "name": "Bouchons Liège Premium" },
-      "etiquettes": { "stock": 2340, "unit": "unités", "name": "Étiquettes Marlowe" }
-    },
-    "bouteilles": {
-      "marlowe_rouge": { "stock": 456, "price": 450, "name": "Marlowe Rouge Reserve" },
-      "marlowe_blanc": { "stock": 298, "price": 380, "name": "Marlowe Blanc Premium" },
-      "marlowe_prestige": { "stock": 67, "price": 850, "name": "Marlowe Prestige" },
-      "marlowe_rose": { "stock": 234, "price": 320, "name": "Marlowe Rosé" },
-      "marlowe_vintage": { "stock": 23, "price": 1200, "name": "Marlowe Vintage" },
-      "coffret_degustation": { "stock": 89, "price": 1800, "name": "Coffret Dégustation" }
     }
   },
   "configuration": {
