@@ -444,14 +444,14 @@
                 // Total
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 463, y: totalsY - 70, size: 12, font: boldFont, color: PDFLib.rgb(1, 1, 1)
+                    x: 455, y: totalsY - 70, size: 12, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                 });
                 
                 // Date
                 const today = new Date();
                 const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                 firstPage.drawText(cleanTextForPDF(dateFormatted), {
-                    x: 350, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 330, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 return pdfDoc;
