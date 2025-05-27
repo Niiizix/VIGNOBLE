@@ -609,22 +609,32 @@
         let isEditMode = false;
         let editingUsername = '';
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Attendre que la DB soit prête
-            await window.dbManager.waitForReady();
+        // Attendre que le script principal soit chargé
+        function initConfigPage() {
+            if (!window.dbManager || !window.dbManager.waitForReady) {
+                setTimeout(initConfigPage, 100);
+                return;
+            }
             
-            // Charger toutes les données depuis la DB
-            await loadAllData();
-            
-            // Initialiser les gestionnaires d'événements
-            setupUserManagement();
-            setupThresholds();
-            setupNotifications();
-            setupSystem();
-            setupLogout();
+            window.dbManager.waitForReady().then(async () => {
+                // Charger toutes les données depuis la DB
+                await loadAllData();
+                
+                // Initialiser les gestionnaires d'événements
+                setupUserManagement();
+                setupThresholds();
+                setupNotifications();
+                setupSystem();
+                setupLogout();
 
-            console.log('✅ Page Configuration chargée avec données DB !');
-        });
+                console.log('✅ Page Configuration chargée avec données DB !');
+            }).catch(error => {
+                console.error('❌ Erreur lors de l\'initialisation:', error);
+                notify.error('Erreur', 'Impossible de charger la configuration.');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initConfigPage);
 
         // === CHARGEMENT DES DONNÉES ===
         async function loadAllData() {
@@ -743,21 +753,32 @@
 
         // === FONCTIONS UTILITAIRES ===
         function loadConfiguration() {
-            if (!currentConfig.thresholds) return;
+            // Vérifier que la configuration existe
+            if (!currentConfig || !currentConfig.thresholds) {
+                console.log('⚠️ Configuration vide, utilisation des valeurs par défaut');
+                currentConfig = {
+                    thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
+                    notifications: { duration: 4, soundEnabled: true },
+                    system: { sessionTimeout: 60, theme: 'light' }
+                };
+            }
             
-            // Charger les seuils
-            document.getElementById('critical-matieres').value = currentConfig.thresholds.matieres?.critical || 50;
-            document.getElementById('warning-matieres').value = currentConfig.thresholds.matieres?.warning || 100;
-            document.getElementById('critical-bouteilles').value = currentConfig.thresholds.bouteilles?.critical || 30;
-            document.getElementById('warning-bouteilles').value = currentConfig.thresholds.bouteilles?.warning || 75;
+            // Charger les seuils avec vérifications
+            const thresholds = currentConfig.thresholds || {};
+            document.getElementById('critical-matieres').value = thresholds.matieres?.critical || 50;
+            document.getElementById('warning-matieres').value = thresholds.matieres?.warning || 100;
+            document.getElementById('critical-bouteilles').value = thresholds.bouteilles?.critical || 30;
+            document.getElementById('warning-bouteilles').value = thresholds.bouteilles?.warning || 75;
 
-            // Charger les notifications
-            document.getElementById('notification-duration').value = currentConfig.notifications?.duration || 4;
-            document.getElementById('sound-notifications').checked = currentConfig.notifications?.soundEnabled !== false;
+            // Charger les notifications avec vérifications
+            const notifications = currentConfig.notifications || {};
+            document.getElementById('notification-duration').value = notifications.duration || 4;
+            document.getElementById('sound-notifications').checked = notifications.soundEnabled !== false;
 
-            // Charger le système
-            document.getElementById('session-timeout').value = currentConfig.system?.sessionTimeout || 60;
-            document.getElementById('theme-mode').value = currentConfig.system?.theme || 'light';
+            // Charger le système avec vérifications
+            const system = currentConfig.system || {};
+            document.getElementById('session-timeout').value = system.sessionTimeout || 60;
+            document.getElementById('theme-mode').value = system.theme || 'light';
 
             updateThresholdInfo();
         }
