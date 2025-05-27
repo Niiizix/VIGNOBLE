@@ -227,7 +227,7 @@ class DatabaseManager {
      */
     async loadDefaultData() {
         try {
-            const response = await fetch('./DB.json');
+            const response = await fetch('../DB.json');
             if (response.ok) {
                 this.defaultData = await response.json();
             } else {
