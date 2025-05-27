@@ -6,6 +6,34 @@
     <title>Inventaire - Marlowe Vineyard Intranet</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
+    <style>
+        .btn-small {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .btn-small i {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -346,6 +374,16 @@
 
             // Déconnexion
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+            // Boutons de suppression (délégation d'événements)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-product-btn')) {
+                    const btn = e.target.closest('.delete-product-btn');
+                    const category = btn.dataset.category;
+                    const productId = btn.dataset.productId;
+                    removeProduct(category, productId);
+                }
+            });
         }
 
         function openAddProductModal() {
@@ -390,6 +428,7 @@
             document.getElementById('addProductForm').reset();
             document.getElementById('stockForm').reset();
             document.getElementById('currentStock').textContent = '0';
+            document.getElementById('stockNote').value = '';
         }
 
         function addProduct() {
