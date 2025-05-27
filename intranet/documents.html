@@ -401,53 +401,53 @@
                     });
                 }
                 
-                // Produits - coordonnées plus conservatrices
-                let productY = 320; // Un peu plus haut
+                // Produits - ajustement final
+                let productY = 320;
                 devisData.produits.forEach((produit, index) => {
                     const currentY = productY - (index * 22);
                     
-                    // Description - garder position qui marche
+                    // Description - OK
                     firstPage.drawText(cleanTextForPDF(produit.nom), {
                         x: 120, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Prix unitaire - garder position qui marche
+                    // Prix unitaire - OK
                     firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
                         x: 390, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Quantité - garder position qui marche  
+                    // Quantité - OK  
                     firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
                         x: 520, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Total HT - ESSAYER PLUS À GAUCHE d'abord
+                    // Total HT - un peu plus à droite pour être mieux centré
                     firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
-                        x: 580, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 610, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
                 
-                // Totaux - ESSAYER BEAUCOUP PLUS À GAUCHE
+                // Totaux - ajustement pour que "EUR" soit visible
                 const totalsY = 260;
                 
-                // Sous-total - proche de la ligne mais visible
+                // Sous-total - parfait, juste s'assurer que EUR est visible
                 firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
-                    x: 580, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 560, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // TVA 
+                // TVA - un peu plus à gauche pour que EUR soit visible
                 const tvaFormatted = Math.round(devisData.totaux.tva * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${tvaFormatted} EUR`), {
-                    x: 580, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 560, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total - dans la zone dorée
+                // Total - un peu plus à gauche pour que EUR soit visible
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 580, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 560, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Date - ESSAYER PLUS À GAUCHE AUSSI
+                // Date - parfaite, on garde
                 const today = new Date();
                 const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                 firstPage.drawText(cleanTextForPDF(dateFormatted), {
