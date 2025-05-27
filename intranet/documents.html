@@ -386,11 +386,11 @@
                 }
                 
                 // Email et téléphone
-                let infoY = 615 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
+                let infoY = 650 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
                 
                 if (devisData.client.email) {
                     firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
-                        x: 77, y: infoY - 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 60, y: infoY - 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     infoY -= 15;
                 }
