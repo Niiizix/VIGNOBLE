@@ -128,12 +128,16 @@ class DatabaseManager {
      */
     async loadFromJSON() {
         try {
-            const response = await fetch('./DB.json');
+            // Détecter le chemin correct selon l'emplacement de la page
+            const isInSubfolder = window.location.pathname.includes('/intranet/');
+            const dbPath = isInSubfolder ? '../DB.json' : './DB.json';
+            
+            const response = await fetch(dbPath);
             if (response.ok) {
                 this.data = await response.json();
-                console.log('📄 DB.json chargé avec succès');
+                console.log('📄 DB.json chargé avec succès depuis:', dbPath);
             } else {
-                throw new Error('Impossible de charger DB.json');
+                throw new Error(`Impossible de charger DB.json depuis ${dbPath}`);
             }
         } catch (error) {
             console.error('⚠️ Erreur lors du chargement de DB.json:', error);
