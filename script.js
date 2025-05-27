@@ -136,7 +136,9 @@ class DatabaseManager {
             const response = await fetch(dbPath);
             if (response.ok) {
                 this.data = await response.json();
-                console.log('📄 DB.json chargé avec succès depuis:', dbPath);
+                // Ne PAS charger l'inventaire depuis JSON - il sera géré par localStorage uniquement
+                delete this.data.inventory;
+                console.log('📄 DB.json chargé avec succès depuis:', dbPath, '(sans inventaire)');
             } else {
                 throw new Error(`Impossible de charger DB.json depuis ${dbPath}`);
             }
