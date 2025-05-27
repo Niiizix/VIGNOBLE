@@ -1,0 +1,146 @@
+{
+  "users": {
+    "admin": {
+      "fullname": "Christopher Marlowe",
+      "phone": "+1 (555) 001-0001",
+      "grade": "ceo",
+      "description": "Administrateur principal",
+      "password": "MW2025",
+      "status": "online",
+      "lastLogin": "Maintenant",
+      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"],
+      "address": "1247 Vinewood Hills Drive, Los Santos, CA 90210",
+      "hireDate": "2020-01-15",
+      "department": "direction",
+      "salary": 250000,
+      "manager": "",
+      "notes": "Fondateur et PDG de Marlowe Vineyard"
+    },
+    "manager": {
+      "fullname": "Alexandre Dubois",
+      "phone": "+1 (555) 002-0123",
+      "grade": "manager",
+      "description": "Gestionnaire opérationnel",
+      "password": "VINE123",
+      "status": "offline",
+      "lastLogin": "Il y a 2h",
+      "permissions": ["dashboard", "inventory", "documents", "reports"],
+      "address": "456 Oak Street, Los Santos, CA 90211",
+      "hireDate": "2021-03-10",
+      "department": "administration",
+      "salary": 85000,
+      "manager": "admin",
+      "notes": "MBA en gestion, spécialisé en opérations viticoles"
+    },
+    "marlowe": {
+      "fullname": "Elena Marlowe",
+      "phone": "+1 (555) 003-0456",
+      "grade": "cfo",
+      "description": "Responsable production",
+      "password": "GRAPE456",
+      "status": "online",
+      "lastLogin": "Il y a 15min",
+      "permissions": ["dashboard", "inventory", "documents", "reports"],
+      "address": "1247 Vinewood Hills Drive, Los Santos, CA 90210",
+      "hireDate": "2020-02-01",
+      "department": "production",
+      "salary": 120000,
+      "manager": "admin",
+      "notes": "Maître de chai certifiée, 15 ans d'expérience"
+    },
+    "vincent": {
+      "fullname": "Vincent Leclerc",
+      "phone": "+1 (555) 004-0789",
+      "grade": "manager",
+      "description": "Responsable ventes",
+      "password": "WINE789",
+      "status": "offline",
+      "lastLogin": "Hier 18h30",
+      "permissions": ["dashboard", "documents", "reports"],
+      "address": "789 Sunset Boulevard, Los Santos, CA 90212",
+      "hireDate": "2021-09-15",
+      "department": "ventes",
+      "salary": 90000,
+      "manager": "admin",
+      "notes": "Sommelier diplômé, expert en marketing viticole"
+    },
+    "sophie": {
+      "fullname": "Sophie Martin",
+      "phone": "+1 (555) 005-0234",
+      "grade": "employe",
+      "description": "Assistante administrative",
+      "password": "CELLAR321",
+      "status": "online",
+      "lastLogin": "Il y a 5min",
+      "permissions": ["dashboard"],
+      "address": "321 Pine Avenue, Los Santos, CA 90213",
+      "hireDate": "2022-05-20",
+      "department": "administration",
+      "salary": 45000,
+      "manager": "manager",
+      "notes": "Diplômée en administration des affaires"
+    },
+    "lucas": {
+      "fullname": "Lucas Bernard",
+      "phone": "+1 (555) 006-0567",
+      "grade": "employe",
+      "description": "Technicien cave",
+      "password": "TECH2025",
+      "status": "offline",
+      "lastLogin": "Il y a 3 jours",
+      "permissions": ["dashboard", "inventory"],
+      "address": "654 Valley Road, Los Santos, CA 90214",
+      "hireDate": "2023-01-10",
+      "department": "technique",
+      "salary": 55000,
+      "manager": "marlowe",
+      "notes": "BTS viticulture-œnologie, spécialisé en fermentation"
+    }
+  },
+  "inventory": {
+    "matieres": {
+      "raisins_cabernet": { "stock": 2450, "unit": "kg", "name": "Raisins Cabernet Sauvignon" },
+      "raisins_chardonnay": { "stock": 1890, "unit": "kg", "name": "Raisins Chardonnay" },
+      "levures_seches": { "stock": 45, "unit": "sachets", "name": "Levures Sèches" },
+      "soufre": { "stock": 78, "unit": "kg", "name": "Soufre" },
+      "bouchons_liege": { "stock": 15680, "unit": "unités", "name": "Bouchons Liège Premium" },
+      "etiquettes": { "stock": 2340, "unit": "unités", "name": "Étiquettes Marlowe" }
+    },
+    "bouteilles": {
+      "marlowe_rouge": { "stock": 456, "price": 450, "name": "Marlowe Rouge Reserve" },
+      "marlowe_blanc": { "stock": 298, "price": 380, "name": "Marlowe Blanc Premium" },
+      "marlowe_prestige": { "stock": 67, "price": 850, "name": "Marlowe Prestige" },
+      "marlowe_rose": { "stock": 234, "price": 320, "name": "Marlowe Rosé" },
+      "marlowe_vintage": { "stock": 23, "price": 1200, "name": "Marlowe Vintage" },
+      "coffret_degustation": { "stock": 89, "price": 1800, "name": "Coffret Dégustation" }
+    }
+  },
+  "configuration": {
+    "thresholds": {
+      "matieres": { "critical": 50, "warning": 100 },
+      "bouteilles": { "critical": 30, "warning": 75 }
+    },
+    "notifications": {
+      "duration": 4,
+      "soundEnabled": true
+    },
+    "system": {
+      "sessionTimeout": 60,
+      "theme": "light"
+    }
+  },
+  "statistics": {
+    "sales": {
+      "monthly": 47320,
+      "bottlesSold": 156,
+      "growth": 12
+    },
+    "documents": {
+      "devis": 47,
+      "factures": 23,
+      "livraisons": 15,
+      "rapports": 8
+    }
+  },
+  "lastUpdate": "2025-01-27T10:30:00Z"
+}
