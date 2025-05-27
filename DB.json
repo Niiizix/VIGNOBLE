@@ -47,6 +47,14 @@
         "border": "2px solid #c62828",
         "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports", "users"]
       }
+      "staff": {
+        "label": "STAFF",
+        "description": "",
+        "color": "#c62828",
+        "background": "#ffebee",
+        "border": "2px solid #c62828",
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+      }
     },
     "permissions": {
       "dashboard": {
@@ -83,10 +91,24 @@
   },
   "users": {
     "admin": {
-      "fullname": "Christopher Marlowe",
-      "phone": "+1 (555) 001-0001",
+      "fullname": "STAFF",
+      "phone": "",
+      "grade": "staff",
+      "password": "ML_STAFF",
+      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+    },
+    "guzman": {
+      "fullname": "Guzman Stamkos",
+      "phone": "",
       "grade": "ceo",
-      "password": "MW2025",
+      "password": "GJ@Sxzdt8dM&g4Y",
+      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+    },
+    "nico": {
+      "fullname": "Nico Capone",
+      "phone": "",
+      "grade": "cfo",
+      "password": "$yJA&E&tJY$98E6",
       "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
     }
   },
