@@ -367,15 +367,15 @@
                 
                 // Numéro de devis
                 firstPage.drawText(cleanTextForPDF(devisData.numeroDevis), {
-                    x: 240, y: 695, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
+                    x: 70, y: 625, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                 });
                 
-                // Client - REMONTÉES À FOND
+                // Client
                 firstPage.drawText(cleanTextForPDF(devisData.client.nom), {
-                    x: 77, y: 580, size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 70, y: 600, size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Adresse - REMONTÉE À FOND
+                // Adresse
                 if (devisData.client.adresse) {
                     const addressLines = devisData.client.adresse.split('\n');
                     addressLines.forEach((line, index) => {
@@ -385,7 +385,7 @@
                     });
                 }
                 
-                // Email et téléphone - REMONTÉS À FOND
+                // Email et téléphone
                 let infoY = 560 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
                 
                 if (devisData.client.email) {
