@@ -65,14 +65,13 @@
                             <tr>
                                 <th>Produit</th>
                                 <th>Stock Actuel</th>
-                                <th>Unité</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="matieres-table">
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
                                     <i class="fas fa-spinner fa-spin"></i> Chargement de l'inventaire...
                                 </td>
                             </tr>
@@ -106,7 +105,7 @@
                         </thead>
                         <tbody id="bouteilles-table">
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
                                     <i class="fas fa-spinner fa-spin"></i> Chargement de l'inventaire...
                                 </td>
                             </tr>
@@ -133,11 +132,6 @@
                 <div class="form-group">
                     <label class="form-label">Stock initial</label>
                     <input type="number" id="initialStock" class="form-input" min="0" required>
-                </div>
-                
-                <div class="form-group" id="unitGroup">
-                    <label class="form-label">Unité</label>
-                    <input type="text" id="productUnit" class="form-input" placeholder="kg, sachets, unités..." required>
                 </div>
 
                 <div class="form-group" id="priceGroup" style="display: none;">
@@ -235,7 +229,7 @@
             if (Object.keys(data).length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="${category === 'matieres' ? 5 : 5}" style="text-align: center; padding: 2rem; color: #666;">
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
                             Aucun produit dans cette catégorie. Cliquez sur "Ajouter Produit" pour commencer.
                         </td>
                     </tr>
@@ -267,7 +261,6 @@
                     row.innerHTML = `
                         <td><strong>${product.name}</strong></td>
                         <td class="stock-value">${product.stock.toLocaleString()}</td>
-                        <td>${product.unit}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>
                             <button class="btn-small btn-danger" onclick="removeProduct('${category}', '${productId}')">
@@ -279,7 +272,7 @@
                     row.innerHTML = `
                         <td><strong>${product.name}</strong></td>
                         <td class="stock-value">${product.stock.toLocaleString()}</td>
-                        <td>$${product.price.toLocaleString()}</td>
+                        <td>${product.price.toLocaleString()}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>
                             <button class="btn-small btn-danger" onclick="removeProduct('${category}', '${productId}')">
@@ -352,7 +345,6 @@
 
         function openAddProductModal() {
             const modal = document.getElementById('addProductModal');
-            const unitGroup = document.getElementById('unitGroup');
             const priceGroup = document.getElementById('priceGroup');
             
             // Afficher/masquer les champs selon la catégorie
@@ -398,7 +390,6 @@
         function addProduct() {
             const name = document.getElementById('productName').value.trim();
             const stock = parseInt(document.getElementById('initialStock').value);
-            const unit = document.getElementById('productUnit').value.trim();
             const price = parseFloat(document.getElementById('productPrice').value) || 0;
             
             if (!name || stock < 0) {
@@ -418,8 +409,7 @@
             // Créer l'objet produit
             const productData = {
                 name: name,
-                stock: stock,
-                unit: unit
+                stock: stock
             };
 
             if (currentCategory === 'bouteilles') {
