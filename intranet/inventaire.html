@@ -167,6 +167,11 @@
                     <label class="form-label">Nouveau stock</label>
                     <input type="number" id="newStock" class="form-input" min="0" required>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Note (optionnel)</label>
+                    <textarea id="stockNote" class="form-textarea" rows="2" placeholder="Motif de la modification..."></textarea>
+                </div>
                 
                 <div class="modal-actions">
                     <button type="button" class="cta-button btn-secondary cancel-btn">Annuler</button>
@@ -437,6 +442,7 @@
         function updateStock() {
             const productId = document.getElementById('productSelect').value;
             const newStock = parseInt(document.getElementById('newStock').value);
+            const note = document.getElementById('stockNote').value.trim();
             
             if (!productId || newStock < 0) {
                 if (window.notify) window.notify.error('Erreur', 'Veuillez sélectionner un produit et entrer un stock valide.');
@@ -452,8 +458,12 @@
                 closeModals();
                 
                 const productName = inventoryData[currentCategory][productId].name;
+                const message = note ? 
+                    `Stock de ${productName} mis à jour: ${newStock.toLocaleString()} (${note})` :
+                    `Stock de ${productName} mis à jour: ${newStock.toLocaleString()}`;
+                
                 if (window.notify) {
-                    window.notify.success('Stock mis à jour', `Stock de ${productName} mis à jour: ${newStock.toLocaleString()}`);
+                    window.notify.success('Stock mis à jour', message);
                 }
             } else {
                 if (window.notify) {
