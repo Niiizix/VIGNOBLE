@@ -46,7 +46,7 @@
         "background": "#ffebee",
         "border": "2px solid #c62828",
         "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports", "users"]
-      }
+      },
       "staff": {
         "label": "STAFF",
         "description": "",
