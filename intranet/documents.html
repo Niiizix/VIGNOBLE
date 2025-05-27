@@ -106,15 +106,15 @@
                     <div class="totals-container">
                         <div class="total-line">
                             <span class="total-label">Sous-total HT :</span>
-                            <span class="total-value" id="sous-total">0,00 €</span>
+                            <span class="total-value" id="sous-total">$0.00</span>
                         </div>
                         <div class="total-line">
                             <span class="total-label">TVA (21%) :</span>
-                            <span class="total-value" id="tva-montant">0,00 €</span>
+                            <span class="total-value" id="tva-montant">$0.00</span>
                         </div>
                         <div class="total-line total-final">
                             <span class="total-label">Total TTC :</span>
-                            <span class="total-value" id="total-final">0,00 €</span>
+                            <span class="total-value" id="total-final">$0.00</span>
                         </div>
                     </div>
                 </div>
@@ -297,7 +297,7 @@
             
             return String(text)
                 // Remplacements simples
-                .replace(/[€]/g, 'EUR')
+                .replace(/[\$]/g, 'USD')
                 .replace(/[àáâäå]/gi, 'a')
                 .replace(/[èéêë]/gi, 'e')
                 .replace(/[ìíîï]/gi, 'i')
@@ -373,7 +373,7 @@
                     });
                     
                     // Prix unitaire
-                    firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
+                    firstPage.drawText(cleanTextForPDF(`$${produit.prix}`), {
                         x: 257, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
@@ -383,7 +383,7 @@
                     });
                     
                     // Total HT
-                    firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
+                    firstPage.drawText(cleanTextForPDF(`$${produit.total}`), {
                         x: 467, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
@@ -392,19 +392,19 @@
                 const totalsY = 335;
                 
                 // Sous-total
-                firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
+                firstPage.drawText(cleanTextForPDF(`$${devisData.totaux.sousTotal}`), {
                     x: 467, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 // TVA
                 const tvaFormatted = Math.round(devisData.totaux.tva * 100) / 100;
-                firstPage.drawText(cleanTextForPDF(`${tvaFormatted} EUR`), {
+                firstPage.drawText(cleanTextForPDF(`$${tvaFormatted}`), {
                     x: 467, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 // Total - ALIGNÉ À DROITE DE LA BULLE JAUNE
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
-                const totalText = cleanTextForPDF(`${totalFormatted} EUR`);
+                const totalText = cleanTextForPDF(`$${totalFormatted}`);
                 const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 12);
                 const rightEdgeOfBubble = 570; // Position droite de la bulle jaune
                 firstPage.drawText(totalText, {
@@ -473,7 +473,7 @@
                 fields: [
                     { name: "📋 Numéro", value: devisData.numeroDevis, inline: true },
                     { name: "👤 Client", value: devisData.client.nom, inline: true },
-                    { name: "💰 Total", value: `${devisData.totaux.total.toLocaleString('fr-FR', {minimumFractionDigits: 2})} EUR`, inline: true },
+                    { name: "💰 Total", value: `$${devisData.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`, inline: true },
                     { name: "🛒 Produits", value: devisData.produits.map(p => `• ${p.nom} (${p.quantite}x)`).join('\n'), inline: false }
                 ],
                 timestamp: new Date().toISOString()
@@ -596,7 +596,7 @@
             
             let optionsHTML = '<option value="">Sélectionnez un produit</option>';
             Object.entries(produits).forEach(([key, prod]) => {
-                optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}€</option>`;
+                optionsHTML += `<option value="${key}">${prod.nom} - $${prod.prix}</option>`;
             });
             
             productLine.innerHTML = `
@@ -643,7 +643,7 @@
             
             if (select.value) {
                 const prix = produits[select.value].prix;
-                priceInput.value = `${prix},00 €`;
+                priceInput.value = `${prix}.00`;
                 updateLineTotal(id);
             } else {
                 priceInput.value = '';
@@ -661,7 +661,7 @@
                 const quantity = parseInt(quantityInput.value) || 0;
                 const total = prix * quantity;
                 
-                totalInput.value = `${total.toLocaleString('fr-FR')},00 €`;
+                totalInput.value = `${total.toLocaleString('en-US')}.00`;
             } else {
                 totalInput.value = '';
             }
@@ -687,9 +687,9 @@
             const tva = sousTotal * 0.21;
             const total = sousTotal + tva;
             
-            document.getElementById('sous-total').textContent = `${sousTotal.toLocaleString('fr-FR')},00 €`;
-            document.getElementById('tva-montant').textContent = `${tva.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`;
-            document.getElementById('total-final').textContent = `${total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`;
+            document.getElementById('sous-total').textContent = `${sousTotal.toLocaleString('en-US')}.00`;
+            document.getElementById('tva-montant').textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('total-final').textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
             devisData.totaux = { sousTotal, tva, total };
         }
@@ -706,11 +706,11 @@
             
             preview += '<h4>Produits:</h4><ul>';
             devisData.produits.forEach(prod => {
-                preview += `<li>${prod.nom} - Quantité: ${prod.quantite} - Total: ${prod.total.toLocaleString('fr-FR')},00 €</li>`;
+                preview += `<li>${prod.nom} - Quantité: ${prod.quantite} - Total: ${prod.total.toLocaleString('en-US')}.00</li>`;
             });
             preview += '</ul>';
             
-            preview += `<h4>Total: ${devisData.totaux.total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</h4>`;
+            preview += `<h4>Total: ${devisData.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h4>`;
             
             notify.info('Prévisualisation', preview);
         }
