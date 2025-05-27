@@ -609,6 +609,170 @@
         let isEditMode = false;
         let editingUsername = '';
 
+        // === FONCTIONS UTILITAIRES (définies en premier) ===
+        function updateUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+
+            if (Object.keys(currentUsers).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-message">Aucun utilisateur trouvé</td></tr>';
+                return;
+            }
+
+            Object.entries(currentUsers).forEach(([username, user]) => {
+                const gradeClass = `grade-${user.grade}`;
+                const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
+                const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
+                const canDelete = username !== 'admin';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <strong>${username}</strong>
+                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description || ''}</div>
+                    </td>
+                    <td>${user.fullname || ''}</td>
+                    <td>${user.phone || ''}</td>
+                    <td><span class="grade-badge ${gradeClass}">${(user.grade || 'employe').toUpperCase()}</span></td>
+                    <td>
+                        <div class="user-status">
+                            <i class="fas fa-circle ${statusIcon}"></i>
+                            <span>${statusText}</span>
+                        </div>
+                    </td>
+                    <td class="last-login">${user.lastLogin || 'Jamais'}</td>
+                    <td>
+                        <div class="user-actions">
+                            <button class="btn-small btn-edit" onclick="editUser('${username}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${canDelete ? `<button class="btn-small btn-delete" onclick="deleteUser('${username}')">
+                                <i class="fas fa-trash"></i>
+                            </button>` : ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function loadConfiguration() {
+            // Vérifier que la configuration existe
+            if (!currentConfig || !currentConfig.thresholds) {
+                console.log('⚠️ Configuration vide, utilisation des valeurs par défaut');
+                currentConfig = {
+                    thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
+                    notifications: { duration: 4, soundEnabled: true },
+                    system: { sessionTimeout: 60, theme: 'light' }
+                };
+            }
+            
+            // Charger les seuils avec vérifications
+            const thresholds = currentConfig.thresholds || {};
+            const criticalMatieres = document.getElementById('critical-matieres');
+            const warningMatieres = document.getElementById('warning-matieres');
+            const criticalBouteilles = document.getElementById('critical-bouteilles');
+            const warningBouteilles = document.getElementById('warning-bouteilles');
+            
+            if (criticalMatieres) criticalMatieres.value = thresholds.matieres?.critical || 50;
+            if (warningMatieres) warningMatieres.value = thresholds.matieres?.warning || 100;
+            if (criticalBouteilles) criticalBouteilles.value = thresholds.bouteilles?.critical || 30;
+            if (warningBouteilles) warningBouteilles.value = thresholds.bouteilles?.warning || 75;
+
+            // Charger les notifications avec vérifications
+            const notifications = currentConfig.notifications || {};
+            const notificationDuration = document.getElementById('notification-duration');
+            const soundNotifications = document.getElementById('sound-notifications');
+            
+            if (notificationDuration) notificationDuration.value = notifications.duration || 4;
+            if (soundNotifications) soundNotifications.checked = notifications.soundEnabled !== false;
+
+            // Charger le système avec vérifications
+            const system = currentConfig.system || {};
+            const sessionTimeout = document.getElementById('session-timeout');
+            const themeMode = document.getElementById('theme-mode');
+            
+            if (sessionTimeout) sessionTimeout.value = system.sessionTimeout || 60;
+            if (themeMode) themeMode.value = system.theme || 'light';
+
+            updateThresholdInfo();
+        }
+
+        function updateThresholdInfo() {
+            const warningMatieres = document.getElementById('warning-matieres');
+            const warningBouteilles = document.getElementById('warning-bouteilles');
+            
+            if (!warningMatieres || !warningBouteilles) return;
+
+            const matieresInfo = document.querySelector('.config-item:nth-child(1) .threshold-info span');
+            const bouteillesInfo = document.querySelector('.config-item:nth-child(2) .threshold-info span');
+
+            if (matieresInfo) {
+                matieresInfo.innerHTML = `Au-dessus de ${warningMatieres.value} unités = <strong>Bon Stock</strong>`;
+            }
+            if (bouteillesInfo) {
+                bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles.value} bouteilles = <strong>Bon Stock</strong>`;
+            }
+        }
+
+        function addConfirmationButtons(notification, onConfirm, confirmText = 'Confirmer') {
+            const notificationContent = notification.querySelector('.notification-content');
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.marginTop = '1rem';
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.gap = '0.5rem';
+            
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'cta-button btn-warning';
+            confirmBtn.style.fontSize = '0.8rem';
+            confirmBtn.style.padding = '0.5rem 1rem';
+            confirmBtn.textContent = confirmText;
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'cta-button btn-secondary';
+            cancelBtn.style.fontSize = '0.8rem';
+            cancelBtn.style.padding = '0.5rem 1rem';
+            cancelBtn.textContent = 'Annuler';
+            
+            buttonsDiv.appendChild(cancelBtn);
+            buttonsDiv.appendChild(confirmBtn);
+            notificationContent.appendChild(buttonsDiv);
+            
+            confirmBtn.addEventListener('click', () => {
+                if (window.notify) window.notify.remove(notification);
+                onConfirm();
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                if (window.notify) window.notify.remove(notification);
+            });
+        }
+
+        // === CHARGEMENT DES DONNÉES ===
+        async function loadAllData() {
+            try {
+                // Charger les utilisateurs
+                currentUsers = window.dbManager.getUsers();
+                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
+                
+                // Charger la configuration
+                currentConfig = window.dbManager.getConfiguration();
+                console.log('⚙️ Configuration chargée:', currentConfig);
+                
+                // Mettre à jour l'interface
+                updateUsersTable();
+                loadConfiguration();
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des données:', error);
+                if (window.notify) {
+                    window.notify.error('Erreur', 'Impossible de charger les données de configuration.');
+                }
+            }
+        }
+
         // Attendre que le script principal soit chargé
         function initConfigPage() {
             if (!window.dbManager || !window.dbManager.waitForReady) {
@@ -630,32 +794,13 @@
                 console.log('✅ Page Configuration chargée avec données DB !');
             }).catch(error => {
                 console.error('❌ Erreur lors de l\'initialisation:', error);
-                notify.error('Erreur', 'Impossible de charger la configuration.');
+                if (window.notify) {
+                    window.notify.error('Erreur', 'Impossible de charger la configuration.');
+                }
             });
         }
 
         document.addEventListener('DOMContentLoaded', initConfigPage);
-
-        // === CHARGEMENT DES DONNÉES ===
-        async function loadAllData() {
-            try {
-                // Charger les utilisateurs
-                currentUsers = window.dbManager.getUsers();
-                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
-                
-                // Charger la configuration
-                currentConfig = window.dbManager.getConfiguration();
-                console.log('⚙️ Configuration chargée:', currentConfig);
-                
-                // Mettre à jour l'interface
-                updateUsersTable();
-                loadConfiguration();
-                
-            } catch (error) {
-                console.error('❌ Erreur lors du chargement des données:', error);
-                notify.error('Erreur', 'Impossible de charger les données de configuration.');
-            }
-        }
 
         // === GESTION DES NOTIFICATIONS ===
         function setupNotifications() {
