@@ -445,7 +445,7 @@
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 const totalText = cleanTextForPDF(`${totalFormatted} EUR`);
                 const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 12);
-                const rightEdgeOfBubble = 500; // Position droite de la bulle jaune
+                const rightEdgeOfBubble = 520; // Position droite de la bulle jaune
                 firstPage.drawText(totalText, {
                     x: rightEdgeOfBubble - totalTextWidth - 10, // 10px de marge depuis le bord droit
                     y: totalsY - 70, 
