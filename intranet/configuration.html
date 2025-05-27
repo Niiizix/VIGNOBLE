@@ -16,6 +16,190 @@
             margin-bottom: 2rem;
         }
 
+        // === GESTION DES SEUILS ===
+        function setupThresholds() {
+            const saveBtn = document.getElementById('saveThresholds');
+            const resetBtn = document.getElementById('resetThresholds');
+            const warningMatieres = document.getElementById('warning-matieres');
+            const warningBouteilles = document.getElementById('warning-bouteilles');
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    const criticalMatieres = parseInt(document.getElementById('critical-matieres')?.value || 50);
+                    const warningMatieresVal = parseInt(document.getElementById('warning-matieres')?.value || 100);
+                    const criticalBouteilles = parseInt(document.getElementById('critical-bouteilles')?.value || 30);
+                    const warningBouteillesVal = parseInt(document.getElementById('warning-bouteilles')?.value || 75);
+
+                    if (criticalMatieres >= warningMatieresVal || criticalBouteilles >= warningBouteillesVal) {
+                        if (window.notify) window.notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
+                        return;
+                    }
+
+                    const newThresholds = {
+                        matieres: { critical: criticalMatieres, warning: warningMatieresVal },
+                        bouteilles: { critical: criticalBouteilles, warning: warningBouteillesVal }
+                    };
+
+                    const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
+                    
+                    if (saved) {
+                        currentConfig.thresholds = newThresholds;
+                        updateThresholdInfo();
+                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
+                    } else {
+                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                    }
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (!window.notify) return;
+                    
+                    const confirmNotification = window.notify.warning(
+                        'Réinitialiser les seuils', 
+                        'Remettre les valeurs par défaut ?', 
+                        10000
+                    );
+                    
+                    addConfirmationButtons(confirmNotification, () => {
+                        const defaultThresholds = {
+                            matieres: { critical: 50, warning: 100 },
+                            bouteilles: { critical: 30, warning: 75 }
+                        };
+                        
+                        const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
+                        if (saved) {
+                            currentConfig.thresholds = defaultThresholds;
+                            loadConfiguration();
+                            if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
+                        }
+                    });
+                });
+            }
+
+            if (warningMatieres) warningMatieres.addEventListener('input', updateThresholdInfo);
+            if (warningBouteilles) warningBouteilles.addEventListener('input', updateThresholdInfo);
+        }
+
+        // === GESTION DES NOTIFICATIONS ===
+        function setupNotifications() {
+            const saveBtn = document.getElementById('saveNotifications');
+            const resetBtn = document.getElementById('resetNotifications');
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    const duration = parseInt(document.getElementById('notification-duration')?.value || 4);
+                    const soundEnabled = document.getElementById('sound-notifications')?.checked || false;
+
+                    const newNotifications = { duration, soundEnabled };
+                    const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
+                    
+                    if (saved) {
+                        currentConfig.notifications = newNotifications;
+                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
+                    } else {
+                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                    }
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (!window.notify) return;
+                    
+                    const confirmNotification = window.notify.warning(
+                        'Réinitialiser les notifications', 
+                        'Remettre les valeurs par défaut ?', 
+                        10000
+                    );
+                    
+                    addConfirmationButtons(confirmNotification, () => {
+                        const defaultNotifications = { duration: 4, soundEnabled: true };
+                        const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
+                        
+                        if (saved) {
+                            currentConfig.notifications = defaultNotifications;
+                            loadConfiguration();
+                            if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
+                        }
+                    });
+                });
+            }
+        }
+
+        // === GESTION DU SYSTÈME ===
+        function setupSystem() {
+            const saveBtn = document.getElementById('saveSystem');
+            const resetBtn = document.getElementById('resetSystem');
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    const sessionTimeout = parseInt(document.getElementById('session-timeout')?.value || 60);
+                    const theme = document.getElementById('theme-mode')?.value || 'light';
+
+                    const newSystem = { sessionTimeout, theme };
+                    const saved = window.dbManager.updateConfiguration('system', newSystem);
+                    
+                    if (saved) {
+                        currentConfig.system = newSystem;
+                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
+                    } else {
+                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                    }
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (!window.notify) return;
+                    
+                    const confirmNotification = window.notify.warning(
+                        'Réinitialiser le système', 
+                        'Remettre les valeurs par défaut ?', 
+                        10000
+                    );
+                    
+                    addConfirmationButtons(confirmNotification, () => {
+                        const defaultSystem = { sessionTimeout: 60, theme: 'light' };
+                        const saved = window.dbManager.updateConfiguration('system', defaultSystem);
+                        
+                        if (saved) {
+                            currentConfig.system = defaultSystem;
+                            loadConfiguration();
+                            if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
+                        }
+                    });
+                });
+            }
+        }
+
+        // === DÉCONNEXION ===
+        function setupLogout() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    if (!window.notify) return;
+                    
+                    const confirmNotification = window.notify.info(
+                        'Confirmation de déconnexion', 
+                        'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                        10000
+                    );
+                    
+                    addConfirmationButtons(confirmNotification, () => {
+                        if (window.notify) window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
+                        setTimeout(() => {
+                            window.location.href = '../index.html';
+                        }, 1000);
+                    }, 'Déconnexion');
+                });
+            }
+        }
+
         .users-table table {
             width: 100%;
             border-collapse: collapse;
