@@ -390,14 +390,14 @@
                 
                 if (devisData.client.email) {
                     firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
-                        x: 60, y: infoY - 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 60, y: infoY - 10, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     infoY -= 15;
                 }
                 
                 if (devisData.client.telephone) {
                     firstPage.drawText(cleanTextForPDF(`Tel: ${devisData.client.telephone}`), {
-                        x: 77, y: infoY - 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 60, y: infoY - 10, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 }
                 
@@ -408,7 +408,7 @@
                     
                     // Description
                     firstPage.drawText(cleanTextForPDF(produit.nom), {
-                        x: 77, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 77, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // Prix unitaire
