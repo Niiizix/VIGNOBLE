@@ -380,13 +380,13 @@
                     const addressLines = devisData.client.adresse.split('\n');
                     addressLines.forEach((line, index) => {
                         firstPage.drawText(cleanTextForPDF(line), {
-                            x: 60, y: 625 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                            x: 60, y: 620 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                         });
                     });
                 }
                 
                 // Email et téléphone
-                let infoY = 640 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
+                let infoY = 630 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
                 
                 if (devisData.client.email) {
                     firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
@@ -413,17 +413,17 @@
                     
                     // Prix unitaire
                     firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
-                        x: 350, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 300, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // Quantité
                     firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
-                        x: 480, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 375, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // Total HT
                     firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
-                        x: 570, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 425, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
                 
