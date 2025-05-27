@@ -85,119 +85,16 @@ class NotificationSystem {
 // Initialiser le système de notifications globalement
 const notify = new NotificationSystem();
 
-// Configuration globale par défaut (peut être surchargée par la page de configuration)
-window.globalConfig = {
-    thresholds: {
-        matieres: {
-            critical: 50,
-            warning: 100
-        },
-        bouteilles: {
-            critical: 30,
-            warning: 75
-        }
-    },
-    notifications: {
-        duration: 4,
-        soundEnabled: true
-    },
-    system: {
-        sessionTimeout: 60,
-        theme: 'light'
-    }
-};
-
-// Fonctions globales pour accéder à la configuration
-window.getStockThresholds = function() {
-    return window.globalConfig.thresholds;
-};
-
-window.getConfiguration = function() {
-    return window.globalConfig;
-};
-
-window.updateGlobalConfig = function(newConfig) {
-    window.globalConfig = { ...window.globalConfig, ...newConfig };
-};
-
-// Header scroll effect
-window.addEventListener('scroll', function() {
-    const header = document.querySelector('.header');
-    if (window.scrollY > 50) {
-        header.style.background = 'rgba(255, 255, 255, 0.98)';
-        header.style.boxShadow = '0 2px 20px rgba(139, 90, 159, 0.1)';
-    } else {
-        header.style.background = 'rgba(255, 255, 255, 0.95)';
-        header.style.boxShadow = 'none';
-    }
-});
-
-// Smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Add animation on scroll for info cards
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
-        }
-    });
-}, observerOptions);
-
-// Observe all info cards
-document.querySelectorAll('.info-card').forEach(card => {
-    observer.observe(card);
-});
-
-// Add some interactive hover effects
-document.querySelectorAll('.info-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-15px) scale(1.02)';
-        this.style.background = '#ffffff';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0) scale(1)';
-        this.style.background = '#f8f9fa';
-    });
-});
-
-// Dynamic bubbles movement
-const particles = document.querySelectorAll('.particle');
-particles.forEach((particle, index) => {
-    particle.style.animationDuration = (6 + Math.random() * 6) + 's';
-    particle.style.animationDelay = (Math.random() * 3) + 's';
-});
-
-console.log('Marlowe Vineyard website loaded successfully!');
-
 /**
  * DB Manager - Gestionnaire de base de données pour Marlowe Vineyard
  * Gère la persistance des données via localStorage et fichiers JSON
  */
-
 class DatabaseManager {
     constructor() {
         this.DB_KEY = 'marlowe_vineyard_db';
         this.DB_VERSION = '1.0';
-        this.defaultData = null;
         this.data = {};
+        this.isReady = false;
         
         // Initialiser la base de données
         this.init();
@@ -208,96 +105,79 @@ class DatabaseManager {
      */
     async init() {
         try {
-            // Charger les données par défaut depuis DB.json
-            await this.loadDefaultData();
+            // Charger les données depuis DB.json
+            await this.loadFromJSON();
             
-            // Charger les données existantes ou utiliser les valeurs par défaut
+            // Charger les données existantes de localStorage ou utiliser celles de DB.json
             this.loadFromStorage();
             
+            this.isReady = true;
             console.log('✅ Database Manager initialisé avec succès');
             console.log('📊 Données chargées:', this.data);
+            
+            // Mettre à jour la configuration globale
+            this.updateGlobalConfig();
         } catch (error) {
             console.error('❌ Erreur lors de l\'initialisation de la DB:', error);
-            this.data = this.getDefaultData();
+            this.isReady = false;
         }
     }
 
     /**
-     * Charge les données par défaut depuis DB.json
+     * Charge les données depuis DB.json
      */
-    async loadDefaultData() {
+    async loadFromJSON() {
         try {
-            const response = await fetch('../DB.json');
+            const response = await fetch('./DB.json');
             if (response.ok) {
-                this.defaultData = await response.json();
+                this.data = await response.json();
+                console.log('📄 DB.json chargé avec succès');
             } else {
                 throw new Error('Impossible de charger DB.json');
             }
         } catch (error) {
-            console.warn('⚠️ DB.json non trouvé, utilisation des données par défaut');
-            this.defaultData = this.getDefaultData();
+            console.error('⚠️ Erreur lors du chargement de DB.json:', error);
+            throw error;
         }
     }
 
     /**
-     * Retourne la structure de données par défaut
-     */
-    getDefaultData() {
-        return {
-            users: {
-                admin: {
-                    fullname: 'Christopher Marlowe',
-                    phone: '+1 (555) 001-0001',
-                    grade: 'ceo',
-                    description: 'Administrateur principal',
-                    password: 'MW2025',
-                    status: 'online',
-                    lastLogin: 'Maintenant',
-                    permissions: ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'],
-                    address: '1247 Vinewood Hills Drive, Los Santos, CA 90210',
-                    hireDate: '2020-01-15',
-                    department: 'direction',
-                    salary: 250000,
-                    manager: '',
-                    notes: 'Fondateur et PDG de Marlowe Vineyard'
-                }
-            },
-            inventory: {
-                matieres: {},
-                bouteilles: {}
-            },
-            configuration: {
-                thresholds: {
-                    matieres: { critical: 50, warning: 100 },
-                    bouteilles: { critical: 30, warning: 75 }
-                },
-                notifications: { duration: 4, soundEnabled: true },
-                system: { sessionTimeout: 60, theme: 'light' }
-            },
-            statistics: {
-                sales: { monthly: 0, bottlesSold: 0, growth: 0 },
-                documents: { devis: 0, factures: 0, livraisons: 0, rapports: 0 }
-            },
-            lastUpdate: new Date().toISOString()
-        };
-    }
-
-    /**
-     * Charge les données depuis localStorage
+     * Charge les données depuis localStorage (si elles existent et sont plus récentes)
      */
     loadFromStorage() {
         try {
             const stored = localStorage.getItem(this.DB_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                this.data = { ...this.defaultData, ...parsed };
+                
+                // Vérifier si les données localStorage sont plus récentes
+                const storedDate = new Date(parsed.lastUpdate || 0);
+                const jsonDate = new Date(this.data.lastUpdate || 0);
+                
+                if (storedDate > jsonDate) {
+                    console.log('💾 Utilisation des données localStorage (plus récentes)');
+                    this.data = parsed;
+                } else {
+                    console.log('📄 Utilisation des données DB.json (plus récentes)');
+                    // Sauvegarder les données JSON dans localStorage
+                    this.saveToStorage();
+                }
             } else {
-                this.data = this.defaultData;
+                console.log('📄 Première utilisation - sauvegarde de DB.json dans localStorage');
                 this.saveToStorage();
             }
         } catch (error) {
             console.error('❌ Erreur lors du chargement depuis localStorage:', error);
-            this.data = this.defaultData;
+        }
+    }
+
+    /**
+     * Met à jour la configuration globale avec les données de la DB
+     */
+    updateGlobalConfig() {
+        if (this.data.configuration) {
+            window.globalConfig = this.data.configuration;
+            console.log('⚙️ Configuration globale mise à jour depuis la DB');
         }
     }
 
@@ -309,11 +189,24 @@ class DatabaseManager {
             this.data.lastUpdate = new Date().toISOString();
             localStorage.setItem(this.DB_KEY, JSON.stringify(this.data));
             console.log('💾 Données sauvegardées avec succès');
+            
+            // Mettre à jour la configuration globale
+            this.updateGlobalConfig();
             return true;
         } catch (error) {
             console.error('❌ Erreur lors de la sauvegarde:', error);
             return false;
         }
+    }
+
+    /**
+     * Attend que la DB soit prête
+     */
+    async waitForReady() {
+        while (!this.isReady) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        return true;
     }
 
     // ============================================
@@ -517,7 +410,6 @@ class DatabaseManager {
             // Validation basique
             if (importedData.users && typeof importedData.users === 'object') {
                 this.data = {
-                    ...this.defaultData,
                     ...importedData,
                     lastUpdate: new Date().toISOString()
                 };
@@ -537,15 +429,20 @@ class DatabaseManager {
     }
 
     /**
-     * Remet à zéro toutes les données
+     * Remet à zéro toutes les données (recharge depuis DB.json)
      */
-    resetDatabase() {
-        this.data = this.defaultData;
-        const saved = this.saveToStorage();
-        if (saved) {
-            console.log('🔄 Base de données réinitialisée');
+    async resetDatabase() {
+        try {
+            await this.loadFromJSON();
+            const saved = this.saveToStorage();
+            if (saved) {
+                console.log('🔄 Base de données réinitialisée depuis DB.json');
+            }
+            return saved;
+        } catch (error) {
+            console.error('❌ Erreur lors de la réinitialisation:', error);
+            return false;
         }
-        return saved;
     }
 
     /**
@@ -560,6 +457,112 @@ class DatabaseManager {
         };
     }
 }
+
+// Fonctions globales pour accéder à la configuration (maintenant basées sur la DB)
+window.getStockThresholds = function() {
+    if (window.dbManager && window.dbManager.isReady) {
+        return window.dbManager.getConfiguration().thresholds;
+    }
+    // Valeurs par défaut si la DB n'est pas encore prête
+    return {
+        matieres: { critical: 50, warning: 100 },
+        bouteilles: { critical: 30, warning: 75 }
+    };
+};
+
+window.getConfiguration = function() {
+    if (window.dbManager && window.dbManager.isReady) {
+        return window.dbManager.getConfiguration();
+    }
+    // Valeurs par défaut si la DB n'est pas encore prête
+    return {
+        thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
+        notifications: { duration: 4, soundEnabled: true },
+        system: { sessionTimeout: 60, theme: 'light' }
+    };
+};
+
+window.updateGlobalConfig = function(newConfig) {
+    if (window.dbManager && window.dbManager.isReady) {
+        // Mettre à jour chaque section de configuration
+        Object.keys(newConfig).forEach(section => {
+            window.dbManager.updateConfiguration(section, newConfig[section]);
+        });
+        return true;
+    }
+    return false;
+};
+
+// Header scroll effect
+window.addEventListener('scroll', function() {
+    const header = document.querySelector('.header');
+    if (header) {
+        if (window.scrollY > 50) {
+            header.style.background = 'rgba(255, 255, 255, 0.98)';
+            header.style.boxShadow = '0 2px 20px rgba(139, 90, 159, 0.1)';
+        } else {
+            header.style.background = 'rgba(255, 255, 255, 0.95)';
+            header.style.boxShadow = 'none';
+        }
+    }
+});
+
+// Smooth scrolling for navigation links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Add animation on scroll for info cards
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+        }
+    });
+}, observerOptions);
+
+// Observe all info cards when they exist
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.info-card').forEach(card => {
+        observer.observe(card);
+    });
+
+    // Add some interactive hover effects
+    document.querySelectorAll('.info-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-15px) scale(1.02)';
+            this.style.background = '#ffffff';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.background = '#f8f9fa';
+        });
+    });
+
+    // Dynamic bubbles movement
+    const particles = document.querySelectorAll('.particle');
+    particles.forEach((particle, index) => {
+        particle.style.animationDuration = (6 + Math.random() * 6) + 's';
+        particle.style.animationDelay = (Math.random() * 3) + 's';
+    });
+
+    console.log('Marlowe Vineyard website loaded successfully!');
+});
 
 // Initialiser le gestionnaire de base de données globalement
 window.dbManager = new DatabaseManager();
