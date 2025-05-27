@@ -451,7 +451,7 @@
                 const today = new Date();
                 const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                 firstPage.drawText(cleanTextForPDF(dateFormatted), {
-                    x: 330, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 335, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 return pdfDoc;
