@@ -367,7 +367,7 @@
                 
                 // Numéro de devis
                 firstPage.drawText(cleanTextForPDF(devisData.numeroDevis), {
-                    x: 110, y: 740, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
+                    x: 120, y: 745, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                 });
                 
                 // Client
@@ -380,7 +380,7 @@
                     const addressLines = devisData.client.adresse.split('\n');
                     addressLines.forEach((line, index) => {
                         firstPage.drawText(cleanTextForPDF(line), {
-                            x: 77, y: 560 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                            x: 60, y: 625 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                         });
                     });
                 }
