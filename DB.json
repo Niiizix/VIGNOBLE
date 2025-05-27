@@ -1,100 +1,93 @@
 {
+  "_comments": {
+    "permissions_disponibles": [
+      "dashboard - Accès au tableau de bord principal",
+      "inventory - Gestion de l'inventaire (stock, produits)",
+      "documents - Gestion des documents (factures, devis, etc.)",
+      "config - Accès à la configuration système",
+      "reports - Génération et consultation des rapports",
+      "users - Gestion des utilisateurs (admin uniquement)"
+    ],
+    "grades_disponibles": [
+      "employe - Employé standard (accès limité)",
+      "manager - Manager (accès étendu)",
+      "cfo - Directeur financier (accès administratif)",
+      "ceo - PDG (accès complet à tout)"
+    ],
+    "notes": "Les champs supprimés: status, lastLogin, description, department, manager, notes, address, hireDate, salary"
+  },
+  "system": {
+    "grades": {
+      "employe": {
+        "label": "Employé",
+        "description": "Employé standard avec accès limité",
+        "color": "#1976d2",
+        "background": "#e3f2fd",
+        "permissions_par_defaut": ["dashboard"]
+      },
+      "manager": {
+        "label": "Manager",
+        "description": "Manager avec accès étendu aux opérations",
+        "color": "#f57c00",
+        "background": "#fff3e0",
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "reports"]
+      },
+      "cfo": {
+        "label": "CFO",
+        "description": "Directeur financier avec accès administratif",
+        "color": "#7b1fa2",
+        "background": "#f3e5f5",
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports"]
+      },
+      "ceo": {
+        "label": "CEO",
+        "description": "PDG avec accès complet à toutes les fonctionnalités",
+        "color": "#c62828",
+        "background": "#ffebee",
+        "border": "2px solid #c62828",
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+      }
+    },
+    "permissions": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Accès au tableau de bord principal",
+        "icon": "📊"
+      },
+      "inventory": {
+        "label": "Inventaire",
+        "description": "Gestion de l'inventaire (stock, produits)",
+        "icon": "📦"
+      },
+      "documents": {
+        "label": "Documents",
+        "description": "Gestion des documents (factures, devis, etc.)",
+        "icon": "📄"
+      },
+      "config": {
+        "label": "Configuration",
+        "description": "Accès à la configuration système",
+        "icon": "⚙️"
+      },
+      "reports": {
+        "label": "Rapports",
+        "description": "Génération et consultation des rapports",
+        "icon": "📈"
+      },
+      "users": {
+        "label": "Gestion utilisateurs",
+        "description": "Gestion des comptes utilisateurs (admin uniquement)",
+        "icon": "👥"
+      }
+    }
+  },
   "users": {
     "admin": {
       "fullname": "Christopher Marlowe",
       "phone": "+1 (555) 001-0001",
       "grade": "ceo",
-      "description": "Administrateur principal",
       "password": "MW2025",
-      "status": "online",
-      "lastLogin": "Maintenant",
-      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"],
-      "address": "1247 Vinewood Hills Drive, Los Santos, CA 90210",
-      "hireDate": "2020-01-15",
-      "department": "direction",
-      "salary": 250000,
-      "manager": "",
-      "notes": "Fondateur et PDG de Marlowe Vineyard"
-    },
-    "manager": {
-      "fullname": "Alexandre Dubois",
-      "phone": "+1 (555) 002-0123",
-      "grade": "manager",
-      "description": "Gestionnaire opérationnel",
-      "password": "VINE123",
-      "status": "offline",
-      "lastLogin": "Il y a 2h",
-      "permissions": ["dashboard", "inventory", "documents", "reports"],
-      "address": "456 Oak Street, Los Santos, CA 90211",
-      "hireDate": "2021-03-10",
-      "department": "administration",
-      "salary": 85000,
-      "manager": "admin",
-      "notes": "MBA en gestion, spécialisé en opérations viticoles"
-    },
-    "marlowe": {
-      "fullname": "Elena Marlowe",
-      "phone": "+1 (555) 003-0456",
-      "grade": "cfo",
-      "description": "Responsable production",
-      "password": "GRAPE456",
-      "status": "online",
-      "lastLogin": "Il y a 15min",
-      "permissions": ["dashboard", "inventory", "documents", "reports"],
-      "address": "1247 Vinewood Hills Drive, Los Santos, CA 90210",
-      "hireDate": "2020-02-01",
-      "department": "production",
-      "salary": 120000,
-      "manager": "admin",
-      "notes": "Maître de chai certifiée, 15 ans d'expérience"
-    },
-    "vincent": {
-      "fullname": "Vincent Leclerc",
-      "phone": "+1 (555) 004-0789",
-      "grade": "manager",
-      "description": "Responsable ventes",
-      "password": "WINE789",
-      "status": "offline",
-      "lastLogin": "Hier 18h30",
-      "permissions": ["dashboard", "documents", "reports"],
-      "address": "789 Sunset Boulevard, Los Santos, CA 90212",
-      "hireDate": "2021-09-15",
-      "department": "ventes",
-      "salary": 90000,
-      "manager": "admin",
-      "notes": "Sommelier diplômé, expert en marketing viticole"
-    },
-    "sophie": {
-      "fullname": "Sophie Martin",
-      "phone": "+1 (555) 005-0234",
-      "grade": "employe",
-      "description": "Assistante administrative",
-      "password": "CELLAR321",
-      "status": "online",
-      "lastLogin": "Il y a 5min",
-      "permissions": ["dashboard"],
-      "address": "321 Pine Avenue, Los Santos, CA 90213",
-      "hireDate": "2022-05-20",
-      "department": "administration",
-      "salary": 45000,
-      "manager": "manager",
-      "notes": "Diplômée en administration des affaires"
-    },
-    "lucas": {
-      "fullname": "Lucas Bernard",
-      "phone": "+1 (555) 006-0567",
-      "grade": "employe",
-      "description": "Technicien cave",
-      "password": "TECH2025",
-      "status": "offline",
-      "lastLogin": "Il y a 3 jours",
-      "permissions": ["dashboard", "inventory"],
-      "address": "654 Valley Road, Los Santos, CA 90214",
-      "hireDate": "2023-01-10",
-      "department": "technique",
-      "salary": 55000,
-      "manager": "marlowe",
-      "notes": "BTS viticulture-œnologie, spécialisé en fermentation"
+      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
     }
   },
   "inventory": {
