@@ -87,11 +87,10 @@ const notify = new NotificationSystem();
 
 /**
  * DB Manager - Gestionnaire de base de données pour Marlowe Vineyard
- * Gère la persistance des données via localStorage et fichiers JSON
+ * Lecture seule depuis DB.json (pas de localStorage pour la sécurité)
  */
 class DatabaseManager {
     constructor() {
-        this.DB_KEY = 'marlowe_vineyard_db';
         this.DB_VERSION = '1.0';
         this.data = {};
         this.isReady = false;
@@ -105,14 +104,11 @@ class DatabaseManager {
      */
     async init() {
         try {
-            // Charger les données depuis DB.json
+            // Charger les données depuis DB.json uniquement
             await this.loadFromJSON();
             
-            // Charger les données existantes de localStorage ou utiliser celles de DB.json
-            this.loadFromStorage();
-            
             this.isReady = true;
-            console.log('✅ Database Manager initialisé avec succès');
+            console.log('✅ Database Manager initialisé avec succès (lecture seule)');
             console.log('📊 Données chargées:', this.data);
             
             // Mettre à jour la configuration globale
@@ -146,60 +142,12 @@ class DatabaseManager {
     }
 
     /**
-     * Charge les données depuis localStorage (si elles existent et sont plus récentes)
-     */
-    loadFromStorage() {
-        try {
-            const stored = localStorage.getItem(this.DB_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                
-                // Vérifier si les données localStorage sont plus récentes
-                const storedDate = new Date(parsed.lastUpdate || 0);
-                const jsonDate = new Date(this.data.lastUpdate || 0);
-                
-                if (storedDate > jsonDate) {
-                    console.log('💾 Utilisation des données localStorage (plus récentes)');
-                    this.data = parsed;
-                } else {
-                    console.log('📄 Utilisation des données DB.json (plus récentes)');
-                    // Sauvegarder les données JSON dans localStorage
-                    this.saveToStorage();
-                }
-            } else {
-                console.log('📄 Première utilisation - sauvegarde de DB.json dans localStorage');
-                this.saveToStorage();
-            }
-        } catch (error) {
-            console.error('❌ Erreur lors du chargement depuis localStorage:', error);
-        }
-    }
-
-    /**
      * Met à jour la configuration globale avec les données de la DB
      */
     updateGlobalConfig() {
         if (this.data.configuration) {
             window.globalConfig = this.data.configuration;
             console.log('⚙️ Configuration globale mise à jour depuis la DB');
-        }
-    }
-
-    /**
-     * Sauvegarde les données dans localStorage
-     */
-    saveToStorage() {
-        try {
-            this.data.lastUpdate = new Date().toISOString();
-            localStorage.setItem(this.DB_KEY, JSON.stringify(this.data));
-            console.log('💾 Données sauvegardées avec succès');
-            
-            // Mettre à jour la configuration globale
-            this.updateGlobalConfig();
-            return true;
-        } catch (error) {
-            console.error('❌ Erreur lors de la sauvegarde:', error);
-            return false;
         }
     }
 
@@ -214,7 +162,7 @@ class DatabaseManager {
     }
 
     // ============================================
-    // GESTION DES UTILISATEURS
+    // GESTION DES UTILISATEURS (lecture seule)
     // ============================================
 
     /**
@@ -231,57 +179,6 @@ class DatabaseManager {
         return this.data.users?.[username] || null;
     }
 
-    /**
-     * Ajoute ou met à jour un utilisateur
-     */
-    saveUser(username, userData) {
-        if (!this.data.users) this.data.users = {};
-        
-        this.data.users[username] = {
-            ...userData,
-            lastModified: new Date().toISOString()
-        };
-        
-        const saved = this.saveToStorage();
-        if (saved) {
-            console.log(`👤 Utilisateur ${username} sauvegardé avec succès`);
-        }
-        return saved;
-    }
-
-    /**
-     * Supprime un utilisateur
-     */
-    deleteUser(username) {
-        if (username === 'admin') {
-            console.error('❌ Impossible de supprimer l\'administrateur');
-            return false;
-        }
-
-        if (this.data.users?.[username]) {
-            delete this.data.users[username];
-            const saved = this.saveToStorage();
-            if (saved) {
-                console.log(`🗑️ Utilisateur ${username} supprimé avec succès`);
-            }
-            return saved;
-        }
-        return false;
-    }
-
-    /**
-     * Met à jour le statut de connexion d'un utilisateur
-     */
-    updateUserStatus(username, status, lastLogin = null) {
-        const user = this.getUser(username);
-        if (user) {
-            user.status = status;
-            if (lastLogin) user.lastLogin = lastLogin;
-            return this.saveUser(username, user);
-        }
-        return false;
-    }
-
     // ============================================
     // GESTION DE L'INVENTAIRE
     // ============================================
@@ -293,27 +190,51 @@ class DatabaseManager {
         return this.data.inventory || { matieres: {}, bouteilles: {} };
     }
 
-    /**
-     * Met à jour le stock d'un produit
-     */
-    updateStock(category, productId, newStock) {
-        if (!this.data.inventory) this.data.inventory = { matieres: {}, bouteilles: {} };
-        if (!this.data.inventory[category]) this.data.inventory[category] = {};
+    // ============================================
+    // GESTION DU SYSTÈME ET GRADES
+    // ============================================
 
-        if (this.data.inventory[category][productId]) {
-            this.data.inventory[category][productId].stock = newStock;
-            const saved = this.saveToStorage();
-            if (saved) {
-                console.log(`📦 Stock mis à jour: ${productId} = ${newStock}`);
-            }
-            return saved;
-        }
-        return false;
+    /**
+     * Obtient les définitions des grades depuis la DB
+     */
+    getGrades() {
+        return this.data.system?.grades || {
+            employe: { label: "Employé", color: "#1976d2", background: "#e3f2fd" },
+            manager: { label: "Manager", color: "#f57c00", background: "#fff3e0" },
+            cfo: { label: "CFO", color: "#7b1fa2", background: "#f3e5f5" },
+            ceo: { label: "CEO", color: "#c62828", background: "#ffebee", border: "2px solid #c62828" }
+        };
     }
 
-    // ============================================
-    // GESTION DE LA CONFIGURATION
-    // ============================================
+    /**
+     * Obtient les définitions des permissions depuis la DB
+     */
+    getPermissions() {
+        return this.data.system?.permissions || {
+            dashboard: { label: "Dashboard", icon: "📊" },
+            inventory: { label: "Inventaire", icon: "📦" },
+            documents: { label: "Documents", icon: "📄" },
+            config: { label: "Configuration", icon: "⚙️" },
+            reports: { label: "Rapports", icon: "📈" },
+            users: { label: "Gestion utilisateurs", icon: "👥" }
+        };
+    }
+
+    /**
+     * Obtient les informations d'un grade spécifique
+     */
+    getGradeInfo(grade) {
+        const grades = this.getGrades();
+        return grades[grade] || { label: grade.toUpperCase(), color: "#666", background: "#f0f0f0" };
+    }
+
+    /**
+     * Obtient les informations d'une permission spécifique
+     */
+    getPermissionInfo(permission) {
+        const permissions = this.getPermissions();
+        return permissions[permission] || { label: permission, icon: "🔧" };
+    }
 
     /**
      * Obtient la configuration complète
@@ -324,24 +245,6 @@ class DatabaseManager {
             notifications: { duration: 4, soundEnabled: true },
             system: { sessionTimeout: 60, theme: 'light' }
         };
-    }
-
-    /**
-     * Met à jour la configuration
-     */
-    updateConfiguration(configSection, newConfig) {
-        if (!this.data.configuration) this.data.configuration = {};
-        
-        this.data.configuration[configSection] = {
-            ...this.data.configuration[configSection],
-            ...newConfig
-        };
-
-        const saved = this.saveToStorage();
-        if (saved) {
-            console.log(`⚙️ Configuration ${configSection} mise à jour`);
-        }
-        return saved;
     }
 
     // ============================================
@@ -358,96 +261,9 @@ class DatabaseManager {
         };
     }
 
-    /**
-     * Met à jour les statistiques
-     */
-    updateStatistics(section, newStats) {
-        if (!this.data.statistics) this.data.statistics = {};
-        
-        this.data.statistics[section] = {
-            ...this.data.statistics[section],
-            ...newStats
-        };
-
-        return this.saveToStorage();
-    }
-
     // ============================================
     // UTILITAIRES
     // ============================================
-
-    /**
-     * Exporte toutes les données en JSON
-     */
-    exportData() {
-        const dataToExport = {
-            ...this.data,
-            exportDate: new Date().toISOString(),
-            version: this.DB_VERSION
-        };
-
-        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
-            type: 'application/json'
-        });
-        
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `marlowe_vineyard_backup_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        console.log('📤 Données exportées avec succès');
-        return true;
-    }
-
-    /**
-     * Importe des données depuis un fichier JSON
-     */
-    async importData(file) {
-        try {
-            const text = await file.text();
-            const importedData = JSON.parse(text);
-            
-            // Validation basique
-            if (importedData.users && typeof importedData.users === 'object') {
-                this.data = {
-                    ...importedData,
-                    lastUpdate: new Date().toISOString()
-                };
-                
-                const saved = this.saveToStorage();
-                if (saved) {
-                    console.log('📥 Données importées avec succès');
-                    return true;
-                }
-            } else {
-                throw new Error('Format de fichier invalide');
-            }
-        } catch (error) {
-            console.error('❌ Erreur lors de l\'import:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Remet à zéro toutes les données (recharge depuis DB.json)
-     */
-    async resetDatabase() {
-        try {
-            await this.loadFromJSON();
-            const saved = this.saveToStorage();
-            if (saved) {
-                console.log('🔄 Base de données réinitialisée depuis DB.json');
-            }
-            return saved;
-        } catch (error) {
-            console.error('❌ Erreur lors de la réinitialisation:', error);
-            return false;
-        }
-    }
 
     /**
      * Obtient les informations de la base de données
@@ -461,6 +277,35 @@ class DatabaseManager {
         };
     }
 }
+
+// Fonctions globales pour accéder aux grades et permissions
+window.getGrades = function() {
+    if (window.dbManager && window.dbManager.isReady) {
+        return window.dbManager.getGrades();
+    }
+    return {};
+};
+
+window.getPermissions = function() {
+    if (window.dbManager && window.dbManager.isReady) {
+        return window.dbManager.getPermissions();
+    }
+    return {};
+};
+
+window.getGradeInfo = function(grade) {
+    if (window.dbManager && window.dbManager.isReady) {
+        return window.dbManager.getGradeInfo(grade);
+    }
+    return { label: grade.toUpperCase(), color: "#666", background: "#f0f0f0" };
+};
+
+window.getPermissionInfo = function(permission) {
+    if (window.dbManager && window.dbManager.isReady) {
+        return window.dbManager.getPermissionInfo(permission);
+    }
+    return { label: permission, icon: "🔧" };
+};
 
 // Fonctions globales pour accéder à la configuration (maintenant basées sur la DB)
 window.getStockThresholds = function() {
@@ -487,14 +332,14 @@ window.getConfiguration = function() {
 };
 
 window.updateGlobalConfig = function(newConfig) {
-    if (window.dbManager && window.dbManager.isReady) {
-        // Mettre à jour chaque section de configuration
-        Object.keys(newConfig).forEach(section => {
-            window.dbManager.updateConfiguration(section, newConfig[section]);
-        });
-        return true;
-    }
-    return false;
+    // Mise à jour temporaire pour la session en cours uniquement
+    Object.keys(newConfig).forEach(section => {
+        if (window.globalConfig) {
+            window.globalConfig[section] = { ...window.globalConfig[section], ...newConfig[section] };
+        }
+    });
+    console.log('⚙️ Configuration mise à jour pour cette session:', newConfig);
+    return true;
 };
 
 // Header scroll effect
