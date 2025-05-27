@@ -182,6 +182,13 @@
             border-color: #8B5A9F;
             outline: none;
         }
+
+        .loading-message {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -254,156 +261,8 @@
                             </thead>
                             <tbody id="usersTableBody">
                                 <tr>
-                                    <td>
-                                        <strong>admin</strong>
-                                        <div style="font-size: 0.8rem; color: #6c757d;">Administrateur principal</div>
-                                    </td>
-                                    <td>Christopher Marlowe</td>
-                                    <td>+1 (555) 001-0001</td>
-                                    <td><span class="grade-badge grade-ceo">CEO</span></td>
-                                    <td>
-                                        <div class="user-status">
-                                            <i class="fas fa-circle status-online"></i>
-                                            <span>En ligne</span>
-                                        </div>
-                                    </td>
-                                    <td class="last-login">Maintenant</td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="btn-small btn-edit" onclick="editUser('admin')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>manager</strong>
-                                        <div style="font-size: 0.8rem; color: #6c757d;">Gestionnaire opérationnel</div>
-                                    </td>
-                                    <td>Alexandre Dubois</td>
-                                    <td>+1 (555) 002-0123</td>
-                                    <td><span class="grade-badge grade-manager">Manager</span></td>
-                                    <td>
-                                        <div class="user-status">
-                                            <i class="fas fa-circle status-offline"></i>
-                                            <span>Hors ligne</span>
-                                        </div>
-                                    </td>
-                                    <td class="last-login">Il y a 2h</td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="btn-small btn-edit" onclick="editUser('manager')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-small btn-delete" onclick="deleteUser('manager')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>marlowe</strong>
-                                        <div style="font-size: 0.8rem; color: #6c757d;">Responsable production</div>
-                                    </td>
-                                    <td>Elena Marlowe</td>
-                                    <td>+1 (555) 003-0456</td>
-                                    <td><span class="grade-badge grade-cfo">CFO</span></td>
-                                    <td>
-                                        <div class="user-status">
-                                            <i class="fas fa-circle status-online"></i>
-                                            <span>En ligne</span>
-                                        </div>
-                                    </td>
-                                    <td class="last-login">Il y a 15min</td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="btn-small btn-edit" onclick="editUser('marlowe')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-small btn-delete" onclick="deleteUser('marlowe')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>vincent</strong>
-                                        <div style="font-size: 0.8rem; color: #6c757d;">Responsable ventes</div>
-                                    </td>
-                                    <td>Vincent Leclerc</td>
-                                    <td>+1 (555) 004-0789</td>
-                                    <td><span class="grade-badge grade-manager">Manager</span></td>
-                                    <td>
-                                        <div class="user-status">
-                                            <i class="fas fa-circle status-offline"></i>
-                                            <span>Hors ligne</span>
-                                        </div>
-                                    </td>
-                                    <td class="last-login">Hier 18h30</td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="btn-small btn-edit" onclick="editUser('vincent')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-small btn-delete" onclick="deleteUser('vincent')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>sophie</strong>
-                                        <div style="font-size: 0.8rem; color: #6c757d;">Assistante administrative</div>
-                                    </td>
-                                    <td>Sophie Martin</td>
-                                    <td>+1 (555) 005-0234</td>
-                                    <td><span class="grade-badge grade-employe">Employé</span></td>
-                                    <td>
-                                        <div class="user-status">
-                                            <i class="fas fa-circle status-online"></i>
-                                            <span>En ligne</span>
-                                        </div>
-                                    </td>
-                                    <td class="last-login">Il y a 5min</td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="btn-small btn-edit" onclick="editUser('sophie')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-small btn-delete" onclick="deleteUser('sophie')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>lucas</strong>
-                                        <div style="font-size: 0.8rem; color: #6c757d;">Technicien cave</div>
-                                    </td>
-                                    <td>Lucas Bernard</td>
-                                    <td>+1 (555) 006-0567</td>
-                                    <td><span class="grade-badge grade-employe">Employé</span></td>
-                                    <td>
-                                        <div class="user-status">
-                                            <i class="fas fa-circle status-offline"></i>
-                                            <span>Hors ligne</span>
-                                        </div>
-                                    </td>
-                                    <td class="last-login">Il y a 3 jours</td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="btn-small btn-edit" onclick="editUser('lucas')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-small btn-delete" onclick="deleteUser('lucas')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
+                                    <td colspan="7" class="loading-message">
+                                        <i class="fas fa-spinner fa-spin"></i> Chargement des utilisateurs...
                                     </td>
                                 </tr>
                             </tbody>
@@ -687,11 +546,7 @@
                     <div class="form-group">
                         <label class="form-label">Manager direct</label>
                         <select id="user-manager" class="form-select">
-                            <option value="">Aucun manager</option>
-                            <option value="admin">Christopher Marlowe (CEO)</option>
-                            <option value="marlowe">Elena Marlowe (CFO)</option>
-                            <option value="manager">Alexandre Dubois (Manager)</option>
-                            <option value="vincent">Vincent Leclerc (Manager)</option>
+                            <!-- Options chargées dynamiquement depuis la DB -->
                         </select>
                     </div>
                 </div>
@@ -748,128 +603,215 @@
 
     <script src="../script.js"></script>
     <script>
-        // Configuration globale avec utilisateurs
-        const configData = window.globalConfig || {
-            thresholds: {
-                matieres: { critical: 50, warning: 100 },
-                bouteilles: { critical: 30, warning: 75 }
-            },
-            notifications: { duration: 4, soundEnabled: true },
-            system: { sessionTimeout: 60, theme: 'light' }
-        };
+        // Variables globales pour les données
+        let currentUsers = {};
+        let currentConfig = {};
+        let isEditMode = false;
+        let editingUsername = '';
 
-        // Base de données des utilisateurs
-        const usersDatabase = {
-            'admin': {
-                fullname: 'Christopher Marlowe',
-                phone: '+1 (555) 001-0001',
-                grade: 'ceo',
-                description: 'Administrateur principal',
-                password: 'MW2025',
-                status: 'online',
-                lastLogin: 'Maintenant',
-                permissions: ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'],
-                address: '1247 Vinewood Hills Drive, Los Santos, CA 90210',
-                hireDate: '2020-01-15',
-                department: 'direction',
-                salary: 250000,
-                manager: '',
-                notes: 'Fondateur et PDG de Marlowe Vineyard'
-            },
-            'manager': {
-                fullname: 'Alexandre Dubois',
-                phone: '+1 (555) 002-0123',
-                grade: 'manager',
-                description: 'Gestionnaire opérationnel',
-                password: 'VINE123',
-                status: 'offline',
-                lastLogin: 'Il y a 2h',
-                permissions: ['dashboard', 'inventory', 'documents', 'reports'],
-                address: '456 Oak Street, Los Santos, CA 90211',
-                hireDate: '2021-03-10',
-                department: 'administration',
-                salary: 85000,
-                manager: 'admin',
-                notes: 'MBA en gestion, spécialisé en opérations viticoles'
-            },
-            'marlowe': {
-                fullname: 'Elena Marlowe',
-                phone: '+1 (555) 003-0456',
-                grade: 'cfo',
-                description: 'Responsable production',
-                password: 'GRAPE456',
-                status: 'online',
-                lastLogin: 'Il y a 15min',
-                permissions: ['dashboard', 'inventory', 'documents', 'reports'],
-                address: '1247 Vinewood Hills Drive, Los Santos, CA 90210',
-                hireDate: '2020-02-01',
-                department: 'production',
-                salary: 120000,
-                manager: 'admin',
-                notes: 'Maître de chai certifiée, 15 ans d\'expérience'
-            },
-            'vincent': {
-                fullname: 'Vincent Leclerc',
-                phone: '+1 (555) 004-0789',
-                grade: 'manager',
-                description: 'Responsable ventes',
-                password: 'WINE789',
-                status: 'offline',
-                lastLogin: 'Hier 18h30',
-                permissions: ['dashboard', 'documents', 'reports'],
-                address: '789 Sunset Boulevard, Los Santos, CA 90212',
-                hireDate: '2021-09-15',
-                department: 'ventes',
-                salary: 90000,
-                manager: 'admin',
-                notes: 'Sommelier diplômé, expert en marketing viticole'
-            },
-            'sophie': {
-                fullname: 'Sophie Martin',
-                phone: '+1 (555) 005-0234',
-                grade: 'employe',
-                description: 'Assistante administrative',
-                password: 'CELLAR321',
-                status: 'online',
-                lastLogin: 'Il y a 5min',
-                permissions: ['dashboard'],
-                address: '321 Pine Avenue, Los Santos, CA 90213',
-                hireDate: '2022-05-20',
-                department: 'administration',
-                salary: 45000,
-                manager: 'manager',
-                notes: 'Diplômée en administration des affaires'
-            },
-            'lucas': {
-                fullname: 'Lucas Bernard',
-                phone: '+1 (555) 006-0567',
-                grade: 'employe',
-                description: 'Technicien cave',
-                password: 'TECH2025',
-                status: 'offline',
-                lastLogin: 'Il y a 3 jours',
-                permissions: ['dashboard', 'inventory'],
-                address: '654 Valley Road, Los Santos, CA 90214',
-                hireDate: '2023-01-10',
-                department: 'technique',
-                salary: 55000,
-                manager: 'marlowe',
-                notes: 'BTS viticulture-œnologie, spécialisé en fermentation'
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadConfiguration();
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Attendre que la DB soit prête
+            await window.dbManager.waitForReady();
+            
+            // Charger toutes les données depuis la DB
+            await loadAllData();
+            
+            // Initialiser les gestionnaires d'événements
             setupUserManagement();
             setupThresholds();
             setupNotifications();
             setupSystem();
             setupLogout();
 
-            console.log('Page Configuration avec gestion utilisateurs chargée !');
+            console.log('✅ Page Configuration chargée avec données DB !');
         });
 
-        // === GESTION DES UTILISATEURS ===
+        // === CHARGEMENT DES DONNÉES ===
+        async function loadAllData() {
+            try {
+                // Charger les utilisateurs
+                currentUsers = window.dbManager.getUsers();
+                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
+                
+                // Charger la configuration
+                currentConfig = window.dbManager.getConfiguration();
+                console.log('⚙️ Configuration chargée:', currentConfig);
+                
+                // Mettre à jour l'interface
+                updateUsersTable();
+                loadConfiguration();
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des données:', error);
+                notify.error('Erreur', 'Impossible de charger les données de configuration.');
+            }
+        }
+
+        // === GESTION DES NOTIFICATIONS ===
+        function setupNotifications() {
+            document.getElementById('saveNotifications').addEventListener('click', function() {
+                const duration = parseInt(document.getElementById('notification-duration').value);
+                const soundEnabled = document.getElementById('sound-notifications').checked;
+
+                const newNotifications = { duration, soundEnabled };
+                const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
+                
+                if (saved) {
+                    currentConfig.notifications = newNotifications;
+                    notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
+                } else {
+                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
+            });
+
+            document.getElementById('resetNotifications').addEventListener('click', function() {
+                const confirmNotification = notify.warning(
+                    'Réinitialiser les notifications', 
+                    'Remettre les valeurs par défaut ?', 
+                    10000
+                );
+                
+                addConfirmationButtons(confirmNotification, () => {
+                    const defaultNotifications = { duration: 4, soundEnabled: true };
+                    const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
+                    
+                    if (saved) {
+                        currentConfig.notifications = defaultNotifications;
+                        loadConfiguration();
+                        notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
+                    }
+                });
+            });
+        }
+
+        // === GESTION DU SYSTÈME ===
+        function setupSystem() {
+            document.getElementById('saveSystem').addEventListener('click', function() {
+                const sessionTimeout = parseInt(document.getElementById('session-timeout').value);
+                const theme = document.getElementById('theme-mode').value;
+
+                const newSystem = { sessionTimeout, theme };
+                const saved = window.dbManager.updateConfiguration('system', newSystem);
+                
+                if (saved) {
+                    currentConfig.system = newSystem;
+                    notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
+                } else {
+                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
+            });
+
+            document.getElementById('resetSystem').addEventListener('click', function() {
+                const confirmNotification = notify.warning(
+                    'Réinitialiser le système', 
+                    'Remettre les valeurs par défaut ?', 
+                    10000
+                );
+                
+                addConfirmationButtons(confirmNotification, () => {
+                    const defaultSystem = { sessionTimeout: 60, theme: 'light' };
+                    const saved = window.dbManager.updateConfiguration('system', defaultSystem);
+                    
+                    if (saved) {
+                        currentConfig.system = defaultSystem;
+                        loadConfiguration();
+                        notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
+                    }
+                });
+            });
+        }
+
+        // === DÉCONNEXION ===
+        function setupLogout() {
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const confirmNotification = notify.info(
+                    'Confirmation de déconnexion', 
+                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                    10000
+                );
+                
+                addConfirmationButtons(confirmNotification, () => {
+                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 1000);
+                }, 'Déconnexion');
+            });
+        }
+
+        // === FONCTIONS UTILITAIRES ===
+        function loadConfiguration() {
+            if (!currentConfig.thresholds) return;
+            
+            // Charger les seuils
+            document.getElementById('critical-matieres').value = currentConfig.thresholds.matieres?.critical || 50;
+            document.getElementById('warning-matieres').value = currentConfig.thresholds.matieres?.warning || 100;
+            document.getElementById('critical-bouteilles').value = currentConfig.thresholds.bouteilles?.critical || 30;
+            document.getElementById('warning-bouteilles').value = currentConfig.thresholds.bouteilles?.warning || 75;
+
+            // Charger les notifications
+            document.getElementById('notification-duration').value = currentConfig.notifications?.duration || 4;
+            document.getElementById('sound-notifications').checked = currentConfig.notifications?.soundEnabled !== false;
+
+            // Charger le système
+            document.getElementById('session-timeout').value = currentConfig.system?.sessionTimeout || 60;
+            document.getElementById('theme-mode').value = currentConfig.system?.theme || 'light';
+
+            updateThresholdInfo();
+        }
+
+        function updateThresholdInfo() {
+            const warningMatieres = document.getElementById('warning-matieres').value;
+            const warningBouteilles = document.getElementById('warning-bouteilles').value;
+
+            const matieresInfo = document.querySelector('.config-item:nth-child(1) .threshold-info span');
+            const bouteillesInfo = document.querySelector('.config-item:nth-child(2) .threshold-info span');
+
+            if (matieresInfo) {
+                matieresInfo.innerHTML = `Au-dessus de ${warningMatieres} unités = <strong>Bon Stock</strong>`;
+            }
+            if (bouteillesInfo) {
+                bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles} bouteilles = <strong>Bon Stock</strong>`;
+            }
+        }
+
+        function addConfirmationButtons(notification, onConfirm, confirmText = 'Confirmer') {
+            const notificationContent = notification.querySelector('.notification-content');
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.marginTop = '1rem';
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.gap = '0.5rem';
+            
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'cta-button btn-warning';
+            confirmBtn.style.fontSize = '0.8rem';
+            confirmBtn.style.padding = '0.5rem 1rem';
+            confirmBtn.textContent = confirmText;
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'cta-button btn-secondary';
+            cancelBtn.style.fontSize = '0.8rem';
+            cancelBtn.style.padding = '0.5rem 1rem';
+            cancelBtn.textContent = 'Annuler';
+            
+            buttonsDiv.appendChild(cancelBtn);
+            buttonsDiv.appendChild(confirmBtn);
+            notificationContent.appendChild(buttonsDiv);
+            
+            confirmBtn.addEventListener('click', () => {
+                notify.remove(notification);
+                onConfirm();
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                notify.remove(notification);
+            });
+        }
+    </script>
+</body>
+</html> UTILISATEURS ===
         function setupUserManagement() {
             const addUserBtn = document.getElementById('addUserBtn');
             const userModal = document.getElementById('userModal');
@@ -884,10 +826,12 @@
                 const rows = document.querySelectorAll('#usersTableBody tr');
                 
                 rows.forEach(row => {
-                    const username = row.querySelector('strong').textContent.toLowerCase();
-                    const fullname = row.cells[1].textContent.toLowerCase();
-                    const phone = row.cells[2].textContent.toLowerCase();
-                    const description = row.querySelector('div').textContent.toLowerCase();
+                    if (row.querySelector('.loading-message')) return; // Skip loading row
+                    
+                    const username = row.querySelector('strong')?.textContent.toLowerCase() || '';
+                    const fullname = row.cells[1]?.textContent.toLowerCase() || '';
+                    const phone = row.cells[2]?.textContent.toLowerCase() || '';
+                    const description = row.querySelector('div')?.textContent.toLowerCase() || '';
                     
                     if (username.includes(query) || fullname.includes(query) || phone.includes(query) || description.includes(query)) {
                         row.style.display = '';
@@ -899,11 +843,14 @@
 
             // Ajouter utilisateur
             addUserBtn.addEventListener('click', function() {
+                isEditMode = false;
+                editingUsername = '';
                 document.getElementById('userModalTitle').textContent = 'Ajouter Utilisateur';
                 document.getElementById('saveUser').innerHTML = '<i class="fas fa-plus"></i> Ajouter';
                 userForm.reset();
                 // Cocher dashboard par défaut
                 document.getElementById('perm-dashboard').checked = true;
+                populateManagerSelect();
                 userModal.style.display = 'flex';
             });
 
@@ -914,221 +861,190 @@
             // Soumettre formulaire utilisateur
             userForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                const username = document.getElementById('user-username').value;
-                const fullname = document.getElementById('user-fullname').value;
-                const phone = document.getElementById('user-phone').value;
-                const grade = document.getElementById('user-grade').value;
-                const password = document.getElementById('user-password').value;
-                const passwordConfirm = document.getElementById('user-password-confirm').value;
-                const description = document.getElementById('user-description').value;
-
-                // Validation
-                if (!username || !fullname || !phone || !grade || !description) {
-                    notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
-                    return;
-                }
-
-                // Vérifier les mots de passe
-                if (password && password !== passwordConfirm) {
-                    notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
-                    return;
-                }
-
-                // Vérifier si l'utilisateur existe déjà
-                if (usersDatabase[username] && document.getElementById('userModalTitle').textContent === 'Ajouter Utilisateur') {
-                    notify.error('Erreur', 'Cet utilisateur existe déjà.');
-                    return;
-                }
-
-                // Collecter les permissions
-                const permissions = [];
-                if (document.getElementById('perm-dashboard').checked) permissions.push('dashboard');
-                if (document.getElementById('perm-inventory').checked) permissions.push('inventory');
-                if (document.getElementById('perm-documents').checked) permissions.push('documents');
-                if (document.getElementById('perm-config').checked) permissions.push('config');
-                if (document.getElementById('perm-reports').checked) permissions.push('reports');
-                if (document.getElementById('perm-users').checked) permissions.push('users');
-
-                // Sauvegarder l'utilisateur
-                usersDatabase[username] = {
-                    fullname: fullname,
-                    phone: phone,
-                    grade: grade,
-                    description: description,
-                    password: password || usersDatabase[username]?.password || 'TEMP123',
-                    status: 'offline',
-                    lastLogin: 'Jamais',
-                    permissions: permissions,
-                    address: document.getElementById('user-address').value || '',
-                    hireDate: document.getElementById('user-hire-date').value || '',
-                    department: document.getElementById('user-department').value || '',
-                    salary: parseInt(document.getElementById('user-salary').value) || 0,
-                    manager: document.getElementById('user-manager').value || '',
-                    notes: document.getElementById('user-notes').value || ''
-                };
-
-                updateUsersTable();
-                userModal.style.display = 'none';
-                
-                const action = document.getElementById('userModalTitle').textContent;
-                notify.success('Succès', `Utilisateur ${action === 'Ajouter Utilisateur' ? 'ajouté' : 'modifié'} avec succès !`);
+                saveUserData();
             });
 
             // Export utilisateurs
             document.getElementById('exportUsers').addEventListener('click', function() {
-                const users = Object.entries(usersDatabase).map(([username, data]) => ({
-                    username,
-                    fullname: data.fullname,
-                    phone: data.phone,
-                    grade: data.grade,
-                    description: data.description,
-                    status: data.status,
-                    lastLogin: data.lastLogin,
-                    department: data.department,
-                    salary: data.salary
-                }));
-
-                const csvContent = "data:text/csv;charset=utf-8," 
-                    + "Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n"
-                    + users.map(user => `${user.username},"${user.fullname}",${user.phone},${user.grade},"${user.description}",${user.status},"${user.lastLogin}",${user.department},${user.salary}`).join('\n');
-
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement('a');
-                link.setAttribute('href', encodedUri);
-                link.setAttribute('download', 'marlowe_users_export.csv');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                notify.success('Export réussi', 'Liste des utilisateurs exportée en CSV.');
+                exportUsersToCSV();
             });
 
             // Réinitialiser mots de passe
             document.getElementById('resetPasswords').addEventListener('click', function() {
-                const confirmNotification = notify.warning(
-                    'Confirmation dangereuse', 
-                    'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
-                    15000
-                );
-                
-                const notificationContent = confirmNotification.querySelector('.notification-content');
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.style.marginTop = '1rem';
-                buttonsDiv.style.display = 'flex';
-                buttonsDiv.style.gap = '0.5rem';
-                
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = 'cta-button btn-warning';
-                confirmBtn.style.fontSize = '0.8rem';
-                confirmBtn.style.padding = '0.5rem 1rem';
-                confirmBtn.textContent = 'RÉINITIALISER';
-                
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'cta-button btn-secondary';
-                cancelBtn.style.fontSize = '0.8rem';
-                cancelBtn.style.padding = '0.5rem 1rem';
-                cancelBtn.textContent = 'Annuler';
-                
-                buttonsDiv.appendChild(cancelBtn);
-                buttonsDiv.appendChild(confirmBtn);
-                notificationContent.appendChild(buttonsDiv);
-                
-                confirmBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                    
-                    // Réinitialiser tous les mots de passe sauf admin
-                    Object.keys(usersDatabase).forEach(username => {
-                        if (username !== 'admin') {
-                            usersDatabase[username].password = 'RESET2025';
-                        }
-                    });
-                    
-                    notify.info('Mots de passe réinitialisés', 'Nouveau mot de passe temporaire: RESET2025');
-                });
-                
-                cancelBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                });
+                resetAllPasswords();
             });
         }
 
-        // Réinitialiser mots de passe
-        document.getElementById('resetPasswords').addEventListener('click', function() {
-            const confirmNotification = notify.warning(
-                    'Confirmation dangereuse', 
-                    'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
-                    15000
-                );
-                
-            const notificationContent = confirmNotification.querySelector('.notification-content');
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.marginTop = '1rem';
-            buttonsDiv.style.display = 'flex';
-            buttonsDiv.style.gap = '0.5rem';
+        function saveUserData() {
+            const username = document.getElementById('user-username').value.trim();
+            const fullname = document.getElementById('user-fullname').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+            const grade = document.getElementById('user-grade').value;
+            const password = document.getElementById('user-password').value;
+            const passwordConfirm = document.getElementById('user-password-confirm').value;
+            const description = document.getElementById('user-description').value.trim();
+
+            // Validation
+            if (!username || !fullname || !phone || !grade || !description) {
+                notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
+                return;
+            }
+
+            // Vérifier les mots de passe
+            if (password && password !== passwordConfirm) {
+                notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
+                return;
+            }
+
+            // Vérifier si l'utilisateur existe déjà (en mode ajout)
+            if (!isEditMode && currentUsers[username]) {
+                notify.error('Erreur', 'Cet utilisateur existe déjà.');
+                return;
+            }
+
+            // Collecter les permissions
+            const permissions = [];
+            if (document.getElementById('perm-dashboard').checked) permissions.push('dashboard');
+            if (document.getElementById('perm-inventory').checked) permissions.push('inventory');
+            if (document.getElementById('perm-documents').checked) permissions.push('documents');
+            if (document.getElementById('perm-config').checked) permissions.push('config');
+            if (document.getElementById('perm-reports').checked) permissions.push('reports');
+            if (document.getElementById('perm-users').checked) permissions.push('users');
+
+            // Créer l'objet utilisateur
+            const userData = {
+                fullname: fullname,
+                phone: phone,
+                grade: grade,
+                description: description,
+                password: password || currentUsers[username]?.password || 'TEMP123',
+                status: currentUsers[username]?.status || 'offline',
+                lastLogin: currentUsers[username]?.lastLogin || 'Jamais',
+                permissions: permissions,
+                address: document.getElementById('user-address').value.trim() || '',
+                hireDate: document.getElementById('user-hire-date').value || '',
+                department: document.getElementById('user-department').value || '',
+                salary: parseInt(document.getElementById('user-salary').value) || 0,
+                manager: document.getElementById('user-manager').value || '',
+                notes: document.getElementById('user-notes').value.trim() || ''
+            };
+
+            // Sauvegarder dans la DB
+            const saved = window.dbManager.saveUser(username, userData);
             
-            const confirmBtn = document.createElement('button');
-            confirmBtn.className = 'cta-button btn-warning';
-            confirmBtn.style.fontSize = '0.8rem';
-            confirmBtn.style.padding = '0.5rem 1rem';
-            confirmBtn.textContent = 'RÉINITIALISER';
+            if (saved) {
+                // Mettre à jour les données locales
+                currentUsers = window.dbManager.getUsers();
+                updateUsersTable();
+                document.getElementById('userModal').style.display = 'none';
                 
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'cta-button btn-secondary';
-            cancelBtn.style.fontSize = '0.8rem';
-            cancelBtn.style.padding = '0.5rem 1rem';
-            cancelBtn.textContent = 'Annuler';
-                
-            buttonsDiv.appendChild(cancelBtn);
-            buttonsDiv.appendChild(confirmBtn);
-            notificationContent.appendChild(buttonsDiv);
-                
-            confirmBtn.addEventListener('click', () => {
-                notify.remove(confirmNotification);
-                    
+                const action = isEditMode ? 'modifié' : 'ajouté';
+                notify.success('Succès', `Utilisateur ${action} avec succès !`);
+            } else {
+                notify.error('Erreur', 'Impossible de sauvegarder l\'utilisateur.');
+            }
+        }
+
+        function populateManagerSelect() {
+            const managerSelect = document.getElementById('user-manager');
+            managerSelect.innerHTML = '<option value="">Aucun manager</option>';
+            
+            Object.entries(currentUsers).forEach(([username, user]) => {
+                if (user.grade === 'ceo' || user.grade === 'cfo' || user.grade === 'manager') {
+                    const option = document.createElement('option');
+                    option.value = username;
+                    option.textContent = `${user.fullname} (${user.grade.toUpperCase()})`;
+                    managerSelect.appendChild(option);
+                }
+            });
+        }
+
+        function exportUsersToCSV() {
+            const users = Object.entries(currentUsers).map(([username, data]) => ({
+                username,
+                fullname: data.fullname,
+                phone: data.phone,
+                grade: data.grade,
+                description: data.description,
+                status: data.status,
+                lastLogin: data.lastLogin,
+                department: data.department || '',
+                salary: data.salary || 0
+            }));
+
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n"
+                + users.map(user => `${user.username},"${user.fullname}",${user.phone},${user.grade},"${user.description}",${user.status},"${user.lastLogin}",${user.department},${user.salary}`).join('\n');
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `marlowe_users_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            notify.success('Export réussi', 'Liste des utilisateurs exportée en CSV.');
+        }
+
+        function resetAllPasswords() {
+            const confirmNotification = notify.warning(
+                'Confirmation dangereuse', 
+                'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
+                15000
+            );
+            
+            addConfirmationButtons(confirmNotification, () => {
                 // Réinitialiser tous les mots de passe sauf admin
-                Object.keys(usersDatabase).forEach(username => {
+                Object.keys(currentUsers).forEach(username => {
                     if (username !== 'admin') {
-                        usersDatabase[username].password = 'RESET2025';
+                        const user = currentUsers[username];
+                        user.password = 'RESET2025';
+                        window.dbManager.saveUser(username, user);
                     }
                 });
-                    
+                
+                currentUsers = window.dbManager.getUsers();
                 notify.info('Mots de passe réinitialisés', 'Nouveau mot de passe temporaire: RESET2025');
             });
-                
-            cancelBtn.addEventListener('click', () => {
-                notify.remove(confirmNotification);
-            });
-        });
+        }
 
         // Fonctions globales pour les actions utilisateurs
         window.editUser = function(username) {
-            const user = usersDatabase[username];
+            const user = currentUsers[username];
             if (!user) return;
 
+            isEditMode = true;
+            editingUsername = username;
             document.getElementById('userModalTitle').textContent = 'Modifier Utilisateur';
             document.getElementById('saveUser').innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
             
+            // Remplir le formulaire
             document.getElementById('user-username').value = username;
-            document.getElementById('user-fullname').value = user.fullname;
-            document.getElementById('user-phone').value = user.phone;
-            document.getElementById('user-grade').value = user.grade;
-            document.getElementById('user-description').value = user.description;
+            document.getElementById('user-fullname').value = user.fullname || '';
+            document.getElementById('user-phone').value = user.phone || '';
+            document.getElementById('user-grade').value = user.grade || 'employe';
+            document.getElementById('user-description').value = user.description || '';
             document.getElementById('user-password').value = '';
             document.getElementById('user-password-confirm').value = '';
             document.getElementById('user-address').value = user.address || '';
             document.getElementById('user-hire-date').value = user.hireDate || '';
             document.getElementById('user-department').value = user.department || '';
             document.getElementById('user-salary').value = user.salary || '';
-            document.getElementById('user-manager').value = user.manager || '';
             document.getElementById('user-notes').value = user.notes || '';
 
+            // Populer les managers et sélectionner le bon
+            populateManagerSelect();
+            document.getElementById('user-manager').value = user.manager || '';
+
             // Permissions
-            document.getElementById('perm-dashboard').checked = user.permissions.includes('dashboard');
-            document.getElementById('perm-inventory').checked = user.permissions.includes('inventory');
-            document.getElementById('perm-documents').checked = user.permissions.includes('documents');
-            document.getElementById('perm-config').checked = user.permissions.includes('config');
-            document.getElementById('perm-reports').checked = user.permissions.includes('reports');
-            document.getElementById('perm-users').checked = user.permissions.includes('users');
+            const permissions = user.permissions || [];
+            document.getElementById('perm-dashboard').checked = permissions.includes('dashboard');
+            document.getElementById('perm-inventory').checked = permissions.includes('inventory');
+            document.getElementById('perm-documents').checked = permissions.includes('documents');
+            document.getElementById('perm-config').checked = permissions.includes('config');
+            document.getElementById('perm-reports').checked = permissions.includes('reports');
+            document.getElementById('perm-users').checked = permissions.includes('users');
 
             document.getElementById('userModal').style.display = 'flex';
         };
@@ -1145,37 +1061,15 @@
                 10000
             );
             
-            const notificationContent = confirmNotification.querySelector('.notification-content');
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.marginTop = '1rem';
-            buttonsDiv.style.display = 'flex';
-            buttonsDiv.style.gap = '0.5rem';
-            
-            const confirmBtn = document.createElement('button');
-            confirmBtn.className = 'cta-button btn-warning';
-            confirmBtn.style.fontSize = '0.8rem';
-            confirmBtn.style.padding = '0.5rem 1rem';
-            confirmBtn.textContent = 'Supprimer';
-            
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'cta-button btn-secondary';
-            cancelBtn.style.fontSize = '0.8rem';
-            cancelBtn.style.padding = '0.5rem 1rem';
-            cancelBtn.textContent = 'Annuler';
-            
-            buttonsDiv.appendChild(cancelBtn);
-            buttonsDiv.appendChild(confirmBtn);
-            notificationContent.appendChild(buttonsDiv);
-            
-            confirmBtn.addEventListener('click', () => {
-                notify.remove(confirmNotification);
-                delete usersDatabase[username];
-                updateUsersTable();
-                notify.success('Utilisateur supprimé', `${username} a été supprimé de la base.`);
-            });
-            
-            cancelBtn.addEventListener('click', () => {
-                notify.remove(confirmNotification);
+            addConfirmationButtons(confirmNotification, () => {
+                const deleted = window.dbManager.deleteUser(username);
+                if (deleted) {
+                    currentUsers = window.dbManager.getUsers();
+                    updateUsersTable();
+                    notify.success('Utilisateur supprimé', `${username} a été supprimé de la base.`);
+                } else {
+                    notify.error('Erreur', 'Impossible de supprimer l\'utilisateur.');
+                }
             });
         };
 
@@ -1183,7 +1077,12 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
 
-            Object.entries(usersDatabase).forEach(([username, user]) => {
+            if (Object.keys(currentUsers).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-message">Aucun utilisateur trouvé</td></tr>';
+                return;
+            }
+
+            Object.entries(currentUsers).forEach(([username, user]) => {
                 const gradeClass = `grade-${user.grade}`;
                 const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
                 const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
@@ -1193,18 +1092,18 @@
                 row.innerHTML = `
                     <td>
                         <strong>${username}</strong>
-                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description}</div>
+                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description || ''}</div>
                     </td>
-                    <td>${user.fullname}</td>
-                    <td>${user.phone}</td>
-                    <td><span class="grade-badge ${gradeClass}">${user.grade.toUpperCase()}</span></td>
+                    <td>${user.fullname || ''}</td>
+                    <td>${user.phone || ''}</td>
+                    <td><span class="grade-badge ${gradeClass}">${(user.grade || 'employe').toUpperCase()}</span></td>
                     <td>
                         <div class="user-status">
                             <i class="fas fa-circle ${statusIcon}"></i>
                             <span>${statusText}</span>
                         </div>
                     </td>
-                    <td class="last-login">${user.lastLogin}</td>
+                    <td class="last-login">${user.lastLogin || 'Jamais'}</td>
                     <td>
                         <div class="user-actions">
                             <button class="btn-small btn-edit" onclick="editUser('${username}')">
@@ -1238,10 +1137,10 @@
                     bouteilles: { critical: criticalBouteilles, warning: warningBouteilles }
                 };
 
-                configData.thresholds = newThresholds;
-                const saved = saveDataToLocalStorage();
+                const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
                 
                 if (saved) {
+                    currentConfig.thresholds = newThresholds;
                     updateThresholdInfo();
                     notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
                 } else {
@@ -1256,31 +1155,7 @@
                     10000
                 );
                 
-                const notificationContent = confirmNotification.querySelector('.notification-content');
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.style.marginTop = '1rem';
-                buttonsDiv.style.display = 'flex';
-                buttonsDiv.style.gap = '0.5rem';
-                
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = 'cta-button btn-warning';
-                confirmBtn.style.fontSize = '0.8rem';
-                confirmBtn.style.padding = '0.5rem 1rem';
-                confirmBtn.textContent = 'Réinitialiser';
-                
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'cta-button btn-secondary';
-                cancelBtn.style.fontSize = '0.8rem';
-                cancelBtn.style.padding = '0.5rem 1rem';
-                cancelBtn.textContent = 'Annuler';
-                
-                buttonsDiv.appendChild(cancelBtn);
-                buttonsDiv.appendChild(confirmBtn);
-                notificationContent.appendChild(buttonsDiv);
-                
-                confirmBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                    
+                addConfirmationButtons(confirmNotification, () => {
                     const defaultThresholds = {
                         matieres: { critical: 50, warning: 100 },
                         bouteilles: { critical: 30, warning: 75 }
@@ -1288,14 +1163,10 @@
                     
                     const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
                     if (saved) {
-                        configData.thresholds = defaultThresholds;
+                        currentConfig.thresholds = defaultThresholds;
                         loadConfiguration();
                         notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
                     }
-                });
-                
-                cancelBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
                 });
             });
 
@@ -1303,185 +1174,4 @@
             document.getElementById('warning-bouteilles').addEventListener('input', updateThresholdInfo);
         }
 
-        // === GESTION DES NOTIFICATIONS ===
-        function setupNotifications() {
-            document.getElementById('saveNotifications').addEventListener('click', function() {
-                const duration = parseInt(document.getElementById('notification-duration').value);
-                const soundEnabled = document.getElementById('sound-notifications').checked;
-
-                const newNotifications = { duration, soundEnabled };
-                const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
-                
-                if (saved) {
-                    configData.notifications = newNotifications;
-                    notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
-                } else {
-                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
-            });
-
-            document.getElementById('resetNotifications').addEventListener('click', function() {
-                const defaultNotifications = { duration: 4, soundEnabled: true };
-                const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
-                
-                if (saved) {
-                    configData.notifications = defaultNotifications;
-                    loadConfiguration();
-                    notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
-                }
-            });
-        }
-
-        // === GESTION DU SYSTÈME ===
-        function setupSystem() {
-            document.getElementById('saveSystem').addEventListener('click', function() {
-                const sessionTimeout = parseInt(document.getElementById('session-timeout').value);
-                const theme = document.getElementById('theme-mode').value;
-
-                const newSystem = { sessionTimeout, theme };
-                const saved = window.dbManager.updateConfiguration('system', newSystem);
-                
-                if (saved) {
-                    configData.system = newSystem;
-                    notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
-                } else {
-                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
-            });
-
-            document.getElementById('resetSystem').addEventListener('click', function() {
-                const defaultSystem = { sessionTimeout: 60, theme: 'light' };
-                const saved = window.dbManager.updateConfiguration('system', defaultSystem);
-                
-                if (saved) {
-                    configData.system = defaultSystem;
-                    loadConfiguration();
-                    notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
-                }
-            });
-        }
-
-        // === DÉCONNEXION ===
-        function setupLogout() {
-            document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const confirmNotification = notify.info(
-                    'Confirmation de déconnexion', 
-                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
-                    10000
-                );
-                
-                const notificationContent = confirmNotification.querySelector('.notification-content');
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.style.marginTop = '1rem';
-                buttonsDiv.style.display = 'flex';
-                buttonsDiv.style.gap = '0.5rem';
-                
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = 'cta-button btn-warning';
-                confirmBtn.style.fontSize = '0.8rem';
-                confirmBtn.style.padding = '0.5rem 1rem';
-                confirmBtn.textContent = 'Déconnexion';
-                
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'cta-button btn-secondary';
-                cancelBtn.style.fontSize = '0.8rem';
-                cancelBtn.style.padding = '0.5rem 1rem';
-                cancelBtn.textContent = 'Annuler';
-                
-                buttonsDiv.appendChild(cancelBtn);
-                buttonsDiv.appendChild(confirmBtn);
-                notificationContent.appendChild(buttonsDiv);
-                
-                confirmBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
-                    setTimeout(() => {
-                        window.location.href = '../index.html';
-                    }, 1000);
-                });
-                
-                cancelBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                });
-            });
-        }
-
-        // === FONCTIONS UTILITAIRES ===
-        function loadConfiguration() {
-            // Charger les seuils
-            document.getElementById('critical-matieres').value = configData.thresholds.matieres.critical;
-            document.getElementById('warning-matieres').value = configData.thresholds.matieres.warning;
-            document.getElementById('critical-bouteilles').value = configData.thresholds.bouteilles.critical;
-            document.getElementById('warning-bouteilles').value = configData.thresholds.bouteilles.warning;
-
-            // Charger les notifications
-            document.getElementById('notification-duration').value = configData.notifications.duration;
-            document.getElementById('sound-notifications').checked = configData.notifications.soundEnabled;
-
-            // Charger le système
-            document.getElementById('session-timeout').value = configData.system.sessionTimeout;
-            document.getElementById('theme-mode').value = configData.system.theme;
-
-            updateThresholdInfo();
-        }
-
-        function updateThresholdInfo() {
-            const warningMatieres = document.getElementById('warning-matieres').value;
-            const warningBouteilles = document.getElementById('warning-bouteilles').value;
-
-            const matieresInfo = document.querySelector('.config-item:nth-child(1) .threshold-info span');
-            const bouteillesInfo = document.querySelector('.config-item:nth-child(2) .threshold-info span');
-
-            if (matieresInfo) {
-                matieresInfo.innerHTML = `Au-dessus de ${warningMatieres} unités = <strong>Bon Stock</strong>`;
-            }
-            if (bouteillesInfo) {
-                bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles} bouteilles = <strong>Bon Stock</strong>`;
-            }
-        }
-
-        function updateUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-
-            Object.entries(usersDatabase).forEach(([username, user]) => {
-                const gradeClass = `grade-${user.grade}`;
-                const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
-                const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
-                const canDelete = username !== 'admin';
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <strong>${username}</strong>
-                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description}</div>
-                    </td>
-                    <td>${user.fullname}</td>
-                    <td>${user.phone}</td>
-                    <td><span class="grade-badge ${gradeClass}">${user.grade.toUpperCase()}</span></td>
-                    <td>
-                        <div class="user-status">
-                            <i class="fas fa-circle ${statusIcon}"></i>
-                            <span>${statusText}</span>
-                        </div>
-                    </td>
-                    <td class="last-login">${user.lastLogin}</td>
-                    <td>
-                        <div class="user-actions">
-                            <button class="btn-small btn-edit" onclick="editUser('${username}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${canDelete ? `<button class="btn-small btn-delete" onclick="deleteUser('${username}')">
-                                <i class="fas fa-trash"></i>
-                            </button>` : ''}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-    </script>
-</body>
-</html>
+        // === GESTION DES
