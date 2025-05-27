@@ -413,17 +413,17 @@
                     
                     // Prix unitaire
                     firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
-                        x: 285, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 277, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // Quantité
                     firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
-                        x: 390, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 397, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // Total HT
                     firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
-                        x: 465, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 467, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
                 
