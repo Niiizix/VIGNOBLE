@@ -6,8 +6,6 @@
     <title>Documents - Marlowe Vineyard Intranet</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
-    <!-- PDF-lib pour modifier les PDFs existants -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -45,131 +43,15 @@
         </div>
     </section>
 
-    <!-- Modal Configuration Discord -->
-    <div id="discordConfigModal" class="modal-devis" style="display: none;">
-        <div class="modal-devis-content" style="max-width: 600px;">
-            <div class="modal-devis-header" style="background: #7289da;">
-                <h3><i class="fab fa-discord"></i> Configuration Discord</h3>
-                <span class="modal-close" onclick="closeDiscordConfig()">&times;</span>
-            </div>
-            <div class="modal-devis-body">
-                <div class="devis-section">
-                    <h4><i class="fas fa-cog"></i> Webhook Discord</h4>
-                    <p>Configurez l'envoi automatique des devis sur votre serveur Discord :</p>
-                    
-                    <div class="form-group">
-                        <label class="form-label">URL du Webhook Discord *</label>
-                        <input type="url" id="webhookUrl" class="form-input" 
-                               placeholder="https://discord.com/api/webhooks/YOUR_WEBHOOK_URL">
-                        <small style="color: #6c757d;">Pour créer un webhook : Paramètres du serveur > Intégrations > Webhooks > Nouveau Webhook</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Nom d'affichage (optionnel)</label>
-                        <input type="text" id="discordUsername" class="form-input" 
-                               value="Marlowe Vineyard" placeholder="Nom affiché sur Discord">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-devis-footer">
-                <button type="button" class="cta-button btn-secondary" onclick="closeDiscordConfig()">Annuler</button>
-                <button type="button" class="cta-button" style="background: #7289da;" onclick="testDiscordWebhook()">
-                    <i class="fas fa-paper-plane"></i> Tester Webhook
-                </button>
-                <button type="button" class="cta-button btn-success" onclick="saveDiscordConfig()">
-                    <i class="fas fa-save"></i> Sauvegarder
-                </button>
-            </div>
+    <!-- Status Debug -->
+    <section style="background: #f8f9fa; padding: 2rem; text-align: center;">
+        <div id="debugStatus" style="max-width: 800px; margin: 0 auto;">
+            <h3>🔧 Status Système</h3>
+            <div id="pdfLibStatus">⏳ Vérification PDF-lib...</div>
+            <div id="templateStatus">⏳ Vérification template...</div>
+            <div id="scriptsStatus">⏳ Vérification scripts...</div>
         </div>
-    </div>
-
-    <!-- Modal Devis -->
-    <div id="devisModal" class="modal-devis">
-        <div class="modal-devis-content">
-            <div class="modal-devis-header">
-                <h3><i class="fas fa-file-invoice-dollar"></i> Créer un Devis</h3>
-                <span class="modal-close" id="closeDevisModal">&times;</span>
-            </div>
-            <div class="modal-devis-body">
-                
-                <!-- Informations Client -->
-                <div class="devis-section">
-                    <h4><i class="fas fa-user"></i> Informations Client</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Nom complet *</label>
-                            <input type="text" id="client-nom" class="form-input" required placeholder="Nom et prénom du client">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" id="client-email" class="form-input" placeholder="email@exemple.com">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Adresse complète *</label>
-                        <textarea id="client-adresse" class="form-textarea" rows="3" required placeholder="Adresse, code postal, ville"></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Téléphone</label>
-                            <input type="tel" id="client-telephone" class="form-input" placeholder="+33 1 23 45 67 89">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Numéro de devis</label>
-                            <input type="text" id="numero-devis" class="form-input" readonly>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sélection des Produits -->
-                <div class="devis-section">
-                    <div class="section-header">
-                        <h4><i class="fas fa-wine-bottle"></i> Sélection des Produits</h4>
-                        <button type="button" class="btn-add-product" id="addProductBtn">
-                            <i class="fas fa-plus"></i> Ajouter
-                        </button>
-                    </div>
-                    <div id="products-container">
-                        <!-- Les lignes de produits seront ajoutées ici -->
-                    </div>
-                </div>
-
-                <!-- Totaux -->
-                <div class="devis-section">
-                    <h4><i class="fas fa-calculator"></i> Récapitulatif</h4>
-                    <div class="totals-container">
-                        <div class="total-line">
-                            <span class="total-label">Sous-total HT :</span>
-                            <span class="total-value" id="sous-total">0,00 €</span>
-                        </div>
-                        <div class="total-line">
-                            <span class="total-label">TVA (21%) :</span>
-                            <span class="total-value" id="tva-montant">0,00 €</span>
-                        </div>
-                        <div class="total-line total-final">
-                            <span class="total-label">Total TTC :</span>
-                            <span class="total-value" id="total-final">0,00 €</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-devis-footer">
-                <button type="button" class="cta-button btn-secondary" id="cancelDevis">Annuler</button>
-                <button type="button" class="cta-button btn-info" id="previewDevis">
-                    <i class="fas fa-eye"></i> Prévisualiser
-                </button>
-                <button type="button" class="cta-button btn-success" id="generateDevis">
-                    <i class="fas fa-file-pdf"></i> Générer PDF
-                </button>
-                <button type="button" class="cta-button" style="background: #7289da;" id="generateAndSendDevis">
-                    <i class="fab fa-discord"></i> PDF + Discord
-                </button>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <!-- Documents Section -->
     <section class="documents-section">
@@ -180,10 +62,6 @@
                 <div class="category-header">
                     <h2><i class="fas fa-user-tie"></i> Documents Clients</h2>
                     <p>Créez tous vos documents commerciaux destinés aux clients</p>
-                    <button class="cta-button" style="background: #7289da; margin-top: 10px;" onclick="openDiscordConfig()">
-                        <i class="fab fa-discord"></i> Configurer Discord
-                    </button>
-                    <div id="templateStatus" style="margin-top: 15px; text-align: center;"></div>
                 </div>
                 
                 <div class="documents-grid">
@@ -193,9 +71,10 @@
                         </div>
                         <h3>Devis Client</h3>
                         <p>Générez un devis personnalisé avec calculs automatiques des totaux HT/TTC et envoi Discord</p>
-                        <button class="cta-button btn-success document-btn" data-document="devis">
-                            <i class="fas fa-plus"></i> Créer un Devis
+                        <button class="cta-button btn-success document-btn" id="testDevisBtn">
+                            <i class="fas fa-plus"></i> Test Devis
                         </button>
+                        <div id="devisStatus" style="margin-top: 10px; font-size: 12px; color: #6c757d;"></div>
                     </div>
 
                     <div class="document-card">
@@ -232,85 +111,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Documents Internes -->
-            <div class="document-category">
-                <div class="category-header">
-                    <h2><i class="fas fa-building"></i> Documents Internes</h2>
-                    <p>Gérez vos documents internes et rapports d'activité</p>
-                </div>
-                
-                <div class="documents-grid">
-                    <div class="document-card">
-                        <div class="document-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <h3>Rapport d'Inventaire</h3>
-                        <p>Générez un rapport détaillé de l'état actuel des stocks et valeurs</p>
-                        <button class="cta-button btn-warning document-btn" data-document="inventaire">
-                            <i class="fas fa-plus"></i> Générer le Rapport
-                        </button>
-                    </div>
-
-                    <div class="document-card">
-                        <div class="document-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3>Rapport de Ventes</h3>
-                        <p>Synthèse des ventes par période avec analyse des performances</p>
-                        <button class="cta-button btn-success document-btn" data-document="ventes">
-                            <i class="fas fa-plus"></i> Générer le Rapport
-                        </button>
-                    </div>
-
-                    <div class="document-card">
-                        <div class="document-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h3>Bon de Commande</h3>
-                        <p>Commandes fournisseurs pour réapprovisionnement en matières premières</p>
-                        <button class="cta-button btn-info document-btn" data-document="commande">
-                            <i class="fas fa-plus"></i> Créer une Commande
-                        </button>
-                    </div>
-
-                    <div class="document-card">
-                        <div class="document-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <h3>Fiche de Production</h3>
-                        <p>Documenter les étapes de production et qualité des cuvées</p>
-                        <button class="cta-button btn-purple document-btn" data-document="production">
-                            <i class="fas fa-plus"></i> Créer une Fiche
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistiques -->
-            <div class="documents-stats">
-                <div class="stats-header">
-                    <h3><i class="fas fa-chart-pie"></i> Statistiques Documents</h3>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-number">47</div>
-                        <div class="stat-label">Devis ce mois</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">23</div>
-                        <div class="stat-label">Factures émises</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">15</div>
-                        <div class="stat-label">Livraisons</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">8</div>
-                        <div class="stat-label">Rapports générés</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -321,875 +121,110 @@
 
     <script src="../script.js"></script>
     <script>
-        // === CONFIGURATION DISCORD ===
-        let discordConfig = {
-            webhookUrl: localStorage.getItem('marlowe_webhook_url') || '',
-            username: localStorage.getItem('marlowe_discord_username') || 'Marlowe Vineyard'
-        };
-
-        // === TEMPLATE PDF ===
-        let templatePDF = null;
-
-        // === FONCTION MODIFICATION PDF AVEC TEMPLATE ===
-        async function generateMarlowePDFFromTemplate(devisData) {
-            if (!templatePDF) {
-                throw new Error('Aucun template PDF chargé. Veuillez d\'abord charger votre template.');
-            }
-            
-            try {
-                // Cloner le template
-                const pdfDoc = await PDFLib.PDFDocument.load(await templatePDF.save());
-                const pages = pdfDoc.getPages();
-                const firstPage = pages[0];
-                
-                // Polices
-                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-                const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-                
-                // === COORDONNÉES AJUSTÉES SELON TON TEMPLATE ===
-                
-                // Numéro de devis (dans la zone dorée, ajusté)
-                firstPage.drawText(devisData.numeroDevis, {
-                    x: 240, // Ajusté plus à droite dans la zone dorée
-                    y: 695, // Ajusté selon la hauteur de la zone dorée
-                    size: 14,
-                    font: boldFont,
-                    color: PDFLib.rgb(1, 1, 1) // Blanc pour le header
-                });
-                
-                // Informations client (sous "Client:")
-                const clientY = 460; // Ajusté selon ton template
-                firstPage.drawText(devisData.client.nom, {
-                    x: 77, // Légèrement indenté sous "Client:"
-                    y: clientY,
-                    size: 11,
-                    font: boldFont,
-                    color: PDFLib.rgb(0, 0, 0)
-                });
-                
-                // Adresse client (multi-lignes)
-                if (devisData.client.adresse) {
-                    const addressLines = devisData.client.adresse.split('\n');
-                    addressLines.forEach((line, index) => {
-                        firstPage.drawText(line, {
-                            x: 77,
-                            y: clientY - 20 - (index * 15),
-                            size: 10,
-                            font: font,
-                            color: PDFLib.rgb(0, 0, 0)
-                        });
-                    });
-                }
-                
-                // Email et téléphone
-                let infoY = clientY - 20 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
-                
-                if (devisData.client.email) {
-                    firstPage.drawText(`Email: ${devisData.client.email}`, {
-                        x: 77,
-                        y: infoY - 10,
-                        size: 10,
-                        font: font,
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                    infoY -= 15;
-                }
-                
-                if (devisData.client.telephone) {
-                    firstPage.drawText(`Tél: ${devisData.client.telephone}`, {
-                        x: 77,
-                        y: infoY - 10,
-                        size: 10,
-                        font: font,
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                }
-                
-                // === PRODUITS DANS LE TABLEAU ===
-                let productY = 350; // Position ajustée selon ton template
-                
-                devisData.produits.forEach((produit, index) => {
-                    const currentY = productY - (index * 20); // Espacement ajusté
-                    
-                    // Nom du produit (colonne Description)
-                    firstPage.drawText(produit.nom, {
-                        x: 77, // Aligné avec les colonnes du tableau
-                        y: currentY,
-                        size: 10,
-                        font: font,
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Prix unitaire (colonne Prix unitaire)
-                    firstPage.drawText(`${produit.prix}€`, {
-                        x: 310, // Ajusté selon la colonne Prix unitaire
-                        y: currentY,
-                        size: 10,
-                        font: font,
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Quantité (colonne Quantité)
-                    firstPage.drawText(produit.quantite.toString(), {
-                        x: 470, // Ajusté selon la colonne Quantité
-                        y: currentY,
-                        size: 10,
-                        font: font,
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Total (colonne Total HT)
-                    firstPage.drawText(`${produit.total}€`, {
-                        x: 640, // Ajusté selon la colonne Total HT
-                        y: currentY,
-                        size: 10,
-                        font: font,
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                });
-                
-                // === TOTAUX (zone droite) ===
-                const totalsY = 200; // Position ajustée selon la zone des totaux
-                
-                // Sous-total (à droite de "Sous-Total")
-                firstPage.drawText(`${devisData.totaux.sousTotal}€`, {
-                    x: 710, // Position à droite pour aligner avec les valeurs
-                    y: totalsY + 40, // Ajusté selon la ligne Sous-Total
-                    size: 11,
-                    font: font,
-                    color: PDFLib.rgb(0, 0, 0)
-                });
-                
-                // TVA (à droite de "TVA (21%)")
-                firstPage.drawText(`${devisData.totaux.tva.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}€`, {
-                    x: 710,
-                    y: totalsY + 20, // Ajusté selon la ligne TVA
-                    size: 11,
-                    font: font,
-                    color: PDFLib.rgb(0, 0, 0)
-                });
-                
-                // Total final (dans la zone dorée)
-                firstPage.drawText(`${devisData.totaux.total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}€`, {
-                    x: 710,
-                    y: totalsY - 10, // Ajusté pour la zone dorée "Total"
-                    size: 12,
-                    font: boldFont,
-                    color: PDFLib.rgb(0, 0, 0) // Noir car le fond doré est clair
-                });
-                
-                // Date signature (dans le cadre signature)
-                const today = new Date().toLocaleDateString('fr-FR');
-                firstPage.drawText(today, {
-                    x: 570, // Ajusté selon la position "Date:" dans le cadre
-                    y: 85, // Ajusté selon la zone signature
-                    size: 10,
-                    font: font,
-                    color: PDFLib.rgb(0, 0, 0)
-                });
-                
-                return pdfDoc;
-                
-            } catch (error) {
-                throw new Error('Erreur lors de la modification du template: ' + error.message);
-            }
-        }
-
-        // === FONCTION ENVOI DISCORD ===
-        async function sendToDiscord(pdfBlob, devisData) {
-            if (!discordConfig.webhookUrl) {
-                throw new Error('URL de webhook Discord non configurée');
-            }
-            
-            const formData = new FormData();
-            
-            // Créer l'embed Discord
-            const embed = {
-                title: "🍷 Nouveau Devis Marlowe Vineyard",
-                color: 0x8B5A9F, // Couleur violette de Marlowe
-                fields: [
-                    {
-                        name: "📋 Numéro de devis",
-                        value: devisData.numeroDevis,
-                        inline: true
-                    },
-                    {
-                        name: "👤 Client",
-                        value: devisData.client.nom,
-                        inline: true
-                    },
-                    {
-                        name: "💰 Montant total",
-                        value: `${devisData.totaux.total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`,
-                        inline: true
-                    },
-                    {
-                        name: "📧 Email",
-                        value: devisData.client.email || "Non renseigné",
-                        inline: true
-                    },
-                    {
-                        name: "📞 Téléphone",
-                        value: devisData.client.telephone || "Non renseigné",
-                        inline: true
-                    },
-                    {
-                        name: "🛒 Produits",
-                        value: devisData.produits.map(p => `• ${p.nom} (${p.quantite}x)`).join('\n'),
-                        inline: false
-                    }
-                ],
-                footer: {
-                    text: "Marlowe Vineyard - Sistema de Devis"
-                },
-                timestamp: new Date().toISOString()
-            };
-            
-            const payload = {
-                content: "📋 **Nouveau devis généré !**",
-                embeds: [embed],
-                username: discordConfig.username
-            };
-            
-            formData.append('payload_json', JSON.stringify(payload));
-            formData.append('file', pdfBlob, `Devis-${devisData.numeroDevis}.pdf`);
-            
-            const response = await fetch(discordConfig.webhookUrl, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Erreur Discord: ${response.status}`);
-            }
-            
-            return response;
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Charger la configuration Discord
-            if (discordConfig.webhookUrl) {
-                console.log('Configuration Discord chargée');
-            }
-
-            // === GESTION TEMPLATE PDF ===
-            // Chargement automatique du template au démarrage
-            tryLoadDefaultTemplate();
-
-            // Gestion des boutons de documents
-            document.querySelectorAll('.document-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const documentType = this.dataset.document;
-                    
-                    if (documentType === 'devis') {
-                        if (!templatePDF) {
-                            notify.warning('Template manquant', 'Veuillez d\'abord charger votre template PDF.');
-                            return;
-                        }
-                        openDevisForm();
-                    } else {
-                        const documentNames = {
-                            'facture': 'Formulaire de Facture',
-                            'livraison': 'Formulaire de Bon de Livraison',
-                            'visite': 'Formulaire de Contrat de Visite',
-                            'inventaire': 'Génération de Rapport d\'Inventaire',
-                            'ventes': 'Génération de Rapport de Ventes',
-                            'commande': 'Formulaire de Bon de Commande',
-                            'production': 'Formulaire de Fiche de Production'
-                        };
-                        
-                        notify.info(
-                            'Formulaire en préparation',
-                            `Le ${documentNames[documentType]} sera bientôt disponible !`
-                        );
-                    }
-                    
-                    // Animation du bouton
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 150);
-                });
-            });
-
-            // Gestion de la déconnexion
-            document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const confirmNotification = notify.info(
-                    'Confirmation de déconnexion', 
-                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
-                    10000
-                );
-                
-                const notificationContent = confirmNotification.querySelector('.notification-content');
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.style.marginTop = '1rem';
-                buttonsDiv.style.display = 'flex';
-                buttonsDiv.style.gap = '0.5rem';
-                
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = 'cta-button btn-warning';
-                confirmBtn.style.fontSize = '0.8rem';
-                confirmBtn.style.padding = '0.5rem 1rem';
-                confirmBtn.textContent = 'Déconnexion';
-                
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'cta-button btn-secondary';
-                cancelBtn.style.fontSize = '0.8rem';
-                cancelBtn.style.padding = '0.5rem 1rem';
-                cancelBtn.textContent = 'Annuler';
-                
-                buttonsDiv.appendChild(cancelBtn);
-                buttonsDiv.appendChild(confirmBtn);
-                notificationContent.appendChild(buttonsDiv);
-                
-                confirmBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
-                    setTimeout(() => {
-                        window.location.href = '../index.html';
-                    }, 1000);
-                });
-                
-                cancelBtn.addEventListener('click', () => {
-                    notify.remove(confirmNotification);
-                });
-            });
-
-            console.log('Page Documents chargée avec succès!');
-        });
-
-        // === GESTION TEMPLATE PDF ===
-        
-        async function tryLoadDefaultTemplate() {
-            // Basé sur ta structure : racine/assets/template-devis.pdf
-            const possiblePaths = [
-                '../assets/template-devis.pdf',    // Si dans intranet/ ou public/
-                './assets/template-devis.pdf',     // Si à la racine  
-                '/assets/template-devis.pdf',      // Path absolu
-                'assets/template-devis.pdf',       // Path relatif simple
-                '../../assets/template-devis.pdf'  // Si dans un sous-sous-dossier
-            ];
+            console.log('=== DIAGNOSTIC MARLOWE DOCUMENTS ===');
             
-            showTemplateStatus('🔄 Recherche du template...', 'info');
-            console.log('=== DEBUG TEMPLATE ===');
-            console.log('URL actuelle:', window.location.href);
-            console.log('Path actuel:', window.location.pathname);
+            // Test 1: Vérifier PDF-lib
+            const pdfLibEl = document.getElementById('pdfLibStatus');
             
-            for (let i = 0; i < possiblePaths.length; i++) {
-                const path = possiblePaths[i];
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+            script.onload = function() {
+                if (typeof PDFLib !== 'undefined') {
+                    pdfLibEl.innerHTML = '✅ PDF-lib chargé avec succès';
+                    pdfLibEl.style.color = '#28a745';
+                    console.log('✅ PDF-lib disponible');
+                    testTemplate();
+                } else {
+                    pdfLibEl.innerHTML = '❌ PDF-lib chargé mais non disponible';
+                    pdfLibEl.style.color = '#dc3545';
+                    console.log('❌ PDF-lib chargé mais PDFLib undefined');
+                }
+            };
+            script.onerror = function() {
+                pdfLibEl.innerHTML = '❌ Impossible de charger PDF-lib';
+                pdfLibEl.style.color = '#dc3545';
+                console.log('❌ Erreur chargement PDF-lib');
+            };
+            document.head.appendChild(script);
+            
+            // Test 2: Vérifier template
+            async function testTemplate() {
+                const templateEl = document.getElementById('templateStatus');
+                
                 try {
-                    console.log(`[${i+1}/${possiblePaths.length}] Test du path: ${path}`);
-                    
-                    const response = await fetch(path);
-                    console.log(`Response status: ${response.status} (${response.statusText})`);
-                    
+                    const response = await fetch('../assets/template-devis.pdf');
                     if (response.ok) {
                         const blob = await response.blob();
-                        console.log(`Blob size: ${blob.size} bytes`);
+                        templateEl.innerHTML = `✅ Template trouvé (${blob.size} bytes)`;
+                        templateEl.style.color = '#28a745';
+                        console.log('✅ Template accessible');
                         
-                        if (blob.size > 0) {
-                            await loadTemplateFromBlob(blob, 'template-devis.pdf');
-                            
-                            showTemplateStatus(`✅ Template chargé depuis: ${path}`, 'success');
-                            console.log(`✅ SUCCESS! Template chargé depuis: ${path}`);
-                            return; // Succès !
-                        } else {
-                            console.log(`❌ Blob vide pour ${path}`);
+                        // Test de chargement PDF
+                        try {
+                            const arrayBuffer = await blob.arrayBuffer();
+                            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                            templateEl.innerHTML = `✅ Template PDF valide (${pdfDoc.getPages().length} page(s))`;
+                            console.log('✅ Template PDF parse avec succès');
+                            enableDevisGeneration();
+                        } catch (error) {
+                            templateEl.innerHTML = `⚠️ Template trouvé mais erreur parsing: ${error.message}`;
+                            templateEl.style.color = '#ffc107';
+                            console.log('⚠️ Erreur parsing PDF:', error);
                         }
+                    } else {
+                        templateEl.innerHTML = `❌ Template non trouvé (${response.status})`;
+                        templateEl.style.color = '#dc3545';
+                        console.log('❌ Template non accessible');
                     }
                 } catch (error) {
-                    console.log(`❌ Erreur avec ${path}:`, error.message);
+                    templateEl.innerHTML = `❌ Erreur accès template: ${error.message}`;
+                    templateEl.style.color = '#dc3545';
+                    console.log('❌ Erreur accès template:', error);
                 }
             }
             
-            // Si aucun path n'a fonctionné
-            showTemplateStatus('❌ Template non trouvé. Vérifiez la console pour plus d\'infos.', 'error');
-            console.error('❌ Template non trouvé dans aucun des paths testés');
-            console.log('Votre structure semble être:');
-            console.log('racine/assets/template-devis.pdf');
-            console.log('racine/intranet/documents.html (probablement)');
-            console.log('Le path ../assets/template-devis.pdf devrait fonctionner...');
-        }
-
-        async function loadTemplateFromBlob(blob, filename) {
-            const arrayBuffer = await blob.arrayBuffer();
-            templatePDF = await PDFLib.PDFDocument.load(arrayBuffer);
-        }
-
-        function showTemplateStatus(message, type) {
-            const statusDiv = document.getElementById('templateStatus');
-            const colors = {
-                success: '#d4edda; color: #155724; border: 1px solid #c3e6cb',
-                error: '#f8d7da; color: #721c24; border: 1px solid #f5c6cb',
-                info: '#cce7ff; color: #004085; border: 1px solid #b8daff'
-            };
-            
-            statusDiv.innerHTML = `<div style="background: ${colors[type]}; padding: 10px; border-radius: 5px; font-size: 14px;">${message}</div>`;
-            
-            setTimeout(() => {
-                if (type !== 'success') {
-                    statusDiv.innerHTML = '';
-                }
-            }, 5000);
-        }
-
-        // === SYSTÈME DE DEVIS ===
-
-        // Produits disponibles avec prix
-        const produits = {
-            'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
-            'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
-            'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
-            'marlowe-rose': { nom: 'Marlowe Rosé', prix: 320 },
-            'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
-            'coffret-degustation': { nom: 'Coffret Dégustation', prix: 1800 }
-        };
-
-        let productCounter = 0;
-        let devisData = {
-            client: {},
-            produits: [],
-            totaux: { sousTotal: 0, tva: 0, total: 0 }
-        };
-
-        // === CONFIGURATION DISCORD ===
-        function openDiscordConfig() {
-            document.getElementById('discordConfigModal').style.display = 'flex';
-            document.getElementById('webhookUrl').value = discordConfig.webhookUrl;
-            document.getElementById('discordUsername').value = discordConfig.username;
-        }
-
-        function closeDiscordConfig() {
-            document.getElementById('discordConfigModal').style.display = 'none';
-        }
-
-        function saveDiscordConfig() {
-            const webhookUrl = document.getElementById('webhookUrl').value.trim();
-            const username = document.getElementById('discordUsername').value.trim() || 'Marlowe Vineyard';
-            
-            if (webhookUrl && !webhookUrl.includes('discord.com/api/webhooks/')) {
-                notify.error('URL invalide', 'Veuillez entrer une URL de webhook Discord valide');
-                return;
+            // Test 3: Vérifier scripts
+            const scriptsEl = document.getElementById('scriptsStatus');
+            if (typeof notify !== 'undefined') {
+                scriptsEl.innerHTML = '✅ Scripts Marlowe chargés';
+                scriptsEl.style.color = '#28a745';
+                console.log('✅ Scripts principaux OK');
+            } else {
+                scriptsEl.innerHTML = '❌ Scripts Marlowe manquants';
+                scriptsEl.style.color = '#dc3545';
+                console.log('❌ Scripts principaux manquants');
             }
             
-            discordConfig.webhookUrl = webhookUrl;
-            discordConfig.username = username;
-            
-            localStorage.setItem('marlowe_webhook_url', webhookUrl);
-            localStorage.setItem('marlowe_discord_username', username);
-            
-            notify.success('Configuration sauvegardée', 'Les paramètres Discord ont été mis à jour');
-            closeDiscordConfig();
-        }
-
-        async function testDiscordWebhook() {
-            const webhookUrl = document.getElementById('webhookUrl').value.trim();
-            
-            if (!webhookUrl) {
-                notify.error('URL manquante', 'Veuillez entrer une URL de webhook');
-                return;
-            }
-            
-            try {
-                const testPayload = {
-                    content: "🧪 **Test de connexion Marlowe Vineyard**",
-                    embeds: [{
-                        title: "✅ Webhook configuré avec succès !",
-                        description: "Le système de devis Marlowe Vineyard est maintenant connecté à ce channel Discord.",
-                        color: 0x8B5A9F,
-                        footer: {
-                            text: "Marlowe Vineyard - Test de connexion"
-                        },
-                        timestamp: new Date().toISOString()
-                    }],
-                    username: document.getElementById('discordUsername').value || 'Marlowe Vineyard'
+            function enableDevisGeneration() {
+                const devisBtn = document.getElementById('testDevisBtn');
+                const devisStatus = document.getElementById('devisStatus');
+                
+                devisBtn.onclick = function() {
+                    devisStatus.innerHTML = '🎉 Système opérationnel ! Génération PDF possible.';
+                    devisStatus.style.color = '#28a745';
+                    
+                    if (typeof notify !== 'undefined') {
+                        notify.success('Système OK', 'Toutes les vérifications passées ! Vous pouvez générer des PDF.');
+                    } else {
+                        alert('Système OK ! Toutes les vérifications passées.');
+                    }
                 };
                 
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(testPayload)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur ${response.status}`);
-                }
-                
-                notify.success('Test réussi !', 'Vérifiez votre channel Discord');
-                
-            } catch (error) {
-                notify.error('Test échoué', error.message);
-            }
-        }
-
-        function openDevisForm() {
-            const modal = document.getElementById('devisModal');
-            modal.style.display = 'flex';
-            
-            // Réinitialiser le formulaire
-            resetDevisForm();
-            
-            // Générer un nouveau numéro de devis
-            generateDevisNumber();
-            
-            // Ajouter la première ligne de produit
-            addProductLine();
-            
-            // Gestion des événements du modal
-            document.getElementById('closeDevisModal').onclick = closeDevisModal;
-            document.getElementById('cancelDevis').onclick = closeDevisModal;
-            document.getElementById('addProductBtn').onclick = addProductLine;
-            document.getElementById('generateDevis').onclick = generatePDF;
-            document.getElementById('generateAndSendDevis').onclick = generateAndSendToDiscord;
-            document.getElementById('previewDevis').onclick = previewDevis;
-            
-            // Fermer en cliquant à l'extérieur
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    closeDevisModal();
-                }
-            };
-        }
-
-        function closeDevisModal() {
-            document.getElementById('devisModal').style.display = 'none';
-        }
-
-        function resetDevisForm() {
-            // Vider les champs
-            document.getElementById('client-nom').value = '';
-            document.getElementById('client-email').value = '';
-            document.getElementById('client-adresse').value = '';
-            document.getElementById('client-telephone').value = '';
-            
-            // Vider les produits
-            document.getElementById('products-container').innerHTML = '';
-            productCounter = 0;
-            
-            // Réinitialiser les totaux
-            updateTotals();
-        }
-
-        function generateDevisNumber() {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            
-            const devisNumber = `DV${year}${month}${day}-${random}`;
-            document.getElementById('numero-devis').value = devisNumber;
-        }
-
-        function addProductLine() {
-            productCounter++;
-            const container = document.getElementById('products-container');
-            
-            const productLine = document.createElement('div');
-            productLine.className = 'product-line';
-            productLine.dataset.id = productCounter;
-            
-            let buttonHTML = '';
-            if (productCounter > 1) {
-                buttonHTML = '<button type="button" class="btn-remove-product" onclick="removeProductLine(' + productCounter + ')"><i class="fas fa-trash"></i></button>';
+                devisBtn.innerHTML = '<i class="fas fa-check"></i> Système OK - Créer Devis';
+                devisBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
             }
             
-            let optionsHTML = '<option value="">Sélectionnez un produit</option>';
-            Object.entries(produits).forEach(([key, prod]) => {
-                optionsHTML += '<option value="' + key + '" data-prix="' + prod.prix + '">' + prod.nom + ' - ' + prod.prix + '€</option>';
-            });
-            
-            productLine.innerHTML = 
-                '<div class="product-line-header">' +
-                    '<span class="product-number">Produit ' + productCounter + '</span>' +
-                    buttonHTML +
-                '</div>' +
-                '<div class="form-row">' +
-                    '<div class="form-group flex-2">' +
-                        '<label class="form-label">Produit</label>' +
-                        '<select class="form-select product-select" data-id="' + productCounter + '" onchange="updateProductPrice(' + productCounter + ')">' +
-                            optionsHTML +
-                        '</select>' +
-                    '</div>' +
-                    '<div class="form-group">' +
-                        '<label class="form-label">Prix unitaire</label>' +
-                        '<input type="text" class="form-input product-price" data-id="' + productCounter + '" readonly placeholder="0,00 €">' +
-                    '</div>' +
-                    '<div class="form-group">' +
-                        '<label class="form-label">Quantité</label>' +
-                        '<input type="number" class="form-input product-quantity" data-id="' + productCounter + '" min="1" value="1" onchange="updateLineTotal(' + productCounter + ')">' +
-                    '</div>' +
-                    '<div class="form-group">' +
-                        '<label class="form-label">Total HT</label>' +
-                        '<input type="text" class="form-input product-total" data-id="' + productCounter + '" readonly placeholder="0,00 €">' +
-                    '</div>' +
-                '</div>';
-            
-            container.appendChild(productLine);
-        }
-
-        function removeProductLine(id) {
-            const line = document.querySelector(`[data-id="${id}"]`);
-            if (line) {
-                line.remove();
-                updateTotals();
-                notify.info('Produit supprimé', 'La ligne de produit a été retirée du devis.');
-            }
-        }
-
-        function updateProductPrice(id) {
-            const select = document.querySelector(`select[data-id="${id}"]`);
-            const priceInput = document.querySelector(`input.product-price[data-id="${id}"]`);
-            const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-            
-            if (select.value) {
-                const prix = produits[select.value].prix;
-                priceInput.value = `${prix},00 €`;
-                updateLineTotal(id);
-            } else {
-                priceInput.value = '';
-                updateLineTotal(id);
-            }
-        }
-
-        function updateLineTotal(id) {
-            const select = document.querySelector(`select[data-id="${id}"]`);
-            const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-            const totalInput = document.querySelector(`input.product-total[data-id="${id}"]`);
-            
-            if (select.value && quantityInput.value) {
-                const prix = produits[select.value].prix;
-                const quantity = parseInt(quantityInput.value) || 0;
-                const total = prix * quantity;
-                
-                totalInput.value = `${total.toLocaleString('fr-FR')},00 €`;
-            } else {
-                totalInput.value = '';
-            }
-            
-            updateTotals();
-        }
-
-        function updateTotals() {
-            let sousTotal = 0;
-            
-            // Calculer le sous-total
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`select[data-id="${id}"]`);
-                const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-                
-                if (select && select.value && quantityInput && quantityInput.value) {
-                    const prix = produits[select.value].prix;
-                    const quantity = parseInt(quantityInput.value) || 0;
-                    sousTotal += prix * quantity;
+            // Gestion déconnexion
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    window.location.href = '../index.html';
                 }
             });
             
-            // Calculer TVA et total
-            const tva = sousTotal * 0.21;
-            const total = sousTotal + tva;
-            
-            // Mettre à jour l'affichage
-            document.getElementById('sous-total').textContent = `${sousTotal.toLocaleString('fr-FR')},00 €`;
-            document.getElementById('tva-montant').textContent = `${tva.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`;
-            document.getElementById('total-final').textContent = `${total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`;
-            
-            // Sauvegarder dans devisData
-            devisData.totaux = { sousTotal, tva, total };
-        }
-
-        function previewDevis() {
-            // Récupérer les données du formulaire
-            collectDevisData();
-            
-            // Afficher la prévisualisation
-            let preview = '<h3>Devis ' + devisData.numeroDevis + '</h3>' +
-                '<h4>Client: ' + devisData.client.nom + '</h4>' +
-                '<p>' + devisData.client.adresse + '</p>';
-            
-            if (devisData.client.email) {
-                preview += '<p>Email: ' + devisData.client.email + '</p>';
-            }
-            
-            if (devisData.client.telephone) {
-                preview += '<p>Tél: ' + devisData.client.telephone + '</p>';
-            }
-            
-            preview += '<h4>Produits:</h4><ul>';
-            
-            devisData.produits.forEach(prod => {
-                preview += '<li>' + prod.nom + ' - Quantité: ' + prod.quantite + ' - Total: ' + prod.total.toLocaleString('fr-FR') + ',00 €</li>';
-            });
-            
-            preview += '</ul><h4>Totaux:</h4>' +
-                '<p>Sous-total HT: ' + devisData.totaux.sousTotal.toLocaleString('fr-FR') + ',00 €</p>' +
-                '<p>TVA (21%): ' + devisData.totaux.tva.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €</p>' +
-                '<p><strong>Total TTC: ' + devisData.totaux.total.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €</strong></p>';
-            
-            notify.info('Prévisualisation', preview);
-        }
-
-        function collectDevisData() {
-            // Collecter les infos client
-            devisData.client = {
-                nom: document.getElementById('client-nom').value,
-                email: document.getElementById('client-email').value,
-                adresse: document.getElementById('client-adresse').value,
-                telephone: document.getElementById('client-telephone').value
-            };
-            
-            devisData.numeroDevis = document.getElementById('numero-devis').value;
-            
-            // Collecter les produits
-            devisData.produits = [];
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`select[data-id="${id}"]`);
-                const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-                
-                if (select && select.value && quantityInput && quantityInput.value) {
-                    const produit = produits[select.value];
-                    const quantity = parseInt(quantityInput.value);
-                    const total = produit.prix * quantity;
-                    
-                    devisData.produits.push({
-                        nom: produit.nom,
-                        prix: produit.prix,
-                        quantite: quantity,
-                        total: total
-                    });
-                }
-            });
-        }
-
-        function generatePDF() {
-            // Valider le formulaire
-            if (!document.getElementById('client-nom').value || !document.getElementById('client-adresse').value) {
-                notify.error('Formulaire incomplet', 'Veuillez remplir au moins le nom et l\'adresse du client.');
-                return;
-            }
-            
-            // Vérifier le template
-            if (!templatePDF) {
-                notify.error('Template manquant', 'Veuillez d\'abord charger votre template PDF.');
-                return;
-            }
-            
-            // Vérifier qu'il y a au moins un produit
-            let hasValidProducts = false;
-            
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector('select[data-id="' + id + '"]');
-                if (select && select.value) {
-                    hasValidProducts = true;
-                }
-            });
-            
-            if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-                return;
-            }
-            
-            // Collecter les données
-            collectDevisData();
-            
-            try {
-                notify.info('Génération en cours...', 'Création du PDF avec votre template...');
-                
-                generateMarlowePDFFromTemplate(devisData).then(async (pdfDoc) => {
-                    const pdfBytes = await pdfDoc.save();
-                    
-                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                    const url = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `Devis-${devisData.numeroDevis}-${devisData.client.nom.replace(/\s+/g, '-')}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    notify.success('Devis généré !', `Le devis ${devisData.numeroDevis} a été créé avec succès.`);
-                    
-                    // Fermer le modal après génération
-                    setTimeout(() => {
-                        closeDevisModal();
-                    }, 2000);
-                }).catch(error => {
-                    notify.error('Erreur PDF', 'Erreur lors de la génération : ' + error.message);
-                });
-                
-            } catch (error) {
-                notify.error('Erreur PDF', 'Erreur lors de la génération : ' + error.message);
-            }
-        }
-
-        async function generateAndSendToDiscord() {
-            // Valider le formulaire
-            if (!document.getElementById('client-nom').value || !document.getElementById('client-adresse').value) {
-                notify.error('Formulaire incomplet', 'Veuillez remplir au moins le nom et l\'adresse du client.');
-                return;
-            }
-            
-            // Vérifier le template
-            if (!templatePDF) {
-                notify.error('Template manquant', 'Veuillez d\'abord charger votre template PDF.');
-                return;
-            }
-            
-            // Vérifier qu'il y a au moins un produit
-            let hasValidProducts = false;
-            
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector('select[data-id="' + id + '"]');
-                if (select && select.value) {
-                    hasValidProducts = true;
-                }
-            });
-            
-            if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-                return;
-            }
-
-            // Vérifier la configuration Discord
-            if (!discordConfig.webhookUrl) {
-                notify.warning('Discord non configuré', 'Configurez d\'abord votre webhook Discord.');
-                openDiscordConfig();
-                return;
-            }
-            
-            // Collecter les données
-            collectDevisData();
-            
-            try {
-                notify.info('Génération en cours...', 'Création du PDF et envoi sur Discord...');
-                
-                const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
-                const pdfBytes = await pdfDoc.save();
-                const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-                
-                await sendToDiscord(pdfBlob, devisData);
-                
-                notify.success('Succès complet !', `Devis ${devisData.numeroDevis} généré et envoyé sur Discord avec succès !`);
-                
-                // Fermer le modal après génération
-                setTimeout(() => {
-                    closeDevisModal();
-                }, 3000);
-                
-            } catch (error) {
-                notify.error('Erreur', 'Erreur lors de l\'envoi : ' + error.message);
-            }
-        }
+            console.log('=== FIN DIAGNOSTIC ===');
+        });
     </script>
 </body>
 </html>
