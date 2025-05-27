@@ -51,46 +51,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .grade-employe {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .grade-manager {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-
-        .grade-cfo {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .grade-ceo {
-            background: #ffebee;
-            color: #c62828;
-            border: 2px solid #c62828;
-        }
-
-        .user-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .status-online {
-            color: #28a745;
-        }
-
-        .status-offline {
-            color: #6c757d;
-        }
-
-        .last-login {
-            color: #6c757d;
-            font-size: 0.9rem;
+            /* Styles dynamiques appliqués via JavaScript depuis DB.json */
         }
 
         .search-user {
@@ -133,6 +94,22 @@
         .info-banner-text {
             color: #1565c0;
             font-size: 0.9rem;
+        }
+
+        .permissions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .permission-badge {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -203,14 +180,12 @@
                                     <th>Nom complet</th>
                                     <th>Téléphone</th>
                                     <th>Grade</th>
-                                    <th>Département</th>
-                                    <th>Statut</th>
-                                    <th>Dernière connexion</th>
+                                    <th>Permissions</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
                                 <tr>
-                                    <td colspan="7" class="loading-message">
+                                    <td colspan="5" class="loading-message">
                                         <i class="fas fa-spinner fa-spin"></i> Chargement des utilisateurs...
                                     </td>
                                 </tr>
@@ -422,32 +397,39 @@
             tbody.innerHTML = '';
 
             if (Object.keys(currentUsers).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="loading-message">Aucun utilisateur trouvé</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="loading-message">Aucun utilisateur trouvé</td></tr>';
                 return;
             }
 
             Object.entries(currentUsers).forEach(([username, user]) => {
-                const gradeClass = `grade-${user.grade}`;
-                const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
-                const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
+                // Récupérer les infos du grade depuis la DB
+                const gradeInfo = window.getGradeInfo(user.grade);
+                
+                // Afficher les permissions sous forme de badges avec icônes
+                const permissionBadges = (user.permissions || []).map(perm => {
+                    const permInfo = window.getPermissionInfo(perm);
+                    return `<span class="permission-badge" title="${permInfo.description || ''}">${permInfo.icon} ${permInfo.label}</span>`;
+                }).join('');
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>
-                        <strong>${username}</strong>
-                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description || ''}</div>
-                    </td>
+                    <td><strong>${username}</strong></td>
                     <td>${user.fullname || ''}</td>
                     <td>${user.phone || ''}</td>
-                    <td><span class="grade-badge ${gradeClass}">${(user.grade || 'employe').toUpperCase()}</span></td>
-                    <td>${user.department || 'Non spécifié'}</td>
                     <td>
-                        <div class="user-status">
-                            <i class="fas fa-circle ${statusIcon}"></i>
-                            <span>${statusText}</span>
+                        <span class="grade-badge" style="
+                            background: ${gradeInfo.background}; 
+                            color: ${gradeInfo.color};
+                            ${gradeInfo.border ? 'border: ' + gradeInfo.border + ';' : ''}
+                        ">
+                            ${gradeInfo.label}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="permissions-list">
+                            ${permissionBadges || '<span style="color: #999; font-style: italic;">Aucune permission</span>'}
                         </div>
                     </td>
-                    <td class="last-login">${user.lastLogin || 'Jamais'}</td>
                 `;
                 tbody.appendChild(row);
             });
