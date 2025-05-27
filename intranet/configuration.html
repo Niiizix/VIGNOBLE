@@ -126,12 +126,31 @@
         }
 
         .user-modal .modal-content {
-            max-width: 600px;
+            max-width: 900px;
+            width: 90%;
         }
 
         .user-form {
             display: grid;
             gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-modal .modal-content {
+                max-width: 95%;
+                margin: 1rem;
+            }
         }
 
         .permissions-grid {
