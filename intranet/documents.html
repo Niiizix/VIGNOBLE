@@ -370,23 +370,23 @@
                     x: 240, y: 695, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                 });
                 
-                // Client - POSITION CORRIGÉE : plus haut, juste sous "Client:"
+                // Client - REMONTÉES À FOND
                 firstPage.drawText(cleanTextForPDF(devisData.client.nom), {
-                    x: 77, y: 565, size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 77, y: 580, size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Adresse - POSITION CORRIGÉE : plus haut
+                // Adresse - REMONTÉE À FOND
                 if (devisData.client.adresse) {
                     const addressLines = devisData.client.adresse.split('\n');
                     addressLines.forEach((line, index) => {
                         firstPage.drawText(cleanTextForPDF(line), {
-                            x: 77, y: 545 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                            x: 77, y: 560 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                         });
                     });
                 }
                 
-                // Email et téléphone - POSITION CORRIGÉE : plus haut
-                let infoY = 545 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
+                // Email et téléphone - REMONTÉS À FOND
+                let infoY = 560 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
                 
                 if (devisData.client.email) {
                     firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
@@ -401,57 +401,57 @@
                     });
                 }
                 
-                // Produits - POSITION CORRIGÉE : plus haut et mieux centré
-                let productY = 450; // Remonté de 320 à 450
+                // Produits - REMONTÉS ENCORE
+                let productY = 480; // Remonté encore plus haut
                 devisData.produits.forEach((produit, index) => {
                     const currentY = productY - (index * 22);
                     
-                    // Description - Position ajustée
+                    // Description
                     firstPage.drawText(cleanTextForPDF(produit.nom), {
                         x: 77, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Prix unitaire - Position ajustée (moins à droite)
+                    // Prix unitaire
                     firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
                         x: 350, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Quantité - Position ajustée (moins à droite)
+                    // Quantité
                     firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
                         x: 480, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Total HT - Position ajustée (moins à droite)
+                    // Total HT
                     firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
                         x: 570, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
                 
-                // Totaux - POSITION CORRIGÉE : plus haut pour être visible
-                const totalsY = 380; // Remonté de 260 à 380
+                // Totaux - DESCENDUS ET À GAUCHE
+                const totalsY = 300; // Descendu plus bas
                 
-                // Sous-total
+                // Sous-total - À GAUCHE
                 firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
-                    x: 520, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 400, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // TVA
+                // TVA - À GAUCHE
                 const tvaFormatted = Math.round(devisData.totaux.tva * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${tvaFormatted} EUR`), {
-                    x: 520, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 400, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total
+                // Total - À GAUCHE
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 520, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 400, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Date - POSITION CORRIGÉE : plus haut pour être visible
+                // Date - DESCENDUE ET À GAUCHE
                 const today = new Date();
                 const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                 firstPage.drawText(cleanTextForPDF(dateFormatted), {
-                    x: 520, y: 200, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 400, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 return pdfDoc;
