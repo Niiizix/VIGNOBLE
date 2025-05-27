@@ -401,57 +401,57 @@
                     });
                 }
                 
-                // Produits
-                let productY = 340; // Ajusté selon le tableau visible
+                // Produits - coordonnées plus conservatrices
+                let productY = 320; // Un peu plus haut
                 devisData.produits.forEach((produit, index) => {
-                    const currentY = productY - (index * 25); // Plus d'espacement entre lignes
+                    const currentY = productY - (index * 22);
                     
-                    // Description (colonne 1)
+                    // Description - garder position qui marche
                     firstPage.drawText(cleanTextForPDF(produit.nom), {
                         x: 120, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Prix unitaire (colonne 2) - mieux centré
+                    // Prix unitaire - garder position qui marche
                     firstPage.drawText(cleanTextForPDF(`${produit.prix} EUR`), {
                         x: 390, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Quantité (colonne 3) - mieux centré
+                    // Quantité - garder position qui marche  
                     firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
                         x: 520, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
-                    // Total HT (colonne 4) - plus à droite pour être visible
+                    // Total HT - ESSAYER PLUS À GAUCHE d'abord
                     firstPage.drawText(cleanTextForPDF(`${produit.total} EUR`), {
-                        x: 650, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        x: 580, y: currentY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 });
                 
-                // Totaux (zone droite) - repositionnés selon le template
-                const totalsY = 280; // Ajusté selon la zone visible des totaux
+                // Totaux - ESSAYER BEAUCOUP PLUS À GAUCHE
+                const totalsY = 260;
                 
-                // Sous-total - aligné avec "Sous-Total" 
+                // Sous-total - proche de la ligne mais visible
                 firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
-                    x: 650, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 580, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // TVA - aligné avec "TVA (21%)"
+                // TVA 
                 const tvaFormatted = Math.round(devisData.totaux.tva * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${tvaFormatted} EUR`), {
-                    x: 650, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 580, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 // Total - dans la zone dorée
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 650, y: totalsY - 60, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 580, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Date complète - dans le cadre signature
+                // Date - ESSAYER PLUS À GAUCHE AUSSI
                 const today = new Date();
                 const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                 firstPage.drawText(cleanTextForPDF(dateFormatted), {
-                    x: 600, y: 100, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 550, y: 120, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 return pdfDoc;
