@@ -1,729 +1,4 @@
-<script src="../script.js"></script>
-    <script>
-        // Variables globales pour les données
-        let currentUsers = {};
-        let currentConfig = {};
-        let isEditMode = false;
-        let editingUsername = '';
-
-        // === FONCTIONS UTILITAIRES (définies en premier) ===
-        function updateUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-
-            if (Object.keys(currentUsers).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="loading-message">Aucun utilisateur trouvé</td></tr>';
-                return;
-            }
-
-            Object.entries(currentUsers).forEach(([username, user]) => {
-                const gradeClass = `grade-${user.grade}`;
-                const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
-                const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
-                const canDelete = username !== 'admin';
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <strong>${username}</strong>
-                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description || ''}</div>
-                    </td>
-                    <td>${user.fullname || ''}</td>
-                    <td>${user.phone || ''}</td>
-                    <td><span class="grade-badge ${gradeClass}">${(user.grade || 'employe').toUpperCase()}</span></td>
-                    <td>
-                        <div class="user-status">
-                            <i class="fas fa-circle ${statusIcon}"></i>
-                            <span>${statusText}</span>
-                        </div>
-                    </td>
-                    <td class="last-login">${user.lastLogin || 'Jamais'}</td>
-                    <td>
-                        <div class="user-actions">
-                            <button class="btn-small btn-edit" onclick="editUser('${username}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${canDelete ? `<button class="btn-small btn-delete" onclick="deleteUser('${username}')">
-                                <i class="fas fa-trash"></i>
-                            </button>` : ''}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function loadConfiguration() {
-            // Vérifier que la configuration existe
-            if (!currentConfig || !currentConfig.thresholds) {
-                console.log('⚠️ Configuration vide, utilisation des valeurs par défaut');
-                currentConfig = {
-                    thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
-                    notifications: { duration: 4, soundEnabled: true },
-                    system: { sessionTimeout: 60, theme: 'light' }
-                };
-            }
-            
-            // Charger les seuils avec vérifications
-            const thresholds = currentConfig.thresholds || {};
-            const criticalMatieres = document.getElementById('critical-matieres');
-            const warningMatieres = document.getElementById('warning-matieres');
-            const criticalBouteilles = document.getElementById('critical-bouteilles');
-            const warningBouteilles = document.getElementById('warning-bouteilles');
-            
-            if (criticalMatieres) criticalMatieres.value = thresholds.matieres?.critical || 50;
-            if (warningMatieres) warningMatieres.value = thresholds.matieres?.warning || 100;
-            if (criticalBouteilles) criticalBouteilles.value = thresholds.bouteilles?.critical || 30;
-            if (warningBouteilles) warningBouteilles.value = thresholds.bouteilles?.warning || 75;
-
-            // Charger les notifications avec vérifications
-            const notifications = currentConfig.notifications || {};
-            const notificationDuration = document.getElementById('notification-duration');
-            const soundNotifications = document.getElementById('sound-notifications');
-            
-            if (notificationDuration) notificationDuration.value = notifications.duration || 4;
-            if (soundNotifications) soundNotifications.checked = notifications.soundEnabled !== false;
-
-            // Charger le système avec vérifications
-            const system = currentConfig.system || {};
-            const sessionTimeout = document.getElementById('session-timeout');
-            const themeMode = document.getElementById('theme-mode');
-            
-            if (sessionTimeout) sessionTimeout.value = system.sessionTimeout || 60;
-            if (themeMode) themeMode.value = system.theme || 'light';
-
-            updateThresholdInfo();
-        }
-
-        function updateThresholdInfo() {
-            const warningMatieres = document.getElementById('warning-matieres');
-            const warningBouteilles = document.getElementById('warning-bouteilles');
-            
-            if (!warningMatieres || !warningBouteilles) return;
-
-            const matieresInfo = document.querySelector('.config-item:nth-child(1) .threshold-info span');
-            const bouteillesInfo = document.querySelector('.config-item:nth-child(2) .threshold-info span');
-
-            if (matieresInfo) {
-                matieresInfo.innerHTML = `Au-dessus de ${warningMatieres.value} unités = <strong>Bon Stock</strong>`;
-            }
-            if (bouteillesInfo) {
-                bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles.value} bouteilles = <strong>Bon Stock</strong>`;
-            }
-        }
-
-        function addConfirmationButtons(notification, onConfirm, confirmText = 'Confirmer') {
-            const notificationContent = notification.querySelector('.notification-content');
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.marginTop = '1rem';
-            buttonsDiv.style.display = 'flex';
-            buttonsDiv.style.gap = '0.5rem';
-            
-            const confirmBtn = document.createElement('button');
-            confirmBtn.className = 'cta-button btn-warning';
-            confirmBtn.style.fontSize = '0.8rem';
-            confirmBtn.style.padding = '0.5rem 1rem';
-            confirmBtn.textContent = confirmText;
-            
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'cta-button btn-secondary';
-            cancelBtn.style.fontSize = '0.8rem';
-            cancelBtn.style.padding = '0.5rem 1rem';
-            cancelBtn.textContent = 'Annuler';
-            
-            buttonsDiv.appendChild(cancelBtn);
-            buttonsDiv.appendChild(confirmBtn);
-            notificationContent.appendChild(buttonsDiv);
-            
-            confirmBtn.addEventListener('click', () => {
-                if (window.notify) window.notify.remove(notification);
-                onConfirm();
-            });
-            
-            cancelBtn.addEventListener('click', () => {
-                if (window.notify) window.notify.remove(notification);
-            });
-        }
-
-        // === GESTION DES UTILISATEURS ===
-        function populateManagerSelect() {
-            const managerSelect = document.getElementById('user-manager');
-            if (!managerSelect) return;
-            
-            managerSelect.innerHTML = '<option value="">Aucun manager</option>';
-            
-            Object.entries(currentUsers).forEach(([username, user]) => {
-                if (user.grade === 'ceo' || user.grade === 'cfo' || user.grade === 'manager') {
-                    const option = document.createElement('option');
-                    option.value = username;
-                    option.textContent = `${user.fullname} (${user.grade.toUpperCase()})`;
-                    managerSelect.appendChild(option);
-                }
-            });
-        }
-
-        function saveUserData() {
-            const username = document.getElementById('user-username').value.trim();
-            const fullname = document.getElementById('user-fullname').value.trim();
-            const phone = document.getElementById('user-phone').value.trim();
-            const grade = document.getElementById('user-grade').value;
-            const password = document.getElementById('user-password').value;
-            const passwordConfirm = document.getElementById('user-password-confirm').value;
-            const description = document.getElementById('user-description').value.trim();
-
-            // Validation
-            if (!username || !fullname || !phone || !grade || !description) {
-                if (window.notify) window.notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
-                return;
-            }
-
-            // Vérifier les mots de passe
-            if (password && password !== passwordConfirm) {
-                if (window.notify) window.notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
-                return;
-            }
-
-            // Vérifier si l'utilisateur existe déjà (en mode ajout)
-            if (!isEditMode && currentUsers[username]) {
-                if (window.notify) window.notify.error('Erreur', 'Cet utilisateur existe déjà.');
-                return;
-            }
-
-            // Collecter les permissions
-            const permissions = [];
-            if (document.getElementById('perm-dashboard')?.checked) permissions.push('dashboard');
-            if (document.getElementById('perm-inventory')?.checked) permissions.push('inventory');
-            if (document.getElementById('perm-documents')?.checked) permissions.push('documents');
-            if (document.getElementById('perm-config')?.checked) permissions.push('config');
-            if (document.getElementById('perm-reports')?.checked) permissions.push('reports');
-            if (document.getElementById('perm-users')?.checked) permissions.push('users');
-
-            // Créer l'objet utilisateur
-            const userData = {
-                fullname: fullname,
-                phone: phone,
-                grade: grade,
-                description: description,
-                password: password || currentUsers[username]?.password || 'TEMP123',
-                status: currentUsers[username]?.status || 'offline',
-                lastLogin: currentUsers[username]?.lastLogin || 'Jamais',
-                permissions: permissions,
-                address: document.getElementById('user-address')?.value.trim() || '',
-                hireDate: document.getElementById('user-hire-date')?.value || '',
-                department: document.getElementById('user-department')?.value || '',
-                salary: parseInt(document.getElementById('user-salary')?.value) || 0,
-                manager: document.getElementById('user-manager')?.value || '',
-                notes: document.getElementById('user-notes')?.value.trim() || ''
-            };
-
-            // Sauvegarder dans la DB
-            const saved = window.dbManager.saveUser(username, userData);
-            
-            if (saved) {
-                // Mettre à jour les données locales
-                currentUsers = window.dbManager.getUsers();
-                updateUsersTable();
-                const userModal = document.getElementById('userModal');
-                if (userModal) userModal.style.display = 'none';
-                
-                const action = isEditMode ? 'modifié' : 'ajouté';
-                if (window.notify) window.notify.success('Succès', `Utilisateur ${action} avec succès !`);
-            } else {
-                if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder l\'utilisateur.');
-            }
-        }
-
-        function exportUsersToCSV() {
-            const users = Object.entries(currentUsers).map(([username, data]) => ({
-                username,
-                fullname: data.fullname,
-                phone: data.phone,
-                grade: data.grade,
-                description: data.description,
-                status: data.status,
-                lastLogin: data.lastLogin,
-                department: data.department || '',
-                salary: data.salary || 0
-            }));
-
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + "Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n"
-                + users.map(user => `${user.username},"${user.fullname}",${user.phone},${user.grade},"${user.description}",${user.status},"${user.lastLogin}",${user.department},${user.salary}`).join('\n');
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', `marlowe_users_export_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            if (window.notify) window.notify.success('Export réussi', 'Liste des utilisateurs exportée en CSV.');
-        }
-
-        function resetAllPasswords() {
-            if (!window.notify) return;
-            
-            const confirmNotification = window.notify.warning(
-                'Confirmation dangereuse', 
-                'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
-                15000
-            );
-            
-            addConfirmationButtons(confirmNotification, () => {
-                // Réinitialiser tous les mots de passe sauf admin
-                Object.keys(currentUsers).forEach(username => {
-                    if (username !== 'admin') {
-                        const user = currentUsers[username];
-                        user.password = 'RESET2025';
-                        window.dbManager.saveUser(username, user);
-                    }
-                });
-                
-                currentUsers = window.dbManager.getUsers();
-                if (window.notify) window.notify.info('Mots de passe réinitialisés', 'Nouveau mot de passe temporaire: RESET2025');
-            });
-        }
-
-        // Fonctions globales pour les actions utilisateurs
-        window.editUser = function(username) {
-            const user = currentUsers[username];
-            if (!user) return;
-
-            isEditMode = true;
-            editingUsername = username;
-            
-            const userModalTitle = document.getElementById('userModalTitle');
-            const saveUserBtn = document.getElementById('saveUser');
-            
-            if (userModalTitle) userModalTitle.textContent = 'Modifier Utilisateur';
-            if (saveUserBtn) saveUserBtn.innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
-            
-            // Remplir le formulaire
-            const fields = {
-                'user-username': username,
-                'user-fullname': user.fullname || '',
-                'user-phone': user.phone || '',
-                'user-grade': user.grade || 'employe',
-                'user-description': user.description || '',
-                'user-address': user.address || '',
-                'user-hire-date': user.hireDate || '',
-                'user-department': user.department || '',
-                'user-salary': user.salary || '',
-                'user-notes': user.notes || ''
-            };
-
-            Object.entries(fields).forEach(([id, value]) => {
-                const element = document.getElementById(id);
-                if (element) element.value = value;
-            });
-
-            // Vider les mots de passe
-            const passwordField = document.getElementById('user-password');
-            const passwordConfirmField = document.getElementById('user-password-confirm');
-            if (passwordField) passwordField.value = '';
-            if (passwordConfirmField) passwordConfirmField.value = '';
-
-            // Populer les managers et sélectionner le bon
-            populateManagerSelect();
-            const managerSelect = document.getElementById('user-manager');
-            if (managerSelect) managerSelect.value = user.manager || '';
-
-            // Permissions
-            const permissions = user.permissions || [];
-            const permissionFields = {
-                'perm-dashboard': permissions.includes('dashboard'),
-                'perm-inventory': permissions.includes('inventory'),
-                'perm-documents': permissions.includes('documents'),
-                'perm-config': permissions.includes('config'),
-                'perm-reports': permissions.includes('reports'),
-                'perm-users': permissions.includes('users')
-            };
-
-            Object.entries(permissionFields).forEach(([id, checked]) => {
-                const element = document.getElementById(id);
-                if (element) element.checked = checked;
-            });
-
-            const userModal = document.getElementById('userModal');
-            if (userModal) userModal.style.display = 'flex';
-        };
-
-        window.deleteUser = function(username) {
-            if (username === 'admin') {
-                if (window.notify) window.notify.error('Action interdite', 'Impossible de supprimer le compte administrateur.');
-                return;
-            }
-
-            if (!window.notify) return;
-
-            const confirmNotification = window.notify.warning(
-                `Supprimer ${username}`, 
-                'Cette action est irréversible. Confirmer la suppression ?', 
-                10000
-            );
-            
-            addConfirmationButtons(confirmNotification, () => {
-                const deleted = window.dbManager.deleteUser(username);
-                if (deleted) {
-                    currentUsers = window.dbManager.getUsers();
-                    updateUsersTable();
-                    if (window.notify) window.notify.success('Utilisateur supprimé', `${username} a été supprimé de la base.`);
-                } else {
-                    if (window.notify) window.notify.error('Erreur', 'Impossible de supprimer l\'utilisateur.');
-                }
-            });
-        };
-
-        function setupUserManagement() {
-            const addUserBtn = document.getElementById('addUserBtn');
-            const userModal = document.getElementById('userModal');
-            const closeModal = document.getElementById('closeUserModal');
-            const cancelBtn = document.getElementById('cancelUser');
-            const userForm = document.getElementById('userForm');
-            const searchInput = document.getElementById('searchUsers');
-
-            if (!addUserBtn || !userModal || !closeModal || !cancelBtn || !userForm) {
-                console.warn('⚠️ Certains éléments UI sont manquants pour la gestion utilisateurs');
-                return;
-            }
-
-            // Recherche d'utilisateurs
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const query = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('#usersTableBody tr');
-                    
-                    rows.forEach(row => {
-                        if (row.querySelector('.loading-message')) return; // Skip loading row
-                        
-                        const username = row.querySelector('strong')?.textContent.toLowerCase() || '';
-                        const fullname = row.cells[1]?.textContent.toLowerCase() || '';
-                        const phone = row.cells[2]?.textContent.toLowerCase() || '';
-                        const description = row.querySelector('div')?.textContent.toLowerCase() || '';
-                        
-                        if (username.includes(query) || fullname.includes(query) || phone.includes(query) || description.includes(query)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Ajouter utilisateur
-            addUserBtn.addEventListener('click', function() {
-                isEditMode = false;
-                editingUsername = '';
-                
-                const userModalTitle = document.getElementById('userModalTitle');
-                const saveUserBtn = document.getElementById('saveUser');
-                
-                if (userModalTitle) userModalTitle.textContent = 'Ajouter Utilisateur';
-                if (saveUserBtn) saveUserBtn.innerHTML = '<i class="fas fa-plus"></i> Ajouter';
-                
-                userForm.reset();
-                // Cocher dashboard par défaut
-                const dashboardPerm = document.getElementById('perm-dashboard');
-                if (dashboardPerm) dashboardPerm.checked = true;
-                
-                populateManagerSelect();
-                userModal.style.display = 'flex';
-            });
-
-            // Fermer modal
-            closeModal.addEventListener('click', () => userModal.style.display = 'none');
-            cancelBtn.addEventListener('click', () => userModal.style.display = 'none');
-
-            // Soumettre formulaire utilisateur
-            userForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveUserData();
-            });
-
-            // Export utilisateurs
-            const exportBtn = document.getElementById('exportUsers');
-            if (exportBtn) {
-                exportBtn.addEventListener('click', exportUsersToCSV);
-            }
-
-            // Réinitialiser mots de passe
-            const resetBtn = document.getElementById('resetPasswords');
-            if (resetBtn) {
-                resetBtn.addEventListener('click', resetAllPasswords);
-            }
-        }
-
-        // === GESTION DES SEUILS ===
-        function setupThresholds() {
-            const saveBtn = document.getElementById('saveThresholds');
-            const resetBtn = document.getElementById('resetThresholds');
-            const warningMatieres = document.getElementById('warning-matieres');
-            const warningBouteilles = document.getElementById('warning-bouteilles');
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    const criticalMatieres = parseInt(document.getElementById('critical-matieres')?.value || 50);
-                    const warningMatieresVal = parseInt(document.getElementById('warning-matieres')?.value || 100);
-                    const criticalBouteilles = parseInt(document.getElementById('critical-bouteilles')?.value || 30);
-                    const warningBouteillesVal = parseInt(document.getElementById('warning-bouteilles')?.value || 75);
-
-                    if (criticalMatieres >= warningMatieresVal || criticalBouteilles >= warningBouteillesVal) {
-                        if (window.notify) window.notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
-                        return;
-                    }
-
-                    const newThresholds = {
-                        matieres: { critical: criticalMatieres, warning: warningMatieresVal },
-                        bouteilles: { critical: criticalBouteilles, warning: warningBouteillesVal }
-                    };
-
-                    const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
-                    
-                    if (saved) {
-                        currentConfig.thresholds = newThresholds;
-                        updateThresholdInfo();
-                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
-                    } else {
-                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                    }
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.warning(
-                        'Réinitialiser les seuils', 
-                        'Remettre les valeurs par défaut ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        const defaultThresholds = {
-                            matieres: { critical: 50, warning: 100 },
-                            bouteilles: { critical: 30, warning: 75 }
-                        };
-                        
-                        const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
-                        if (saved) {
-                            currentConfig.thresholds = defaultThresholds;
-                            loadConfiguration();
-                            if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
-                        }
-                    });
-                });
-            }
-
-            if (warningMatieres) warningMatieres.addEventListener('input', updateThresholdInfo);
-            if (warningBouteilles) warningBouteilles.addEventListener('input', updateThresholdInfo);
-        }
-
-        // === GESTION DES NOTIFICATIONS ===
-        function setupNotifications() {
-            const saveBtn = document.getElementById('saveNotifications');
-            const resetBtn = document.getElementById('resetNotifications');
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    const duration = parseInt(document.getElementById('notification-duration')?.value || 4);
-                    const soundEnabled = document.getElementById('sound-notifications')?.checked || false;
-
-                    const newNotifications = { duration, soundEnabled };
-                    const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
-                    
-                    if (saved) {
-                        currentConfig.notifications = newNotifications;
-                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
-                    } else {
-                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                    }
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.warning(
-                        'Réinitialiser les notifications', 
-                        'Remettre les valeurs par défaut ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        const defaultNotifications = { duration: 4, soundEnabled: true };
-                        const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
-                        
-                        if (saved) {
-                            currentConfig.notifications = defaultNotifications;
-                            loadConfiguration();
-                            if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
-                        }
-                    });
-                });
-            }
-        }
-
-        // === GESTION DU SYSTÈME ===
-        function setupSystem() {
-            const saveBtn = document.getElementById('saveSystem');
-            const resetBtn = document.getElementById('resetSystem');
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    const sessionTimeout = parseInt(document.getElementById('session-timeout')?.value || 60);
-                    const theme = document.getElementById('theme-mode')?.value || 'light';
-
-                    const newSystem = { sessionTimeout, theme };
-                    const saved = window.dbManager.updateConfiguration('system', newSystem);
-                    
-                    if (saved) {
-                        currentConfig.system = newSystem;
-                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
-                    } else {
-                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                    }
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.warning(
-                        'Réinitialiser le système', 
-                        'Remettre les valeurs par défaut ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        const defaultSystem = { sessionTimeout: 60, theme: 'light' };
-                        const saved = window.dbManager.updateConfiguration('system', defaultSystem);
-                        
-                        if (saved) {
-                            currentConfig.system = defaultSystem;
-                            loadConfiguration();
-                            if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
-                        }
-                    });
-                });
-            }
-        }
-
-        // === DÉCONNEXION ===
-        function setupLogout() {
-            const logoutBtn = document.getElementById('logoutBtn');
-            
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.info(
-                        'Confirmation de déconnexion', 
-                        'Êtes-vous sûr de vouloir vous déconnecter ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        if (window.notify) window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
-                        setTimeout(() => {
-                            window.location.href = '../index.html';
-                        }, 1000);
-                    }, 'Déconnexion');
-                });
-            }
-        }
-
-        // === CHARGEMENT DES DONNÉES ===
-        async function loadAllData() {
-            try {
-                // Charger les utilisateurs
-                currentUsers = window.dbManager.getUsers();
-                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
-                
-                // Charger la configuration
-                currentConfig = window.dbManager.getConfiguration();
-                console.log('⚙️ Configuration chargée:', currentConfig);
-                
-                // Mettre à jour l'interface
-                updateUsersTable();
-                loadConfiguration();
-                
-            } catch (error) {
-                console.error('❌ Erreur lors du chargement des données:', error);
-                if (window.notify) {
-                    window.notify.error('Erreur', 'Impossible de charger les données de configuration.');
-                }
-            }
-        }
-
-        // Attendre que le script principal soit chargé
-        function initConfigPage() {
-            console.log('🔄 Initialisation de la page de configuration...');
-            
-            if (!window.dbManager || !window.dbManager.waitForReady) {
-                console.log('⏳ En attente du DatabaseManager...');
-                setTimeout(initConfigPage, 100);
-                return;
-            }
-            
-            console.log('📊 DatabaseManager trouvé, attente de l\'initialisation...');
-            
-            window.dbManager.waitForReady().then(async () => {
-                console.log('✅ DatabaseManager prêt, chargement des données...');
-                
-                // Charger toutes les données depuis la DB
-                await loadAllData();
-                
-                console.log('🔧 Initialisation des gestionnaires d\'événements...');
-                
-                // Initialiser les gestionnaires d'événements
-                try {
-                    setupUserManagement();
-                    console.log('✅ setupUserManagement terminé');
-                    
-                    setupThresholds();
-                    console.log('✅ setupThresholds terminé');
-                    
-                    setupNotifications();
-                    console.log('✅ setupNotifications terminé');
-                    
-                    setupSystem();
-                    console.log('✅ setupSystem terminé');
-                    
-                    setupLogout();
-                    console.log('✅ setupLogout terminé');
-                    
-                    console.log('✅ Page Configuration chargée avec données DB !');
-                } catch (setupError) {
-                    console.error('❌ Erreur lors de l\'initialisation des gestionnaires:', setupError);
-                    if (window.notify) {
-                        window.notify.error('Erreur', 'Problème lors de l\'initialisation de l\'interface.');
-                    }
-                }
-                
-            }).catch(error => {
-                console.error('❌ Erreur lors de l\'initialisation:', error);
-                if (window.notify) {
-                    window.notify.error('Erreur', 'Impossible de charger la configuration.');
-                }
-            });
-        }
-
-        // Démarrer l'initialisation quand le DOM est prêt
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM chargé, démarrage de l\'initialisation...');
-            initConfigPage();
-        });
-    </script>
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -739,190 +14,6 @@
             overflow: hidden;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             margin-bottom: 2rem;
-        }
-
-        // === GESTION DES SEUILS ===
-        function setupThresholds() {
-            const saveBtn = document.getElementById('saveThresholds');
-            const resetBtn = document.getElementById('resetThresholds');
-            const warningMatieres = document.getElementById('warning-matieres');
-            const warningBouteilles = document.getElementById('warning-bouteilles');
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    const criticalMatieres = parseInt(document.getElementById('critical-matieres')?.value || 50);
-                    const warningMatieresVal = parseInt(document.getElementById('warning-matieres')?.value || 100);
-                    const criticalBouteilles = parseInt(document.getElementById('critical-bouteilles')?.value || 30);
-                    const warningBouteillesVal = parseInt(document.getElementById('warning-bouteilles')?.value || 75);
-
-                    if (criticalMatieres >= warningMatieresVal || criticalBouteilles >= warningBouteillesVal) {
-                        if (window.notify) window.notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
-                        return;
-                    }
-
-                    const newThresholds = {
-                        matieres: { critical: criticalMatieres, warning: warningMatieresVal },
-                        bouteilles: { critical: criticalBouteilles, warning: warningBouteillesVal }
-                    };
-
-                    const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
-                    
-                    if (saved) {
-                        currentConfig.thresholds = newThresholds;
-                        updateThresholdInfo();
-                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
-                    } else {
-                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                    }
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.warning(
-                        'Réinitialiser les seuils', 
-                        'Remettre les valeurs par défaut ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        const defaultThresholds = {
-                            matieres: { critical: 50, warning: 100 },
-                            bouteilles: { critical: 30, warning: 75 }
-                        };
-                        
-                        const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
-                        if (saved) {
-                            currentConfig.thresholds = defaultThresholds;
-                            loadConfiguration();
-                            if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
-                        }
-                    });
-                });
-            }
-
-            if (warningMatieres) warningMatieres.addEventListener('input', updateThresholdInfo);
-            if (warningBouteilles) warningBouteilles.addEventListener('input', updateThresholdInfo);
-        }
-
-        // === GESTION DES NOTIFICATIONS ===
-        function setupNotifications() {
-            const saveBtn = document.getElementById('saveNotifications');
-            const resetBtn = document.getElementById('resetNotifications');
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    const duration = parseInt(document.getElementById('notification-duration')?.value || 4);
-                    const soundEnabled = document.getElementById('sound-notifications')?.checked || false;
-
-                    const newNotifications = { duration, soundEnabled };
-                    const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
-                    
-                    if (saved) {
-                        currentConfig.notifications = newNotifications;
-                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
-                    } else {
-                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                    }
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.warning(
-                        'Réinitialiser les notifications', 
-                        'Remettre les valeurs par défaut ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        const defaultNotifications = { duration: 4, soundEnabled: true };
-                        const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
-                        
-                        if (saved) {
-                            currentConfig.notifications = defaultNotifications;
-                            loadConfiguration();
-                            if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
-                        }
-                    });
-                });
-            }
-        }
-
-        // === GESTION DU SYSTÈME ===
-        function setupSystem() {
-            const saveBtn = document.getElementById('saveSystem');
-            const resetBtn = document.getElementById('resetSystem');
-
-            if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    const sessionTimeout = parseInt(document.getElementById('session-timeout')?.value || 60);
-                    const theme = document.getElementById('theme-mode')?.value || 'light';
-
-                    const newSystem = { sessionTimeout, theme };
-                    const saved = window.dbManager.updateConfiguration('system', newSystem);
-                    
-                    if (saved) {
-                        currentConfig.system = newSystem;
-                        if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
-                    } else {
-                        if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                    }
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.warning(
-                        'Réinitialiser le système', 
-                        'Remettre les valeurs par défaut ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        const defaultSystem = { sessionTimeout: 60, theme: 'light' };
-                        const saved = window.dbManager.updateConfiguration('system', defaultSystem);
-                        
-                        if (saved) {
-                            currentConfig.system = defaultSystem;
-                            loadConfiguration();
-                            if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
-                        }
-                    });
-                });
-            }
-        }
-
-        // === DÉCONNEXION ===
-        function setupLogout() {
-            const logoutBtn = document.getElementById('logoutBtn');
-            
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    if (!window.notify) return;
-                    
-                    const confirmNotification = window.notify.info(
-                        'Confirmation de déconnexion', 
-                        'Êtes-vous sûr de vouloir vous déconnecter ?', 
-                        10000
-                    );
-                    
-                    addConfirmationButtons(confirmNotification, () => {
-                        if (window.notify) window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
-                        setTimeout(() => {
-                            window.location.href = '../index.html';
-                        }, 1000);
-                    }, 'Déconnexion');
-                });
-            }
         }
 
         .users-table table {
@@ -1512,13 +603,13 @@
 
     <script src="../script.js"></script>
     <script>
-        // Variables globales pour les données
+        // Variables globales
         let currentUsers = {};
         let currentConfig = {};
         let isEditMode = false;
         let editingUsername = '';
 
-        // === FONCTIONS UTILITAIRES (définies en premier) ===
+        // === FONCTIONS UTILITAIRES ===
         function updateUsersTable() {
             const tbody = document.getElementById('usersTableBody');
             if (!tbody) return;
@@ -1568,9 +659,7 @@
         }
 
         function loadConfiguration() {
-            // Vérifier que la configuration existe
             if (!currentConfig || !currentConfig.thresholds) {
-                console.log('⚠️ Configuration vide, utilisation des valeurs par défaut');
                 currentConfig = {
                     thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
                     notifications: { duration: 4, soundEnabled: true },
@@ -1578,33 +667,25 @@
                 };
             }
             
-            // Charger les seuils avec vérifications
-            const thresholds = currentConfig.thresholds || {};
-            const criticalMatieres = document.getElementById('critical-matieres');
-            const warningMatieres = document.getElementById('warning-matieres');
-            const criticalBouteilles = document.getElementById('critical-bouteilles');
-            const warningBouteilles = document.getElementById('warning-bouteilles');
-            
-            if (criticalMatieres) criticalMatieres.value = thresholds.matieres?.critical || 50;
-            if (warningMatieres) warningMatieres.value = thresholds.matieres?.warning || 100;
-            if (criticalBouteilles) criticalBouteilles.value = thresholds.bouteilles?.critical || 30;
-            if (warningBouteilles) warningBouteilles.value = thresholds.bouteilles?.warning || 75;
+            const elements = {
+                'critical-matieres': currentConfig.thresholds.matieres?.critical || 50,
+                'warning-matieres': currentConfig.thresholds.matieres?.warning || 100,
+                'critical-bouteilles': currentConfig.thresholds.bouteilles?.critical || 30,
+                'warning-bouteilles': currentConfig.thresholds.bouteilles?.warning || 75,
+                'notification-duration': currentConfig.notifications?.duration || 4,
+                'session-timeout': currentConfig.system?.sessionTimeout || 60
+            };
 
-            // Charger les notifications avec vérifications
-            const notifications = currentConfig.notifications || {};
-            const notificationDuration = document.getElementById('notification-duration');
+            Object.entries(elements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.value = value;
+            });
+
             const soundNotifications = document.getElementById('sound-notifications');
-            
-            if (notificationDuration) notificationDuration.value = notifications.duration || 4;
-            if (soundNotifications) soundNotifications.checked = notifications.soundEnabled !== false;
-
-            // Charger le système avec vérifications
-            const system = currentConfig.system || {};
-            const sessionTimeout = document.getElementById('session-timeout');
             const themeMode = document.getElementById('theme-mode');
             
-            if (sessionTimeout) sessionTimeout.value = system.sessionTimeout || 60;
-            if (themeMode) themeMode.value = system.theme || 'light';
+            if (soundNotifications) soundNotifications.checked = currentConfig.notifications?.soundEnabled !== false;
+            if (themeMode) themeMode.value = currentConfig.system?.theme || 'light';
 
             updateThresholdInfo();
         }
@@ -1659,18 +740,377 @@
             });
         }
 
+        // === GESTION UTILISATEURS ===
+        function populateManagerSelect() {
+            const managerSelect = document.getElementById('user-manager');
+            if (!managerSelect) return;
+            
+            managerSelect.innerHTML = '<option value="">Aucun manager</option>';
+            
+            Object.entries(currentUsers).forEach(([username, user]) => {
+                if (user.grade === 'ceo' || user.grade === 'cfo' || user.grade === 'manager') {
+                    const option = document.createElement('option');
+                    option.value = username;
+                    option.textContent = `${user.fullname} (${user.grade.toUpperCase()})`;
+                    managerSelect.appendChild(option);
+                }
+            });
+        }
+
+        function saveUserData() {
+            const username = document.getElementById('user-username').value.trim();
+            const fullname = document.getElementById('user-fullname').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+            const grade = document.getElementById('user-grade').value;
+            const password = document.getElementById('user-password').value;
+            const passwordConfirm = document.getElementById('user-password-confirm').value;
+            const description = document.getElementById('user-description').value.trim();
+
+            // Validation
+            if (!username || !fullname || !phone || !grade || !description) {
+                if (window.notify) window.notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
+                return;
+            }
+
+            if (password && password !== passwordConfirm) {
+                if (window.notify) window.notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
+                return;
+            }
+
+            if (!isEditMode && currentUsers[username]) {
+                if (window.notify) window.notify.error('Erreur', 'Cet utilisateur existe déjà.');
+                return;
+            }
+
+            // Collecter les permissions
+            const permissions = [];
+            ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'].forEach(perm => {
+                if (document.getElementById(`perm-${perm}`)?.checked) permissions.push(perm);
+            });
+
+            // Créer l'objet utilisateur
+            const userData = {
+                fullname, phone, grade, description,
+                password: password || currentUsers[username]?.password || 'TEMP123',
+                status: currentUsers[username]?.status || 'offline',
+                lastLogin: currentUsers[username]?.lastLogin || 'Jamais',
+                permissions,
+                address: document.getElementById('user-address')?.value.trim() || '',
+                hireDate: document.getElementById('user-hire-date')?.value || '',
+                department: document.getElementById('user-department')?.value || '',
+                salary: parseInt(document.getElementById('user-salary')?.value) || 0,
+                manager: document.getElementById('user-manager')?.value || '',
+                notes: document.getElementById('user-notes')?.value.trim() || ''
+            };
+
+            const saved = window.dbManager.saveUser(username, userData);
+            
+            if (saved) {
+                currentUsers = window.dbManager.getUsers();
+                updateUsersTable();
+                document.getElementById('userModal').style.display = 'none';
+                
+                const action = isEditMode ? 'modifié' : 'ajouté';
+                if (window.notify) window.notify.success('Succès', `Utilisateur ${action} avec succès !`);
+            } else {
+                if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder l\'utilisateur.');
+            }
+        }
+
+        // Fonctions globales
+        window.editUser = function(username) {
+            const user = currentUsers[username];
+            if (!user) return;
+
+            isEditMode = true;
+            editingUsername = username;
+            
+            document.getElementById('userModalTitle').textContent = 'Modifier Utilisateur';
+            document.getElementById('saveUser').innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
+            
+            // Remplir le formulaire
+            const fields = {
+                'user-username': username,
+                'user-fullname': user.fullname || '',
+                'user-phone': user.phone || '',
+                'user-grade': user.grade || 'employe',
+                'user-description': user.description || '',
+                'user-address': user.address || '',
+                'user-hire-date': user.hireDate || '',
+                'user-department': user.department || '',
+                'user-salary': user.salary || '',
+                'user-notes': user.notes || ''
+            };
+
+            Object.entries(fields).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.value = value;
+            });
+
+            // Vider les mots de passe
+            document.getElementById('user-password').value = '';
+            document.getElementById('user-password-confirm').value = '';
+
+            populateManagerSelect();
+            document.getElementById('user-manager').value = user.manager || '';
+
+            // Permissions
+            const permissions = user.permissions || [];
+            ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'].forEach(perm => {
+                const element = document.getElementById(`perm-${perm}`);
+                if (element) element.checked = permissions.includes(perm);
+            });
+
+            document.getElementById('userModal').style.display = 'flex';
+        };
+
+        window.deleteUser = function(username) {
+            if (username === 'admin') {
+                if (window.notify) window.notify.error('Action interdite', 'Impossible de supprimer le compte administrateur.');
+                return;
+            }
+
+            if (!window.notify) return;
+
+            const confirmNotification = window.notify.warning(
+                `Supprimer ${username}`, 
+                'Cette action est irréversible. Confirmer la suppression ?', 
+                10000
+            );
+            
+            addConfirmationButtons(confirmNotification, () => {
+                const deleted = window.dbManager.deleteUser(username);
+                if (deleted) {
+                    currentUsers = window.dbManager.getUsers();
+                    updateUsersTable();
+                    if (window.notify) window.notify.success('Utilisateur supprimé', `${username} a été supprimé de la base.`);
+                } else {
+                    if (window.notify) window.notify.error('Erreur', 'Impossible de supprimer l\'utilisateur.');
+                }
+            });
+        };
+
+        // === SETUP FUNCTIONS ===
+        function setupUserManagement() {
+            const userModal = document.getElementById('userModal');
+            const userForm = document.getElementById('userForm');
+
+            // Ajouter utilisateur
+            document.getElementById('addUserBtn')?.addEventListener('click', function() {
+                isEditMode = false;
+                document.getElementById('userModalTitle').textContent = 'Ajouter Utilisateur';
+                document.getElementById('saveUser').innerHTML = '<i class="fas fa-plus"></i> Ajouter';
+                userForm.reset();
+                document.getElementById('perm-dashboard').checked = true;
+                populateManagerSelect();
+                userModal.style.display = 'flex';
+            });
+
+            // Fermer modal
+            document.getElementById('closeUserModal')?.addEventListener('click', () => userModal.style.display = 'none');
+            document.getElementById('cancelUser')?.addEventListener('click', () => userModal.style.display = 'none');
+
+            // Formulaire
+            userForm?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveUserData();
+            });
+
+            // Recherche
+            document.getElementById('searchUsers')?.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll('#usersTableBody tr').forEach(row => {
+                    if (row.querySelector('.loading-message')) return;
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+
+            // Export CSV
+            document.getElementById('exportUsers')?.addEventListener('click', function() {
+                const users = Object.entries(currentUsers).map(([username, data]) => 
+                    `${username},"${data.fullname}",${data.phone},${data.grade},"${data.description}",${data.status},"${data.lastLogin}",${data.department || ''},${data.salary || 0}`
+                );
+
+                const csvContent = "data:text/csv;charset=utf-8,Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n" + users.join('\n');
+                const link = document.createElement('a');
+                link.href = encodeURI(csvContent);
+                link.download = `marlowe_users_export_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+
+                if (window.notify) window.notify.success('Export réussi', 'Liste des utilisateurs exportée en CSV.');
+            });
+
+            // Reset passwords
+            document.getElementById('resetPasswords')?.addEventListener('click', function() {
+                if (!window.notify) return;
+                
+                const confirmNotification = window.notify.warning(
+                    'Confirmation dangereuse', 
+                    'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
+                    15000
+                );
+                
+                addConfirmationButtons(confirmNotification, () => {
+                    Object.keys(currentUsers).forEach(username => {
+                        if (username !== 'admin') {
+                            const user = currentUsers[username];
+                            user.password = 'RESET2025';
+                            window.dbManager.saveUser(username, user);
+                        }
+                    });
+                    
+                    currentUsers = window.dbManager.getUsers();
+                    if (window.notify) window.notify.info('Mots de passe réinitialisés', 'Nouveau mot de passe temporaire: RESET2025');
+                });
+            });
+        }
+
+        function setupThresholds() {
+            document.getElementById('saveThresholds')?.addEventListener('click', function() {
+                const newThresholds = {
+                    matieres: {
+                        critical: parseInt(document.getElementById('critical-matieres')?.value || 50),
+                        warning: parseInt(document.getElementById('warning-matieres')?.value || 100)
+                    },
+                    bouteilles: {
+                        critical: parseInt(document.getElementById('critical-bouteilles')?.value || 30),
+                        warning: parseInt(document.getElementById('warning-bouteilles')?.value || 75)
+                    }
+                };
+
+                if (newThresholds.matieres.critical >= newThresholds.matieres.warning || 
+                    newThresholds.bouteilles.critical >= newThresholds.bouteilles.warning) {
+                    if (window.notify) window.notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
+                    return;
+                }
+
+                const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
+                
+                if (saved) {
+                    currentConfig.thresholds = newThresholds;
+                    updateThresholdInfo();
+                    if (window.notify) window.notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
+                } else {
+                    if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
+            });
+
+            document.getElementById('resetThresholds')?.addEventListener('click', function() {
+                if (!window.notify) return;
+                
+                const confirmNotification = window.notify.warning('Réinitialiser les seuils', 'Remettre les valeurs par défaut ?', 10000);
+                addConfirmationButtons(confirmNotification, () => {
+                    const defaultThresholds = {
+                        matieres: { critical: 50, warning: 100 },
+                        bouteilles: { critical: 30, warning: 75 }
+                    };
+                    
+                    const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
+                    if (saved) {
+                        currentConfig.thresholds = defaultThresholds;
+                        loadConfiguration();
+                        if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
+                    }
+                });
+            });
+
+            ['warning-matieres', 'warning-bouteilles'].forEach(id => {
+                document.getElementById(id)?.addEventListener('input', updateThresholdInfo);
+            });
+        }
+
+        function setupNotifications() {
+            document.getElementById('saveNotifications')?.addEventListener('click', function() {
+                const newNotifications = {
+                    duration: parseInt(document.getElementById('notification-duration')?.value || 4),
+                    soundEnabled: document.getElementById('sound-notifications')?.checked || false
+                };
+
+                const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
+                
+                if (saved) {
+                    currentConfig.notifications = newNotifications;
+                    if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
+                } else {
+                    if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
+            });
+
+            document.getElementById('resetNotifications')?.addEventListener('click', function() {
+                if (!window.notify) return;
+                
+                const confirmNotification = window.notify.warning('Réinitialiser les notifications', 'Remettre les valeurs par défaut ?', 10000);
+                addConfirmationButtons(confirmNotification, () => {
+                    const defaultNotifications = { duration: 4, soundEnabled: true };
+                    const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
+                    
+                    if (saved) {
+                        currentConfig.notifications = defaultNotifications;
+                        loadConfiguration();
+                        if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
+                    }
+                });
+            });
+        }
+
+        function setupSystem() {
+            document.getElementById('saveSystem')?.addEventListener('click', function() {
+                const newSystem = {
+                    sessionTimeout: parseInt(document.getElementById('session-timeout')?.value || 60),
+                    theme: document.getElementById('theme-mode')?.value || 'light'
+                };
+
+                const saved = window.dbManager.updateConfiguration('system', newSystem);
+                
+                if (saved) {
+                    currentConfig.system = newSystem;
+                    if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
+                } else {
+                    if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
+            });
+
+            document.getElementById('resetSystem')?.addEventListener('click', function() {
+                if (!window.notify) return;
+                
+                const confirmNotification = window.notify.warning('Réinitialiser le système', 'Remettre les valeurs par défaut ?', 10000);
+                addConfirmationButtons(confirmNotification, () => {
+                    const defaultSystem = { sessionTimeout: 60, theme: 'light' };
+                    const saved = window.dbManager.updateConfiguration('system', defaultSystem);
+                    
+                    if (saved) {
+                        currentConfig.system = defaultSystem;
+                        loadConfiguration();
+                        if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
+                    }
+                });
+            });
+        }
+
+        function setupLogout() {
+            document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (!window.notify) return;
+                
+                const confirmNotification = window.notify.info('Confirmation de déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', 10000);
+                addConfirmationButtons(confirmNotification, () => {
+                    if (window.notify) window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
+                    setTimeout(() => window.location.href = '../index.html', 1000);
+                }, 'Déconnexion');
+            });
+        }
+
         // === CHARGEMENT DES DONNÉES ===
         async function loadAllData() {
             try {
-                // Charger les utilisateurs
                 currentUsers = window.dbManager.getUsers();
-                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
-                
-                // Charger la configuration
                 currentConfig = window.dbManager.getConfiguration();
+                
+                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
                 console.log('⚙️ Configuration chargée:', currentConfig);
                 
-                // Mettre à jour l'interface
                 updateUsersTable();
                 loadConfiguration();
                 
@@ -1682,7 +1122,7 @@
             }
         }
 
-        // Attendre que le script principal soit chargé
+        // === INITIALISATION ===
         function initConfigPage() {
             console.log('🔄 Initialisation de la page de configuration...');
             
@@ -1697,27 +1137,16 @@
             window.dbManager.waitForReady().then(async () => {
                 console.log('✅ DatabaseManager prêt, chargement des données...');
                 
-                // Charger toutes les données depuis la DB
                 await loadAllData();
                 
                 console.log('🔧 Initialisation des gestionnaires d\'événements...');
                 
-                // Initialiser les gestionnaires d'événements
                 try {
                     setupUserManagement();
-                    console.log('✅ setupUserManagement terminé');
-                    
                     setupThresholds();
-                    console.log('✅ setupThresholds terminé');
-                    
                     setupNotifications();
-                    console.log('✅ setupNotifications terminé');
-                    
                     setupSystem();
-                    console.log('✅ setupSystem terminé');
-                    
                     setupLogout();
-                    console.log('✅ setupLogout terminé');
                     
                     console.log('✅ Page Configuration chargée avec données DB !');
                 } catch (setupError) {
@@ -1735,548 +1164,11 @@
             });
         }
 
-        // Démarrer l'initialisation quand le DOM est prêt
+        // Démarrer l'initialisation
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📄 DOM chargé, démarrage de l\'initialisation...');
             initConfigPage();
         });
-
-        // === GESTION DES NOTIFICATIONS ===
-        function setupNotifications() {
-            document.getElementById('saveNotifications').addEventListener('click', function() {
-                const duration = parseInt(document.getElementById('notification-duration').value);
-                const soundEnabled = document.getElementById('sound-notifications').checked;
-
-                const newNotifications = { duration, soundEnabled };
-                const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
-                
-                if (saved) {
-                    currentConfig.notifications = newNotifications;
-                    notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
-                } else {
-                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
-            });
-
-            document.getElementById('resetNotifications').addEventListener('click', function() {
-                const confirmNotification = notify.warning(
-                    'Réinitialiser les notifications', 
-                    'Remettre les valeurs par défaut ?', 
-                    10000
-                );
-                
-                addConfirmationButtons(confirmNotification, () => {
-                    const defaultNotifications = { duration: 4, soundEnabled: true };
-                    const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
-                    
-                    if (saved) {
-                        currentConfig.notifications = defaultNotifications;
-                        loadConfiguration();
-                        notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
-                    }
-                });
-            });
-        }
-
-        // === GESTION DU SYSTÈME ===
-        function setupSystem() {
-            document.getElementById('saveSystem').addEventListener('click', function() {
-                const sessionTimeout = parseInt(document.getElementById('session-timeout').value);
-                const theme = document.getElementById('theme-mode').value;
-
-                const newSystem = { sessionTimeout, theme };
-                const saved = window.dbManager.updateConfiguration('system', newSystem);
-                
-                if (saved) {
-                    currentConfig.system = newSystem;
-                    notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
-                } else {
-                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
-            });
-
-            document.getElementById('resetSystem').addEventListener('click', function() {
-                const confirmNotification = notify.warning(
-                    'Réinitialiser le système', 
-                    'Remettre les valeurs par défaut ?', 
-                    10000
-                );
-                
-                addConfirmationButtons(confirmNotification, () => {
-                    const defaultSystem = { sessionTimeout: 60, theme: 'light' };
-                    const saved = window.dbManager.updateConfiguration('system', defaultSystem);
-                    
-                    if (saved) {
-                        currentConfig.system = defaultSystem;
-                        loadConfiguration();
-                        notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
-                    }
-                });
-            });
-        }
-
-        // === DÉCONNEXION ===
-        function setupLogout() {
-            document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const confirmNotification = notify.info(
-                    'Confirmation de déconnexion', 
-                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
-                    10000
-                );
-                
-                addConfirmationButtons(confirmNotification, () => {
-                    notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
-                    setTimeout(() => {
-                        window.location.href = '../index.html';
-                    }, 1000);
-                }, 'Déconnexion');
-            });
-        }
-
-        // === FONCTIONS UTILITAIRES ===
-        function loadConfiguration() {
-            // Vérifier que la configuration existe
-            if (!currentConfig || !currentConfig.thresholds) {
-                console.log('⚠️ Configuration vide, utilisation des valeurs par défaut');
-                currentConfig = {
-                    thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
-                    notifications: { duration: 4, soundEnabled: true },
-                    system: { sessionTimeout: 60, theme: 'light' }
-                };
-            }
-            
-            // Charger les seuils avec vérifications
-            const thresholds = currentConfig.thresholds || {};
-            document.getElementById('critical-matieres').value = thresholds.matieres?.critical || 50;
-            document.getElementById('warning-matieres').value = thresholds.matieres?.warning || 100;
-            document.getElementById('critical-bouteilles').value = thresholds.bouteilles?.critical || 30;
-            document.getElementById('warning-bouteilles').value = thresholds.bouteilles?.warning || 75;
-
-            // Charger les notifications avec vérifications
-            const notifications = currentConfig.notifications || {};
-            document.getElementById('notification-duration').value = notifications.duration || 4;
-            document.getElementById('sound-notifications').checked = notifications.soundEnabled !== false;
-
-            // Charger le système avec vérifications
-            const system = currentConfig.system || {};
-            document.getElementById('session-timeout').value = system.sessionTimeout || 60;
-            document.getElementById('theme-mode').value = system.theme || 'light';
-
-            updateThresholdInfo();
-        }
-
-        function updateThresholdInfo() {
-            const warningMatieres = document.getElementById('warning-matieres').value;
-            const warningBouteilles = document.getElementById('warning-bouteilles').value;
-
-            const matieresInfo = document.querySelector('.config-item:nth-child(1) .threshold-info span');
-            const bouteillesInfo = document.querySelector('.config-item:nth-child(2) .threshold-info span');
-
-            if (matieresInfo) {
-                matieresInfo.innerHTML = `Au-dessus de ${warningMatieres} unités = <strong>Bon Stock</strong>`;
-            }
-            if (bouteillesInfo) {
-                bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles} bouteilles = <strong>Bon Stock</strong>`;
-            }
-        }
-
-        function addConfirmationButtons(notification, onConfirm, confirmText = 'Confirmer') {
-            const notificationContent = notification.querySelector('.notification-content');
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.marginTop = '1rem';
-            buttonsDiv.style.display = 'flex';
-            buttonsDiv.style.gap = '0.5rem';
-            
-            const confirmBtn = document.createElement('button');
-            confirmBtn.className = 'cta-button btn-warning';
-            confirmBtn.style.fontSize = '0.8rem';
-            confirmBtn.style.padding = '0.5rem 1rem';
-            confirmBtn.textContent = confirmText;
-            
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'cta-button btn-secondary';
-            cancelBtn.style.fontSize = '0.8rem';
-            cancelBtn.style.padding = '0.5rem 1rem';
-            cancelBtn.textContent = 'Annuler';
-            
-            buttonsDiv.appendChild(cancelBtn);
-            buttonsDiv.appendChild(confirmBtn);
-            notificationContent.appendChild(buttonsDiv);
-            
-            confirmBtn.addEventListener('click', () => {
-                notify.remove(notification);
-                onConfirm();
-            });
-            
-            cancelBtn.addEventListener('click', () => {
-                notify.remove(notification);
-            });
-        }
     </script>
 </body>
-</html> UTILISATEURS ===
-        function setupUserManagement() {
-            const addUserBtn = document.getElementById('addUserBtn');
-            const userModal = document.getElementById('userModal');
-            const closeModal = document.getElementById('closeUserModal');
-            const cancelBtn = document.getElementById('cancelUser');
-            const userForm = document.getElementById('userForm');
-            const searchInput = document.getElementById('searchUsers');
-
-            // Recherche d'utilisateurs
-            searchInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase();
-                const rows = document.querySelectorAll('#usersTableBody tr');
-                
-                rows.forEach(row => {
-                    if (row.querySelector('.loading-message')) return; // Skip loading row
-                    
-                    const username = row.querySelector('strong')?.textContent.toLowerCase() || '';
-                    const fullname = row.cells[1]?.textContent.toLowerCase() || '';
-                    const phone = row.cells[2]?.textContent.toLowerCase() || '';
-                    const description = row.querySelector('div')?.textContent.toLowerCase() || '';
-                    
-                    if (username.includes(query) || fullname.includes(query) || phone.includes(query) || description.includes(query)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-
-            // Ajouter utilisateur
-            addUserBtn.addEventListener('click', function() {
-                isEditMode = false;
-                editingUsername = '';
-                document.getElementById('userModalTitle').textContent = 'Ajouter Utilisateur';
-                document.getElementById('saveUser').innerHTML = '<i class="fas fa-plus"></i> Ajouter';
-                userForm.reset();
-                // Cocher dashboard par défaut
-                document.getElementById('perm-dashboard').checked = true;
-                populateManagerSelect();
-                userModal.style.display = 'flex';
-            });
-
-            // Fermer modal
-            closeModal.addEventListener('click', () => userModal.style.display = 'none');
-            cancelBtn.addEventListener('click', () => userModal.style.display = 'none');
-
-            // Soumettre formulaire utilisateur
-            userForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveUserData();
-            });
-
-            // Export utilisateurs
-            document.getElementById('exportUsers').addEventListener('click', function() {
-                exportUsersToCSV();
-            });
-
-            // Réinitialiser mots de passe
-            document.getElementById('resetPasswords').addEventListener('click', function() {
-                resetAllPasswords();
-            });
-        }
-
-        function saveUserData() {
-            const username = document.getElementById('user-username').value.trim();
-            const fullname = document.getElementById('user-fullname').value.trim();
-            const phone = document.getElementById('user-phone').value.trim();
-            const grade = document.getElementById('user-grade').value;
-            const password = document.getElementById('user-password').value;
-            const passwordConfirm = document.getElementById('user-password-confirm').value;
-            const description = document.getElementById('user-description').value.trim();
-
-            // Validation
-            if (!username || !fullname || !phone || !grade || !description) {
-                notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
-                return;
-            }
-
-            // Vérifier les mots de passe
-            if (password && password !== passwordConfirm) {
-                notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
-                return;
-            }
-
-            // Vérifier si l'utilisateur existe déjà (en mode ajout)
-            if (!isEditMode && currentUsers[username]) {
-                notify.error('Erreur', 'Cet utilisateur existe déjà.');
-                return;
-            }
-
-            // Collecter les permissions
-            const permissions = [];
-            if (document.getElementById('perm-dashboard').checked) permissions.push('dashboard');
-            if (document.getElementById('perm-inventory').checked) permissions.push('inventory');
-            if (document.getElementById('perm-documents').checked) permissions.push('documents');
-            if (document.getElementById('perm-config').checked) permissions.push('config');
-            if (document.getElementById('perm-reports').checked) permissions.push('reports');
-            if (document.getElementById('perm-users').checked) permissions.push('users');
-
-            // Créer l'objet utilisateur
-            const userData = {
-                fullname: fullname,
-                phone: phone,
-                grade: grade,
-                description: description,
-                password: password || currentUsers[username]?.password || 'TEMP123',
-                status: currentUsers[username]?.status || 'offline',
-                lastLogin: currentUsers[username]?.lastLogin || 'Jamais',
-                permissions: permissions,
-                address: document.getElementById('user-address').value.trim() || '',
-                hireDate: document.getElementById('user-hire-date').value || '',
-                department: document.getElementById('user-department').value || '',
-                salary: parseInt(document.getElementById('user-salary').value) || 0,
-                manager: document.getElementById('user-manager').value || '',
-                notes: document.getElementById('user-notes').value.trim() || ''
-            };
-
-            // Sauvegarder dans la DB
-            const saved = window.dbManager.saveUser(username, userData);
-            
-            if (saved) {
-                // Mettre à jour les données locales
-                currentUsers = window.dbManager.getUsers();
-                updateUsersTable();
-                document.getElementById('userModal').style.display = 'none';
-                
-                const action = isEditMode ? 'modifié' : 'ajouté';
-                notify.success('Succès', `Utilisateur ${action} avec succès !`);
-            } else {
-                notify.error('Erreur', 'Impossible de sauvegarder l\'utilisateur.');
-            }
-        }
-
-        function populateManagerSelect() {
-            const managerSelect = document.getElementById('user-manager');
-            managerSelect.innerHTML = '<option value="">Aucun manager</option>';
-            
-            Object.entries(currentUsers).forEach(([username, user]) => {
-                if (user.grade === 'ceo' || user.grade === 'cfo' || user.grade === 'manager') {
-                    const option = document.createElement('option');
-                    option.value = username;
-                    option.textContent = `${user.fullname} (${user.grade.toUpperCase()})`;
-                    managerSelect.appendChild(option);
-                }
-            });
-        }
-
-        function exportUsersToCSV() {
-            const users = Object.entries(currentUsers).map(([username, data]) => ({
-                username,
-                fullname: data.fullname,
-                phone: data.phone,
-                grade: data.grade,
-                description: data.description,
-                status: data.status,
-                lastLogin: data.lastLogin,
-                department: data.department || '',
-                salary: data.salary || 0
-            }));
-
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + "Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n"
-                + users.map(user => `${user.username},"${user.fullname}",${user.phone},${user.grade},"${user.description}",${user.status},"${user.lastLogin}",${user.department},${user.salary}`).join('\n');
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', `marlowe_users_export_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            notify.success('Export réussi', 'Liste des utilisateurs exportée en CSV.');
-        }
-
-        function resetAllPasswords() {
-            const confirmNotification = notify.warning(
-                'Confirmation dangereuse', 
-                'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
-                15000
-            );
-            
-            addConfirmationButtons(confirmNotification, () => {
-                // Réinitialiser tous les mots de passe sauf admin
-                Object.keys(currentUsers).forEach(username => {
-                    if (username !== 'admin') {
-                        const user = currentUsers[username];
-                        user.password = 'RESET2025';
-                        window.dbManager.saveUser(username, user);
-                    }
-                });
-                
-                currentUsers = window.dbManager.getUsers();
-                notify.info('Mots de passe réinitialisés', 'Nouveau mot de passe temporaire: RESET2025');
-            });
-        }
-
-        // Fonctions globales pour les actions utilisateurs
-        window.editUser = function(username) {
-            const user = currentUsers[username];
-            if (!user) return;
-
-            isEditMode = true;
-            editingUsername = username;
-            document.getElementById('userModalTitle').textContent = 'Modifier Utilisateur';
-            document.getElementById('saveUser').innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
-            
-            // Remplir le formulaire
-            document.getElementById('user-username').value = username;
-            document.getElementById('user-fullname').value = user.fullname || '';
-            document.getElementById('user-phone').value = user.phone || '';
-            document.getElementById('user-grade').value = user.grade || 'employe';
-            document.getElementById('user-description').value = user.description || '';
-            document.getElementById('user-password').value = '';
-            document.getElementById('user-password-confirm').value = '';
-            document.getElementById('user-address').value = user.address || '';
-            document.getElementById('user-hire-date').value = user.hireDate || '';
-            document.getElementById('user-department').value = user.department || '';
-            document.getElementById('user-salary').value = user.salary || '';
-            document.getElementById('user-notes').value = user.notes || '';
-
-            // Populer les managers et sélectionner le bon
-            populateManagerSelect();
-            document.getElementById('user-manager').value = user.manager || '';
-
-            // Permissions
-            const permissions = user.permissions || [];
-            document.getElementById('perm-dashboard').checked = permissions.includes('dashboard');
-            document.getElementById('perm-inventory').checked = permissions.includes('inventory');
-            document.getElementById('perm-documents').checked = permissions.includes('documents');
-            document.getElementById('perm-config').checked = permissions.includes('config');
-            document.getElementById('perm-reports').checked = permissions.includes('reports');
-            document.getElementById('perm-users').checked = permissions.includes('users');
-
-            document.getElementById('userModal').style.display = 'flex';
-        };
-
-        window.deleteUser = function(username) {
-            if (username === 'admin') {
-                notify.error('Action interdite', 'Impossible de supprimer le compte administrateur.');
-                return;
-            }
-
-            const confirmNotification = notify.warning(
-                `Supprimer ${username}`, 
-                'Cette action est irréversible. Confirmer la suppression ?', 
-                10000
-            );
-            
-            addConfirmationButtons(confirmNotification, () => {
-                const deleted = window.dbManager.deleteUser(username);
-                if (deleted) {
-                    currentUsers = window.dbManager.getUsers();
-                    updateUsersTable();
-                    notify.success('Utilisateur supprimé', `${username} a été supprimé de la base.`);
-                } else {
-                    notify.error('Erreur', 'Impossible de supprimer l\'utilisateur.');
-                }
-            });
-        };
-
-        function updateUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-
-            if (Object.keys(currentUsers).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="loading-message">Aucun utilisateur trouvé</td></tr>';
-                return;
-            }
-
-            Object.entries(currentUsers).forEach(([username, user]) => {
-                const gradeClass = `grade-${user.grade}`;
-                const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
-                const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
-                const canDelete = username !== 'admin';
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <strong>${username}</strong>
-                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description || ''}</div>
-                    </td>
-                    <td>${user.fullname || ''}</td>
-                    <td>${user.phone || ''}</td>
-                    <td><span class="grade-badge ${gradeClass}">${(user.grade || 'employe').toUpperCase()}</span></td>
-                    <td>
-                        <div class="user-status">
-                            <i class="fas fa-circle ${statusIcon}"></i>
-                            <span>${statusText}</span>
-                        </div>
-                    </td>
-                    <td class="last-login">${user.lastLogin || 'Jamais'}</td>
-                    <td>
-                        <div class="user-actions">
-                            <button class="btn-small btn-edit" onclick="editUser('${username}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${canDelete ? `<button class="btn-small btn-delete" onclick="deleteUser('${username}')">
-                                <i class="fas fa-trash"></i>
-                            </button>` : ''}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // === GESTION DES SEUILS ===
-        function setupThresholds() {
-            document.getElementById('saveThresholds').addEventListener('click', function() {
-                const criticalMatieres = parseInt(document.getElementById('critical-matieres').value);
-                const warningMatieres = parseInt(document.getElementById('warning-matieres').value);
-                const criticalBouteilles = parseInt(document.getElementById('critical-bouteilles').value);
-                const warningBouteilles = parseInt(document.getElementById('warning-bouteilles').value);
-
-                if (criticalMatieres >= warningMatieres || criticalBouteilles >= warningBouteilles) {
-                    notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
-                    return;
-                }
-
-                const newThresholds = {
-                    matieres: { critical: criticalMatieres, warning: warningMatieres },
-                    bouteilles: { critical: criticalBouteilles, warning: warningBouteilles }
-                };
-
-                const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
-                
-                if (saved) {
-                    currentConfig.thresholds = newThresholds;
-                    updateThresholdInfo();
-                    notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
-                } else {
-                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
-            });
-
-            document.getElementById('resetThresholds').addEventListener('click', function() {
-                const confirmNotification = notify.warning(
-                    'Réinitialiser les seuils', 
-                    'Remettre les valeurs par défaut ?', 
-                    10000
-                );
-                
-                addConfirmationButtons(confirmNotification, () => {
-                    const defaultThresholds = {
-                        matieres: { critical: 50, warning: 100 },
-                        bouteilles: { critical: 30, warning: 75 }
-                    };
-                    
-                    const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
-                    if (saved) {
-                        currentConfig.thresholds = defaultThresholds;
-                        loadConfiguration();
-                        notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
-                    }
-                });
-            });
-
-            document.getElementById('warning-matieres').addEventListener('input', updateThresholdInfo);
-            document.getElementById('warning-bouteilles').addEventListener('input', updateThresholdInfo);
-        }
-
-        // === GESTION DES
+</html>
