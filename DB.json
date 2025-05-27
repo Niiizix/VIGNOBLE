@@ -49,7 +49,7 @@
       },
       "staff": {
         "label": "STAFF",
-        "description": "",
+        "description": "X",
         "color": "#c62828",
         "background": "#ffebee",
         "border": "2px solid #c62828",
@@ -92,21 +92,21 @@
   "users": {
     "admin": {
       "fullname": "STAFF",
-      "phone": "",
+      "phone": "X",
       "grade": "staff",
       "password": "ML_STAFF",
       "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
     },
     "guzman": {
       "fullname": "Guzman Stamkos",
-      "phone": "",
+      "phone": "X",
       "grade": "ceo",
       "password": "GJ@Sxzdt8dM&g4Y",
       "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
     },
     "nico": {
       "fullname": "Nico Capone",
-      "phone": "",
+      "phone": "X",
       "grade": "cfo",
       "password": "$yJA&E&tJY$98E6",
       "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
