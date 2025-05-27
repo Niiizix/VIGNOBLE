@@ -427,27 +427,27 @@
                     });
                 });
                 
-                // Totaux - DESCENDUS ET À GAUCHE
-                const totalsY = 300; // Descendu plus bas
+                // Totaux
+                const totalsY = 350;
                 
-                // Sous-total - À GAUCHE
+                // Sous-total
                 firstPage.drawText(cleanTextForPDF(`${devisData.totaux.sousTotal} EUR`), {
-                    x: 400, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 467, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // TVA - À GAUCHE
+                // TVA
                 const tvaFormatted = Math.round(devisData.totaux.tva * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${tvaFormatted} EUR`), {
-                    x: 400, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    x: 467, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total - À GAUCHE
+                // Total
                 const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
                 firstPage.drawText(cleanTextForPDF(`${totalFormatted} EUR`), {
-                    x: 400, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+                    x: 467, y: totalsY - 55, size: 12, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Date - DESCENDUE ET À GAUCHE
+                // Date
                 const today = new Date();
                 const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                 firstPage.drawText(cleanTextForPDF(dateFormatted), {
