@@ -225,7 +225,8 @@
                             <thead>
                                 <tr>
                                     <th>Nom d'utilisateur</th>
-                                    <th>Email</th>
+                                    <th>Nom complet</th>
+                                    <th>Téléphone</th>
                                     <th>Grade</th>
                                     <th>Statut</th>
                                     <th>Dernière connexion</th>
@@ -238,7 +239,8 @@
                                         <strong>admin</strong>
                                         <div style="font-size: 0.8rem; color: #6c757d;">Administrateur principal</div>
                                     </td>
-                                    <td>admin@marlowevineyard.com</td>
+                                    <td>Christopher Marlowe</td>
+                                    <td>+1 (555) 001-0001</td>
                                     <td><span class="grade-badge grade-ceo">CEO</span></td>
                                     <td>
                                         <div class="user-status">
@@ -260,7 +262,8 @@
                                         <strong>manager</strong>
                                         <div style="font-size: 0.8rem; color: #6c757d;">Gestionnaire opérationnel</div>
                                     </td>
-                                    <td>manager@marlowevineyard.com</td>
+                                    <td>Alexandre Dubois</td>
+                                    <td>+1 (555) 002-0123</td>
                                     <td><span class="grade-badge grade-manager">Manager</span></td>
                                     <td>
                                         <div class="user-status">
@@ -285,7 +288,8 @@
                                         <strong>marlowe</strong>
                                         <div style="font-size: 0.8rem; color: #6c757d;">Responsable production</div>
                                     </td>
-                                    <td>marlowe@marlowevineyard.com</td>
+                                    <td>Elena Marlowe</td>
+                                    <td>+1 (555) 003-0456</td>
                                     <td><span class="grade-badge grade-cfo">CFO</span></td>
                                     <td>
                                         <div class="user-status">
@@ -310,7 +314,8 @@
                                         <strong>vincent</strong>
                                         <div style="font-size: 0.8rem; color: #6c757d;">Responsable ventes</div>
                                     </td>
-                                    <td>vincent@marlowevineyard.com</td>
+                                    <td>Vincent Leclerc</td>
+                                    <td>+1 (555) 004-0789</td>
                                     <td><span class="grade-badge grade-manager">Manager</span></td>
                                     <td>
                                         <div class="user-status">
@@ -335,7 +340,8 @@
                                         <strong>sophie</strong>
                                         <div style="font-size: 0.8rem; color: #6c757d;">Assistante administrative</div>
                                     </td>
-                                    <td>sophie@marlowevineyard.com</td>
+                                    <td>Sophie Martin</td>
+                                    <td>+1 (555) 005-0234</td>
                                     <td><span class="grade-badge grade-employe">Employé</span></td>
                                     <td>
                                         <div class="user-status">
@@ -360,7 +366,8 @@
                                         <strong>lucas</strong>
                                         <div style="font-size: 0.8rem; color: #6c757d;">Technicien cave</div>
                                     </td>
-                                    <td>lucas@marlowevineyard.com</td>
+                                    <td>Lucas Bernard</td>
+                                    <td>+1 (555) 006-0567</td>
                                     <td><span class="grade-badge grade-employe">Employé</span></td>
                                     <td>
                                         <div class="user-status">
@@ -592,12 +599,16 @@
                         <input type="text" id="user-username" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Email *</label>
-                        <input type="email" id="user-email" class="form-input" required>
+                        <label class="form-label">Nom complet *</label>
+                        <input type="text" id="user-fullname" class="form-input" required>
                     </div>
                 </div>
 
                 <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Téléphone *</label>
+                        <input type="tel" id="user-phone" class="form-input" required placeholder="+1 (555) 000-0000">
+                    </div>
                     <div class="form-group">
                         <label class="form-label">Grade *</label>
                         <select id="user-grade" class="form-select" required>
@@ -607,37 +618,98 @@
                             <option value="ceo">CEO</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Code d'accès</label>
                         <input type="password" id="user-password" class="form-input" placeholder="Laisser vide pour ne pas changer">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirmer le code</label>
+                        <input type="password" id="user-password-confirm" class="form-input" placeholder="Confirmer le code d'accès">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Description / Rôle</label>
-                    <input type="text" id="user-description" class="form-input" placeholder="ex: Responsable production">
+                    <label class="form-label">Description / Rôle *</label>
+                    <input type="text" id="user-description" class="form-input" required placeholder="ex: Responsable production">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Permissions</label>
+                    <label class="form-label">Adresse complète</label>
+                    <textarea id="user-address" class="form-textarea" rows="3" placeholder="Adresse, code postal, ville, pays"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date d'embauche</label>
+                        <input type="date" id="user-hire-date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Département</label>
+                        <select id="user-department" class="form-select">
+                            <option value="">Sélectionner un département</option>
+                            <option value="direction">Direction</option>
+                            <option value="production">Production</option>
+                            <option value="ventes">Ventes & Marketing</option>
+                            <option value="administration">Administration</option>
+                            <option value="technique">Technique</option>
+                            <option value="qualite">Qualité</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Salaire (optionnel)</label>
+                        <input type="number" id="user-salary" class="form-input" placeholder="Salaire annuel en $">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Manager direct</label>
+                        <select id="user-manager" class="form-select">
+                            <option value="">Aucun manager</option>
+                            <option value="admin">Christopher Marlowe (CEO)</option>
+                            <option value="marlowe">Elena Marlowe (CFO)</option>
+                            <option value="manager">Alexandre Dubois (Manager)</option>
+                            <option value="vincent">Vincent Leclerc (Manager)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Permissions d'accès</label>
                     <div class="permissions-grid">
                         <div class="permission-item">
-                            <input type="checkbox" id="perm-dashboard">
-                            <label for="perm-dashboard">Dashboard</label>
+                            <input type="checkbox" id="perm-dashboard" checked>
+                            <label for="perm-dashboard">📊 Dashboard</label>
                         </div>
                         <div class="permission-item">
                             <input type="checkbox" id="perm-inventory">
-                            <label for="perm-inventory">Inventaire</label>
+                            <label for="perm-inventory">📦 Inventaire</label>
                         </div>
                         <div class="permission-item">
                             <input type="checkbox" id="perm-documents">
-                            <label for="perm-documents">Documents</label>
+                            <label for="perm-documents">📄 Documents</label>
                         </div>
                         <div class="permission-item">
                             <input type="checkbox" id="perm-config">
-                            <label for="perm-config">Configuration</label>
+                            <label for="perm-config">⚙️ Configuration</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="perm-reports">
+                            <label for="perm-reports">📈 Rapports</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="perm-users">
+                            <label for="perm-users">👥 Gestion utilisateurs</label>
                         </div>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes additionnelles</label>
+                    <textarea id="user-notes" class="form-textarea" rows="3" placeholder="Informations complémentaires, certifications, compétences spéciales..."></textarea>
                 </div>
 
                 <div class="config-actions">
@@ -670,21 +742,102 @@
         // Base de données des utilisateurs
         const usersDatabase = {
             'admin': {
-                email: 'admin@marlowevineyard.com',
+                fullname: 'Christopher Marlowe',
+                phone: '+1 (555) 001-0001',
                 grade: 'ceo',
                 description: 'Administrateur principal',
                 password: 'MW2025',
                 status: 'online',
                 lastLogin: 'Maintenant',
-                permissions: ['dashboard', 'inventory', 'documents', 'config']
+                permissions: ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'],
+                address: '1247 Vinewood Hills Drive, Los Santos, CA 90210',
+                hireDate: '2020-01-15',
+                department: 'direction',
+                salary: 250000,
+                manager: '',
+                notes: 'Fondateur et PDG de Marlowe Vineyard'
             },
             'manager': {
-                email: 'manager@marlowevineyard.com',
+                fullname: 'Alexandre Dubois',
+                phone: '+1 (555) 002-0123',
                 grade: 'manager',
                 description: 'Gestionnaire opérationnel',
                 password: 'VINE123',
                 status: 'offline',
                 lastLogin: 'Il y a 2h',
+                permissions: ['dashboard', 'inventory', 'documents', 'reports'],
+                address: '456 Oak Street, Los Santos, CA 90211',
+                hireDate: '2021-03-10',
+                department: 'administration',
+                salary: 85000,
+                manager: 'admin',
+                notes: 'MBA en gestion, spécialisé en opérations viticoles'
+            },
+            'marlowe': {
+                fullname: 'Elena Marlowe',
+                phone: '+1 (555) 003-0456',
+                grade: 'cfo',
+                description: 'Responsable production',
+                password: 'GRAPE456',
+                status: 'online',
+                lastLogin: 'Il y a 15min',
+                permissions: ['dashboard', 'inventory', 'documents', 'reports'],
+                address: '1247 Vinewood Hills Drive, Los Santos, CA 90210',
+                hireDate: '2020-02-01',
+                department: 'production',
+                salary: 120000,
+                manager: 'admin',
+                notes: 'Maître de chai certifiée, 15 ans d\'expérience'
+            },
+            'vincent': {
+                fullname: 'Vincent Leclerc',
+                phone: '+1 (555) 004-0789',
+                grade: 'manager',
+                description: 'Responsable ventes',
+                password: 'WINE789',
+                status: 'offline',
+                lastLogin: 'Hier 18h30',
+                permissions: ['dashboard', 'documents', 'reports'],
+                address: '789 Sunset Boulevard, Los Santos, CA 90212',
+                hireDate: '2021-09-15',
+                department: 'ventes',
+                salary: 90000,
+                manager: 'admin',
+                notes: 'Sommelier diplômé, expert en marketing viticole'
+            },
+            'sophie': {
+                fullname: 'Sophie Martin',
+                phone: '+1 (555) 005-0234',
+                grade: 'employe',
+                description: 'Assistante administrative',
+                password: 'CELLAR321',
+                status: 'online',
+                lastLogin: 'Il y a 5min',
+                permissions: ['dashboard'],
+                address: '321 Pine Avenue, Los Santos, CA 90213',
+                hireDate: '2022-05-20',
+                department: 'administration',
+                salary: 45000,
+                manager: 'manager',
+                notes: 'Diplômée en administration des affaires'
+            },
+            'lucas': {
+                fullname: 'Lucas Bernard',
+                phone: '+1 (555) 006-0567',
+                grade: 'employe',
+                description: 'Technicien cave',
+                password: 'TECH2025',
+                status: 'offline',
+                lastLogin: 'Il y a 3 jours',
+                permissions: ['dashboard', 'inventory'],
+                address: '654 Valley Road, Los Santos, CA 90214',
+                hireDate: '2023-01-10',
+                department: 'technique',
+                salary: 55000,
+                manager: 'marlowe',
+                notes: 'BTS viticulture-œnologie, spécialisé en fermentation'
+            }
+        };',
                 permissions: ['dashboard', 'inventory', 'documents']
             },
             'marlowe': {
@@ -752,10 +905,11 @@
                 
                 rows.forEach(row => {
                     const username = row.querySelector('strong').textContent.toLowerCase();
-                    const email = row.cells[1].textContent.toLowerCase();
+                    const fullname = row.cells[1].textContent.toLowerCase();
+                    const phone = row.cells[2].textContent.toLowerCase();
                     const description = row.querySelector('div').textContent.toLowerCase();
                     
-                    if (username.includes(query) || email.includes(query) || description.includes(query)) {
+                    if (username.includes(query) || fullname.includes(query) || phone.includes(query) || description.includes(query)) {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
@@ -768,6 +922,8 @@
                 document.getElementById('userModalTitle').textContent = 'Ajouter Utilisateur';
                 document.getElementById('saveUser').innerHTML = '<i class="fas fa-plus"></i> Ajouter';
                 userForm.reset();
+                // Cocher dashboard par défaut
+                document.getElementById('perm-dashboard').checked = true;
                 userModal.style.display = 'flex';
             });
 
@@ -779,14 +935,22 @@
             userForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const username = document.getElementById('user-username').value;
-                const email = document.getElementById('user-email').value;
+                const fullname = document.getElementById('user-fullname').value;
+                const phone = document.getElementById('user-phone').value;
                 const grade = document.getElementById('user-grade').value;
                 const password = document.getElementById('user-password').value;
+                const passwordConfirm = document.getElementById('user-password-confirm').value;
                 const description = document.getElementById('user-description').value;
 
                 // Validation
-                if (!username || !email || !grade) {
+                if (!username || !fullname || !phone || !grade || !description) {
                     notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
+                    return;
+                }
+
+                // Vérifier les mots de passe
+                if (password && password !== passwordConfirm) {
+                    notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
                     return;
                 }
 
@@ -802,16 +966,25 @@
                 if (document.getElementById('perm-inventory').checked) permissions.push('inventory');
                 if (document.getElementById('perm-documents').checked) permissions.push('documents');
                 if (document.getElementById('perm-config').checked) permissions.push('config');
+                if (document.getElementById('perm-reports').checked) permissions.push('reports');
+                if (document.getElementById('perm-users').checked) permissions.push('users');
 
                 // Sauvegarder l'utilisateur
                 usersDatabase[username] = {
-                    email: email,
+                    fullname: fullname,
+                    phone: phone,
                     grade: grade,
                     description: description,
                     password: password || usersDatabase[username]?.password || 'TEMP123',
                     status: 'offline',
                     lastLogin: 'Jamais',
-                    permissions: permissions
+                    permissions: permissions,
+                    address: document.getElementById('user-address').value || '',
+                    hireDate: document.getElementById('user-hire-date').value || '',
+                    department: document.getElementById('user-department').value || '',
+                    salary: parseInt(document.getElementById('user-salary').value) || 0,
+                    manager: document.getElementById('user-manager').value || '',
+                    notes: document.getElementById('user-notes').value || ''
                 };
 
                 updateUsersTable();
@@ -825,16 +998,19 @@
             document.getElementById('exportUsers').addEventListener('click', function() {
                 const users = Object.entries(usersDatabase).map(([username, data]) => ({
                     username,
-                    email: data.email,
+                    fullname: data.fullname,
+                    phone: data.phone,
                     grade: data.grade,
                     description: data.description,
                     status: data.status,
-                    lastLogin: data.lastLogin
+                    lastLogin: data.lastLogin,
+                    department: data.department,
+                    salary: data.salary
                 }));
 
                 const csvContent = "data:text/csv;charset=utf-8," 
-                    + "Nom d'utilisateur,Email,Grade,Description,Statut,Dernière connexion\n"
-                    + users.map(user => `${user.username},${user.email},${user.grade},"${user.description}",${user.status},"${user.lastLogin}"`).join('\n');
+                    + "Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n"
+                    + users.map(user => `${user.username},"${user.fullname}",${user.phone},${user.grade},"${user.description}",${user.status},"${user.lastLogin}",${user.department},${user.salary}`).join('\n');
 
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement('a');
@@ -905,16 +1081,26 @@
             document.getElementById('saveUser').innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
             
             document.getElementById('user-username').value = username;
-            document.getElementById('user-email').value = user.email;
+            document.getElementById('user-fullname').value = user.fullname;
+            document.getElementById('user-phone').value = user.phone;
             document.getElementById('user-grade').value = user.grade;
             document.getElementById('user-description').value = user.description;
             document.getElementById('user-password').value = '';
+            document.getElementById('user-password-confirm').value = '';
+            document.getElementById('user-address').value = user.address || '';
+            document.getElementById('user-hire-date').value = user.hireDate || '';
+            document.getElementById('user-department').value = user.department || '';
+            document.getElementById('user-salary').value = user.salary || '';
+            document.getElementById('user-manager').value = user.manager || '';
+            document.getElementById('user-notes').value = user.notes || '';
 
             // Permissions
             document.getElementById('perm-dashboard').checked = user.permissions.includes('dashboard');
             document.getElementById('perm-inventory').checked = user.permissions.includes('inventory');
             document.getElementById('perm-documents').checked = user.permissions.includes('documents');
             document.getElementById('perm-config').checked = user.permissions.includes('config');
+            document.getElementById('perm-reports').checked = user.permissions.includes('reports');
+            document.getElementById('perm-users').checked = user.permissions.includes('users');
 
             document.getElementById('userModal').style.display = 'flex';
         };
@@ -981,7 +1167,8 @@
                         <strong>${username}</strong>
                         <div style="font-size: 0.8rem; color: #6c757d;">${user.description}</div>
                     </td>
-                    <td>${user.email}</td>
+                    <td>${user.fullname}</td>
+                    <td>${user.phone}</td>
                     <td><span class="grade-badge ${gradeClass}">${user.grade.toUpperCase()}</span></td>
                     <td>
                         <div class="user-status">
