@@ -367,7 +367,7 @@
                 
                 // Numéro de devis
                 firstPage.drawText(cleanTextForPDF(devisData.numeroDevis), {
-                    x: 125, y: 743, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
+                    x: 130, y: 743, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                 });
                 
                 // Client
@@ -386,7 +386,7 @@
                 }
                 
                 // Email et téléphone
-                let infoY = 650 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
+                let infoY = 645 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
                 
                 if (devisData.client.email) {
                     firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
