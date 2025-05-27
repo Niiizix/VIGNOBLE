@@ -74,38 +74,6 @@
             border: 2px solid #c62828;
         }
 
-        .user-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-small {
-            padding: 0.3rem 0.6rem;
-            font-size: 0.8rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-edit {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #138496;
-        }
-
-        .btn-delete {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c82333;
-        }
-
         .user-status {
             display: flex;
             align-items: center;
@@ -123,50 +91,6 @@
         .last-login {
             color: #6c757d;
             font-size: 0.9rem;
-        }
-
-        .user-modal .modal-content {
-            max-width: 900px;
-            width: 90%;
-        }
-
-        .user-form {
-            display: grid;
-            gap: 1.5rem;
-            padding: 2rem;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .user-modal .modal-content {
-                max-width: 95%;
-                margin: 1rem;
-            }
-        }
-
-        .permissions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .permission-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 5px;
         }
 
         .search-user {
@@ -188,6 +112,27 @@
             padding: 2rem;
             color: #6c757d;
             font-style: italic;
+        }
+
+        .info-banner {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .info-banner i {
+            color: #2196f3;
+            font-size: 1.2rem;
+        }
+
+        .info-banner-text {
+            color: #1565c0;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -223,7 +168,7 @@
         <div class="hero-content">
             <h1>Configuration Système</h1>
             <p class="subtitle">Paramètres de l'intranet</p>
-            <p>Configurez les paramètres globaux et gérez les utilisateurs de votre intranet.</p>
+            <p>Consultez les utilisateurs et configurez les paramètres globaux de votre intranet.</p>
         </div>
     </section>
 
@@ -231,19 +176,23 @@
     <section class="config-section">
         <div class="config-container">
             
-            <!-- Gestion des Utilisateurs -->
+            <!-- Consultation des Utilisateurs -->
             <div class="config-category">
                 <div class="config-header">
-                    <h2><i class="fas fa-users"></i> Gestion des Utilisateurs</h2>
-                    <p>Gérez les comptes utilisateurs et leurs permissions d'accès</p>
+                    <h2><i class="fas fa-users"></i> Utilisateurs du Système</h2>
+                    <p>Consultez la liste des utilisateurs et leurs informations</p>
                 </div>
                 
                 <div class="config-content">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                        <input type="text" id="searchUsers" class="search-user" placeholder="🔍 Rechercher un utilisateur..." style="flex: 1; min-width: 250px;">
-                        <button class="cta-button btn-success" id="addUserBtn">
-                            <i class="fas fa-user-plus"></i> Ajouter Utilisateur
-                        </button>
+                    <div class="info-banner">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="info-banner-text">
+                            <strong>Mode consultation uniquement</strong> - Pour modifier les utilisateurs, éditez directement le fichier DB.json
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <input type="text" id="searchUsers" class="search-user" placeholder="🔍 Rechercher un utilisateur..." style="max-width: 400px;">
                     </div>
 
                     <div class="users-table">
@@ -254,9 +203,9 @@
                                     <th>Nom complet</th>
                                     <th>Téléphone</th>
                                     <th>Grade</th>
+                                    <th>Département</th>
                                     <th>Statut</th>
                                     <th>Dernière connexion</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
@@ -267,15 +216,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-
-                    <div class="config-actions">
-                        <button type="button" class="cta-button btn-info" id="exportUsers">
-                            <i class="fas fa-download"></i> Exporter Liste
-                        </button>
-                        <button type="button" class="cta-button btn-warning" id="resetPasswords">
-                            <i class="fas fa-key"></i> Réinitialiser Mots de Passe
-                        </button>
                     </div>
                 </div>
             </div>
@@ -463,139 +403,6 @@
         </div>
     </section>
 
-    <!-- Modal pour utilisateur -->
-    <div id="userModal" class="modal user-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="userModalTitle">Modifier Utilisateur</h3>
-                <span class="modal-close" id="closeUserModal">&times;</span>
-            </div>
-            <form id="userForm" class="user-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Nom d'utilisateur *</label>
-                        <input type="text" id="user-username" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nom complet *</label>
-                        <input type="text" id="user-fullname" class="form-input" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Téléphone *</label>
-                        <input type="tel" id="user-phone" class="form-input" required placeholder="+1 (555) 000-0000">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Grade *</label>
-                        <select id="user-grade" class="form-select" required>
-                            <option value="employe">Employé</option>
-                            <option value="manager">Manager</option>
-                            <option value="cfo">CFO</option>
-                            <option value="ceo">CEO</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Code d'accès</label>
-                        <input type="password" id="user-password" class="form-input" placeholder="Laisser vide pour ne pas changer">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Confirmer le code</label>
-                        <input type="password" id="user-password-confirm" class="form-input" placeholder="Confirmer le code d'accès">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description / Rôle *</label>
-                    <input type="text" id="user-description" class="form-input" required placeholder="ex: Responsable production">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Adresse complète</label>
-                    <textarea id="user-address" class="form-textarea" rows="3" placeholder="Adresse, code postal, ville, pays"></textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Date d'embauche</label>
-                        <input type="date" id="user-hire-date" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Département</label>
-                        <select id="user-department" class="form-select">
-                            <option value="">Sélectionner un département</option>
-                            <option value="direction">Direction</option>
-                            <option value="production">Production</option>
-                            <option value="ventes">Ventes & Marketing</option>
-                            <option value="administration">Administration</option>
-                            <option value="technique">Technique</option>
-                            <option value="qualite">Qualité</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Salaire (optionnel)</label>
-                        <input type="number" id="user-salary" class="form-input" placeholder="Salaire annuel en $">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Manager direct</label>
-                        <select id="user-manager" class="form-select">
-                            <!-- Options chargées dynamiquement depuis la DB -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Permissions d'accès</label>
-                    <div class="permissions-grid">
-                        <div class="permission-item">
-                            <input type="checkbox" id="perm-dashboard" checked>
-                            <label for="perm-dashboard">📊 Dashboard</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="perm-inventory">
-                            <label for="perm-inventory">📦 Inventaire</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="perm-documents">
-                            <label for="perm-documents">📄 Documents</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="perm-config">
-                            <label for="perm-config">⚙️ Configuration</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="perm-reports">
-                            <label for="perm-reports">📈 Rapports</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="perm-users">
-                            <label for="perm-users">👥 Gestion utilisateurs</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Notes additionnelles</label>
-                    <textarea id="user-notes" class="form-textarea" rows="3" placeholder="Informations complémentaires, certifications, compétences spéciales..."></textarea>
-                </div>
-
-                <div class="config-actions">
-                    <button type="button" class="cta-button btn-secondary" id="cancelUser">Annuler</button>
-                    <button type="submit" class="cta-button btn-success" id="saveUser">
-                        <i class="fas fa-save"></i> Sauvegarder
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Footer -->
     <footer class="footer">
         <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
@@ -606,8 +413,6 @@
         // Variables globales
         let currentUsers = {};
         let currentConfig = {};
-        let isEditMode = false;
-        let editingUsername = '';
 
         // === FONCTIONS UTILITAIRES ===
         function updateUsersTable() {
@@ -625,7 +430,6 @@
                 const gradeClass = `grade-${user.grade}`;
                 const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
                 const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
-                const canDelete = username !== 'admin';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -636,6 +440,7 @@
                     <td>${user.fullname || ''}</td>
                     <td>${user.phone || ''}</td>
                     <td><span class="grade-badge ${gradeClass}">${(user.grade || 'employe').toUpperCase()}</span></td>
+                    <td>${user.department || 'Non spécifié'}</td>
                     <td>
                         <div class="user-status">
                             <i class="fas fa-circle ${statusIcon}"></i>
@@ -643,16 +448,6 @@
                         </div>
                     </td>
                     <td class="last-login">${user.lastLogin || 'Jamais'}</td>
-                    <td>
-                        <div class="user-actions">
-                            <button class="btn-small btn-edit" onclick="editUser('${username}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${canDelete ? `<button class="btn-small btn-delete" onclick="deleteUser('${username}')">
-                                <i class="fas fa-trash"></i>
-                            </button>` : ''}
-                        </div>
-                    </td>
                 `;
                 tbody.appendChild(row);
             });
@@ -740,228 +535,15 @@
             });
         }
 
-        // === GESTION UTILISATEURS ===
-        function populateManagerSelect() {
-            const managerSelect = document.getElementById('user-manager');
-            if (!managerSelect) return;
-            
-            managerSelect.innerHTML = '<option value="">Aucun manager</option>';
-            
-            Object.entries(currentUsers).forEach(([username, user]) => {
-                if (user.grade === 'ceo' || user.grade === 'cfo' || user.grade === 'manager') {
-                    const option = document.createElement('option');
-                    option.value = username;
-                    option.textContent = `${user.fullname} (${user.grade.toUpperCase()})`;
-                    managerSelect.appendChild(option);
-                }
-            });
-        }
-
-        function saveUserData() {
-            const username = document.getElementById('user-username').value.trim();
-            const fullname = document.getElementById('user-fullname').value.trim();
-            const phone = document.getElementById('user-phone').value.trim();
-            const grade = document.getElementById('user-grade').value;
-            const password = document.getElementById('user-password').value;
-            const passwordConfirm = document.getElementById('user-password-confirm').value;
-            const description = document.getElementById('user-description').value.trim();
-
-            // Validation
-            if (!username || !fullname || !phone || !grade || !description) {
-                if (window.notify) window.notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires.');
-                return;
-            }
-
-            if (password && password !== passwordConfirm) {
-                if (window.notify) window.notify.error('Erreur', 'Les mots de passe ne correspondent pas.');
-                return;
-            }
-
-            if (!isEditMode && currentUsers[username]) {
-                if (window.notify) window.notify.error('Erreur', 'Cet utilisateur existe déjà.');
-                return;
-            }
-
-            // Collecter les permissions
-            const permissions = [];
-            ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'].forEach(perm => {
-                if (document.getElementById(`perm-${perm}`)?.checked) permissions.push(perm);
-            });
-
-            // Créer l'objet utilisateur
-            const userData = {
-                fullname, phone, grade, description,
-                password: password || currentUsers[username]?.password || 'TEMP123',
-                status: currentUsers[username]?.status || 'offline',
-                lastLogin: currentUsers[username]?.lastLogin || 'Jamais',
-                permissions,
-                address: document.getElementById('user-address')?.value.trim() || '',
-                hireDate: document.getElementById('user-hire-date')?.value || '',
-                department: document.getElementById('user-department')?.value || '',
-                salary: parseInt(document.getElementById('user-salary')?.value) || 0,
-                manager: document.getElementById('user-manager')?.value || '',
-                notes: document.getElementById('user-notes')?.value.trim() || ''
-            };
-
-            const saved = window.dbManager.saveUser(username, userData);
-            
-            if (saved) {
-                currentUsers = window.dbManager.getUsers();
-                updateUsersTable();
-                document.getElementById('userModal').style.display = 'none';
-                
-                const action = isEditMode ? 'modifié' : 'ajouté';
-                if (window.notify) window.notify.success('Succès', `Utilisateur ${action} avec succès !`);
-            } else {
-                if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder l\'utilisateur.');
-            }
-        }
-
-        // Fonctions globales
-        window.editUser = function(username) {
-            const user = currentUsers[username];
-            if (!user) return;
-
-            isEditMode = true;
-            editingUsername = username;
-            
-            document.getElementById('userModalTitle').textContent = 'Modifier Utilisateur';
-            document.getElementById('saveUser').innerHTML = '<i class="fas fa-save"></i> Sauvegarder';
-            
-            // Remplir le formulaire
-            const fields = {
-                'user-username': username,
-                'user-fullname': user.fullname || '',
-                'user-phone': user.phone || '',
-                'user-grade': user.grade || 'employe',
-                'user-description': user.description || '',
-                'user-address': user.address || '',
-                'user-hire-date': user.hireDate || '',
-                'user-department': user.department || '',
-                'user-salary': user.salary || '',
-                'user-notes': user.notes || ''
-            };
-
-            Object.entries(fields).forEach(([id, value]) => {
-                const element = document.getElementById(id);
-                if (element) element.value = value;
-            });
-
-            // Vider les mots de passe
-            document.getElementById('user-password').value = '';
-            document.getElementById('user-password-confirm').value = '';
-
-            populateManagerSelect();
-            document.getElementById('user-manager').value = user.manager || '';
-
-            // Permissions
-            const permissions = user.permissions || [];
-            ['dashboard', 'inventory', 'documents', 'config', 'reports', 'users'].forEach(perm => {
-                const element = document.getElementById(`perm-${perm}`);
-                if (element) element.checked = permissions.includes(perm);
-            });
-
-            document.getElementById('userModal').style.display = 'flex';
-        };
-
-        window.deleteUser = function(username) {
-            if (username === 'admin') {
-                if (window.notify) window.notify.error('Action interdite', 'Impossible de supprimer le compte administrateur.');
-                return;
-            }
-
-            if (!window.notify) return;
-
-            const confirmNotification = window.notify.warning(
-                `Supprimer ${username}`, 
-                'Cette action est irréversible. Confirmer la suppression ?', 
-                10000
-            );
-            
-            addConfirmationButtons(confirmNotification, () => {
-                const deleted = window.dbManager.deleteUser(username);
-                if (deleted) {
-                    currentUsers = window.dbManager.getUsers();
-                    updateUsersTable();
-                    if (window.notify) window.notify.success('Utilisateur supprimé', `${username} a été supprimé de la base.`);
-                } else {
-                    if (window.notify) window.notify.error('Erreur', 'Impossible de supprimer l\'utilisateur.');
-                }
-            });
-        };
-
         // === SETUP FUNCTIONS ===
         function setupUserManagement() {
-            const userModal = document.getElementById('userModal');
-            const userForm = document.getElementById('userForm');
-
-            // Ajouter utilisateur
-            document.getElementById('addUserBtn')?.addEventListener('click', function() {
-                isEditMode = false;
-                document.getElementById('userModalTitle').textContent = 'Ajouter Utilisateur';
-                document.getElementById('saveUser').innerHTML = '<i class="fas fa-plus"></i> Ajouter';
-                userForm.reset();
-                document.getElementById('perm-dashboard').checked = true;
-                populateManagerSelect();
-                userModal.style.display = 'flex';
-            });
-
-            // Fermer modal
-            document.getElementById('closeUserModal')?.addEventListener('click', () => userModal.style.display = 'none');
-            document.getElementById('cancelUser')?.addEventListener('click', () => userModal.style.display = 'none');
-
-            // Formulaire
-            userForm?.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveUserData();
-            });
-
-            // Recherche
+            // Recherche uniquement
             document.getElementById('searchUsers')?.addEventListener('input', function() {
                 const query = this.value.toLowerCase();
                 document.querySelectorAll('#usersTableBody tr').forEach(row => {
                     if (row.querySelector('.loading-message')) return;
                     const text = row.textContent.toLowerCase();
                     row.style.display = text.includes(query) ? '' : 'none';
-                });
-            });
-
-            // Export CSV
-            document.getElementById('exportUsers')?.addEventListener('click', function() {
-                const users = Object.entries(currentUsers).map(([username, data]) => 
-                    `${username},"${data.fullname}",${data.phone},${data.grade},"${data.description}",${data.status},"${data.lastLogin}",${data.department || ''},${data.salary || 0}`
-                );
-
-                const csvContent = "data:text/csv;charset=utf-8,Nom d'utilisateur,Nom complet,Téléphone,Grade,Description,Statut,Dernière connexion,Département,Salaire\n" + users.join('\n');
-                const link = document.createElement('a');
-                link.href = encodeURI(csvContent);
-                link.download = `marlowe_users_export_${new Date().toISOString().split('T')[0]}.csv`;
-                link.click();
-
-                if (window.notify) window.notify.success('Export réussi', 'Liste des utilisateurs exportée en CSV.');
-            });
-
-            // Reset passwords
-            document.getElementById('resetPasswords')?.addEventListener('click', function() {
-                if (!window.notify) return;
-                
-                const confirmNotification = window.notify.warning(
-                    'Confirmation dangereuse', 
-                    'Réinitialiser TOUS les mots de passe ? Cette action est irréversible.', 
-                    15000
-                );
-                
-                addConfirmationButtons(confirmNotification, () => {
-                    Object.keys(currentUsers).forEach(username => {
-                        if (username !== 'admin') {
-                            const user = currentUsers[username];
-                            user.password = 'RESET2025';
-                            window.dbManager.saveUser(username, user);
-                        }
-                    });
-                    
-                    currentUsers = window.dbManager.getUsers();
-                    if (window.notify) window.notify.info('Mots de passe réinitialisés', 'Nouveau mot de passe temporaire: RESET2025');
                 });
             });
         }
@@ -985,15 +567,12 @@
                     return;
                 }
 
-                const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
+                // Mettre à jour la configuration globale (sans localStorage)
+                currentConfig.thresholds = newThresholds;
+                window.globalConfig.thresholds = newThresholds;
                 
-                if (saved) {
-                    currentConfig.thresholds = newThresholds;
-                    updateThresholdInfo();
-                    if (window.notify) window.notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
-                } else {
-                    if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
+                updateThresholdInfo();
+                if (window.notify) window.notify.success('Configuration mise à jour', 'Nouveaux seuils appliqués pour cette session.');
             });
 
             document.getElementById('resetThresholds')?.addEventListener('click', function() {
@@ -1006,12 +585,10 @@
                         bouteilles: { critical: 30, warning: 75 }
                     };
                     
-                    const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
-                    if (saved) {
-                        currentConfig.thresholds = defaultThresholds;
-                        loadConfiguration();
-                        if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
-                    }
+                    currentConfig.thresholds = defaultThresholds;
+                    window.globalConfig.thresholds = defaultThresholds;
+                    loadConfiguration();
+                    if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
                 });
             });
 
@@ -1027,14 +604,10 @@
                     soundEnabled: document.getElementById('sound-notifications')?.checked || false
                 };
 
-                const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
+                currentConfig.notifications = newNotifications;
+                window.globalConfig.notifications = newNotifications;
                 
-                if (saved) {
-                    currentConfig.notifications = newNotifications;
-                    if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
-                } else {
-                    if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
+                if (window.notify) window.notify.success('Configuration mise à jour', 'Paramètres de notification appliqués pour cette session.');
             });
 
             document.getElementById('resetNotifications')?.addEventListener('click', function() {
@@ -1043,13 +616,10 @@
                 const confirmNotification = window.notify.warning('Réinitialiser les notifications', 'Remettre les valeurs par défaut ?', 10000);
                 addConfirmationButtons(confirmNotification, () => {
                     const defaultNotifications = { duration: 4, soundEnabled: true };
-                    const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
-                    
-                    if (saved) {
-                        currentConfig.notifications = defaultNotifications;
-                        loadConfiguration();
-                        if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
-                    }
+                    currentConfig.notifications = defaultNotifications;
+                    window.globalConfig.notifications = defaultNotifications;
+                    loadConfiguration();
+                    if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
                 });
             });
         }
@@ -1061,14 +631,10 @@
                     theme: document.getElementById('theme-mode')?.value || 'light'
                 };
 
-                const saved = window.dbManager.updateConfiguration('system', newSystem);
+                currentConfig.system = newSystem;
+                window.globalConfig.system = newSystem;
                 
-                if (saved) {
-                    currentConfig.system = newSystem;
-                    if (window.notify) window.notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
-                } else {
-                    if (window.notify) window.notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
-                }
+                if (window.notify) window.notify.success('Configuration mise à jour', 'Paramètres système appliqués pour cette session.');
             });
 
             document.getElementById('resetSystem')?.addEventListener('click', function() {
@@ -1077,13 +643,10 @@
                 const confirmNotification = window.notify.warning('Réinitialiser le système', 'Remettre les valeurs par défaut ?', 10000);
                 addConfirmationButtons(confirmNotification, () => {
                     const defaultSystem = { sessionTimeout: 60, theme: 'light' };
-                    const saved = window.dbManager.updateConfiguration('system', defaultSystem);
-                    
-                    if (saved) {
-                        currentConfig.system = defaultSystem;
-                        loadConfiguration();
-                        if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
-                    }
+                    currentConfig.system = defaultSystem;
+                    window.globalConfig.system = defaultSystem;
+                    loadConfiguration();
+                    if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
                 });
             });
         }
@@ -1105,11 +668,12 @@
         // === CHARGEMENT DES DONNÉES ===
         async function loadAllData() {
             try {
+                // Charger uniquement depuis DB.json (pas de localStorage)
                 currentUsers = window.dbManager.getUsers();
                 currentConfig = window.dbManager.getConfiguration();
                 
-                console.log('👥 Utilisateurs chargés:', Object.keys(currentUsers).length);
-                console.log('⚙️ Configuration chargée:', currentConfig);
+                console.log('👥 Utilisateurs chargés depuis DB.json:', Object.keys(currentUsers).length);
+                console.log('⚙️ Configuration chargée depuis DB.json:', currentConfig);
                 
                 updateUsersTable();
                 loadConfiguration();
@@ -1117,14 +681,14 @@
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des données:', error);
                 if (window.notify) {
-                    window.notify.error('Erreur', 'Impossible de charger les données de configuration.');
+                    window.notify.error('Erreur', 'Impossible de charger les données depuis DB.json.');
                 }
             }
         }
 
         // === INITIALISATION ===
         function initConfigPage() {
-            console.log('🔄 Initialisation de la page de configuration...');
+            console.log('🔄 Initialisation de la page de configuration (mode lecture seule)...');
             
             if (!window.dbManager || !window.dbManager.waitForReady) {
                 console.log('⏳ En attente du DatabaseManager...');
@@ -1148,7 +712,7 @@
                     setupSystem();
                     setupLogout();
                     
-                    console.log('✅ Page Configuration chargée avec données DB !');
+                    console.log('✅ Page Configuration chargée en mode lecture seule !');
                 } catch (setupError) {
                     console.error('❌ Erreur lors de l\'initialisation des gestionnaires:', setupError);
                     if (window.notify) {
@@ -1166,7 +730,7 @@
 
         // Démarrer l'initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM chargé, démarrage de l\'initialisation...');
+            console.log('📄 DOM chargé, démarrage de l\'initialisation en mode lecture seule...');
             initConfigPage();
         });
     </script>
