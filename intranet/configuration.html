@@ -856,7 +856,47 @@
                 manager: 'marlowe',
                 notes: 'BTS viticulture-œnologie, spécialisé en fermentation'
             }
+        };',
+                permissions: ['dashboard', 'inventory', 'documents']
+            },
+            'marlowe': {
+                email: 'marlowe@marlowevineyard.com',
+                grade: 'cfo',
+                description: 'Responsable production',
+                password: 'GRAPE456',
+                status: 'online',
+                lastLogin: 'Il y a 15min',
+                permissions: ['dashboard', 'inventory', 'documents']
+            },
+            'vincent': {
+                email: 'vincent@marlowevineyard.com',
+                grade: 'manager',
+                description: 'Responsable ventes',
+                password: 'WINE789',
+                status: 'offline',
+                lastLogin: 'Hier 18h30',
+                permissions: ['dashboard', 'documents']
+            },
+            'sophie': {
+                email: 'sophie@marlowevineyard.com',
+                grade: 'employe',
+                description: 'Assistante administrative',
+                password: 'CELLAR321',
+                status: 'online',
+                lastLogin: 'Il y a 5min',
+                permissions: ['dashboard']
+            },
+            'lucas': {
+                email: 'lucas@marlowevineyard.com',
+                grade: 'employe',
+                description: 'Technicien cave',
+                password: 'TECH2025',
+                status: 'offline',
+                lastLogin: 'Il y a 3 jours',
+                permissions: ['dashboard', 'inventory']
+            }
         };
+
         document.addEventListener('DOMContentLoaded', function() {
             loadConfiguration();
             setupUserManagement();
@@ -1098,6 +1138,7 @@
                     notify.remove(confirmNotification);
                 });
             });
+        }
 
         // Fonctions globales pour les actions utilisateurs
         window.editUser = function(username) {
@@ -1219,7 +1260,7 @@
             });
         }
 
-        // === GESTION DES SEUILS (existant) ===
+        // === GESTION DES SEUILS ===
         function setupThresholds() {
             document.getElementById('saveThresholds').addEventListener('click', function() {
                 const criticalMatieres = parseInt(document.getElementById('critical-matieres').value);
@@ -1232,14 +1273,19 @@
                     return;
                 }
 
-                configData.thresholds.matieres.critical = criticalMatieres;
-                configData.thresholds.matieres.warning = warningMatieres;
-                configData.thresholds.bouteilles.critical = criticalBouteilles;
-                configData.thresholds.bouteilles.warning = warningBouteilles;
+                const newThresholds = {
+                    matieres: { critical: criticalMatieres, warning: warningMatieres },
+                    bouteilles: { critical: criticalBouteilles, warning: warningBouteilles }
+                };
 
-                window.updateGlobalConfig(configData);
-                updateThresholdInfo();
-                notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
+                const saved = window.dbManager.updateConfiguration('thresholds', newThresholds);
+                if (saved) {
+                    configData.thresholds = newThresholds;
+                    updateThresholdInfo();
+                    notify.success('Configuration sauvegardée', 'Nouveaux seuils appliqués.');
+                } else {
+                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
             });
 
             document.getElementById('resetThresholds').addEventListener('click', function() {
@@ -1274,14 +1320,17 @@
                 confirmBtn.addEventListener('click', () => {
                     notify.remove(confirmNotification);
                     
-                    configData.thresholds.matieres.critical = 50;
-                    configData.thresholds.matieres.warning = 100;
-                    configData.thresholds.bouteilles.critical = 30;
-                    configData.thresholds.bouteilles.warning = 75;
+                    const defaultThresholds = {
+                        matieres: { critical: 50, warning: 100 },
+                        bouteilles: { critical: 30, warning: 75 }
+                    };
                     
-                    window.updateGlobalConfig(configData);
-                    loadConfiguration();
-                    notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
+                    const saved = window.dbManager.updateConfiguration('thresholds', defaultThresholds);
+                    if (saved) {
+                        configData.thresholds = defaultThresholds;
+                        loadConfiguration();
+                        notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
+                    }
                 });
                 
                 cancelBtn.addEventListener('click', () => {
@@ -1293,45 +1342,63 @@
             document.getElementById('warning-bouteilles').addEventListener('input', updateThresholdInfo);
         }
 
-        // === GESTION DES NOTIFICATIONS (existant) ===
+        // === GESTION DES NOTIFICATIONS ===
         function setupNotifications() {
             document.getElementById('saveNotifications').addEventListener('click', function() {
                 const duration = parseInt(document.getElementById('notification-duration').value);
                 const soundEnabled = document.getElementById('sound-notifications').checked;
 
-                configData.notifications.duration = duration;
-                configData.notifications.soundEnabled = soundEnabled;
-                window.updateGlobalConfig(configData);
-                notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
+                const newNotifications = { duration, soundEnabled };
+                const saved = window.dbManager.updateConfiguration('notifications', newNotifications);
+                
+                if (saved) {
+                    configData.notifications = newNotifications;
+                    notify.success('Configuration sauvegardée', 'Paramètres de notification mis à jour.');
+                } else {
+                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
             });
 
             document.getElementById('resetNotifications').addEventListener('click', function() {
-                configData.notifications.duration = 4;
-                configData.notifications.soundEnabled = true;
-                window.updateGlobalConfig(configData);
-                loadConfiguration();
-                notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
+                const defaultNotifications = { duration: 4, soundEnabled: true };
+                const saved = window.dbManager.updateConfiguration('notifications', defaultNotifications);
+                
+                if (saved) {
+                    configData.notifications = defaultNotifications;
+                    loadConfiguration();
+                    notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
+                }
             });
         }
 
-        // === GESTION DU SYSTÈME (existant) ===
+        // === GESTION DU SYSTÈME ===
         function setupSystem() {
             document.getElementById('saveSystem').addEventListener('click', function() {
                 const sessionTimeout = parseInt(document.getElementById('session-timeout').value);
                 const theme = document.getElementById('theme-mode').value;
 
-                configData.system.sessionTimeout = sessionTimeout;
-                configData.system.theme = theme;
-                window.updateGlobalConfig(configData);
-                notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
+                const newSystem = { sessionTimeout, theme };
+                const saved = window.dbManager.updateConfiguration('system', newSystem);
+                
+                if (saved) {
+                    configData.system = newSystem;
+                    notify.success('Configuration sauvegardée', 'Paramètres système mis à jour.');
+                } else {
+                    notify.error('Erreur', 'Impossible de sauvegarder la configuration.');
+                }
             });
 
             document.getElementById('resetSystem').addEventListener('click', function() {
-                configData.system.sessionTimeout = 60;
-                configData.system.theme = 'light';
-                window.updateGlobalConfig(configData);
-                loadConfiguration();
-                notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
+                const defaultSystem = { sessionTimeout: 60, theme: 'light' };
+                const saved = window.dbManager.updateConfiguration('system', defaultSystem);
+                
+                if (saved) {
+                    configData.system = defaultSystem;
+                    loadConfiguration();
+                    notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
+                }
+            });
+        }aut restaurés.');
             });
         }
 
@@ -1414,6 +1481,47 @@
             if (bouteillesInfo) {
                 bouteillesInfo.innerHTML = `Au-dessus de ${warningBouteilles} bouteilles = <strong>Bon Stock</strong>`;
             }
+        }
+
+        function updateUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            Object.entries(usersDatabase).forEach(([username, user]) => {
+                const gradeClass = `grade-${user.grade}`;
+                const statusIcon = user.status === 'online' ? 'status-online' : 'status-offline';
+                const statusText = user.status === 'online' ? 'En ligne' : 'Hors ligne';
+                const canDelete = username !== 'admin';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <strong>${username}</strong>
+                        <div style="font-size: 0.8rem; color: #6c757d;">${user.description}</div>
+                    </td>
+                    <td>${user.fullname}</td>
+                    <td>${user.phone}</td>
+                    <td><span class="grade-badge ${gradeClass}">${user.grade.toUpperCase()}</span></td>
+                    <td>
+                        <div class="user-status">
+                            <i class="fas fa-circle ${statusIcon}"></i>
+                            <span>${statusText}</span>
+                        </div>
+                    </td>
+                    <td class="last-login">${user.lastLogin}</td>
+                    <td>
+                        <div class="user-actions">
+                            <button class="btn-small btn-edit" onclick="editUser('${username}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${canDelete ? `<button class="btn-small btn-delete" onclick="deleteUser('${username}')">
+                                <i class="fas fa-trash"></i>
+                            </button>` : ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
         }
     </script>
 </body>
