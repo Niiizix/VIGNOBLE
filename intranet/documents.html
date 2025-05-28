@@ -658,7 +658,7 @@
                 if (factureData.produits && Array.isArray(factureData.produits)) {
                     factureData.produits.slice(0, 10).forEach((produit, index) => {
                         try {
-                            const currentY = productY - (index * 33);
+                            const currentY = productY - (index * 34);
                             
                             if (currentY > 150) {
                                 const nomProduit = cleanTextForPDF(produit.nom);
