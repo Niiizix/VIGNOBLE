@@ -737,6 +737,145 @@
                 }
             });
         }
+
+        // === FONCTION ENVOI DISCORD SIMPLIFIÉ (EMBED SEULEMENT) ===
+        async function sendEmbedToDiscord(devisData) {
+            const payload = {
+                content: "📋 Nouveau devis créé !",
+                embeds: [{
+                    title: "🍷 Devis Marlowe Vineyard",
+                    color: 0x8B5A9F,
+                    fields: [
+                        {
+                            name: "Numéro",
+                            value: devisData.numeroDevis,
+                            inline: true
+                        },
+                        {
+                            name: "Client", 
+                            value: devisData.client.nom,
+                            inline: true
+                        },
+                        {
+                            name: "Total",
+                            value: `$${devisData.totaux.total.toFixed(2)}`,
+                            inline: true
+                        }
+                    ]
+                }]
+            };
+            
+            const response = await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) throw new Error(`Discord error: ${response.status}`);
+            return true;
+        }
+        
+        async function downloadPDF(devisData) {
+            try {
+                console.log('📄 Génération PDF pour téléchargement...');
+                
+                const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
+                const pdfBytes = await pdfDoc.save();
+                
+                console.log('📄 PDF généré:', pdfBytes.length, 'bytes');
+                
+                const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+                
+                const clientName = devisData.client.nom
+                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                    .replace(/\s+/g, '_')
+                    .substring(0, 20);
+                
+                const filename = `Devis_${devisData.numeroDevis}_${clientName}.pdf`;
+                
+                const url = URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                
+                console.log('✅ PDF téléchargé:', filename);
+                return filename;
+                
+            } catch (error) {
+                console.error('❌ Erreur téléchargement PDF:', error);
+                throw error;
+            }
+        }
+        
+        // === FONCTION PRINCIPALE (INCHANGÉE) ===
+        async function generateDevisComplete() {
+            console.log('🚀 Génération complète du devis...');
+            
+            if (!document.getElementById('client-nom').value.trim()) {
+                notify.error('Formulaire incomplet', 'Le nom du client est requis.');
+                return;
+            }
+            
+            if (!document.getElementById('client-adresse').value.trim()) {
+                notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
+                return;
+            }
+            
+            if (!templatePDF) {
+                notify.error('Template manquant', 'Le template PDF n\'est pas chargé.');
+                return;
+            }
+            
+            let hasValidProducts = false;
+            document.querySelectorAll('.product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`select[data-id="${id}"]`);
+                if (select && select.value) hasValidProducts = true;
+            });
+            
+            if (!hasValidProducts) {
+                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
+                return;
+            }
+            
+            collectDevisData();
+            console.log('📊 Données du devis:', devisData);
+            
+            try {
+                notify.info('Traitement en cours...', 'Génération du PDF...');
+                
+                const filename = await downloadPDF(devisData);
+                console.log('✅ PDF téléchargé:', filename);
+                
+                notify.info('Notification Discord...', 'Envoi en cours...');
+                
+                await sendEmbedToDiscord(devisData);
+                console.log('✅ Discord notifié');
+                
+                notify.success(
+                    'Devis créé avec succès !', 
+                    `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Devis ${devisData.numeroDevis} finalisé`
+                );
+                
+                setTimeout(() => closeDevisModal(), 3000);
+                
+            } catch (error) {
+                console.error('❌ Erreur complète:', error);
+                
+                if (error.message.includes('Discord')) {
+                    notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué. Vérifiez la console.');
+                } else {
+                    notify.error('Erreur de génération', error.message);
+                }
+            }
+        }
     </script>
 </body>
 </html>
