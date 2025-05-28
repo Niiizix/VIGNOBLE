@@ -714,7 +714,7 @@
             try {
                 showTemplateStatus('🔄 Chargement du template facture...', 'info');
                 
-                const response = await fetch('../assets/template-facture.pdf');
+                const response = await fetch('../assets/template-factures.pdf');
                 if (response.ok) {
                     const blob = await response.blob();
                     const arrayBuffer = await blob.arrayBuffer();
