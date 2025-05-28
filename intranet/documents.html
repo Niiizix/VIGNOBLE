@@ -610,7 +610,7 @@
                 // 3. Informations client (coordonnées temporaires)
                 if (cleanNom) {
                     firstPage.drawText(cleanNom, {
-                        x: 420, y: 610,
+                        x: 425, y: 610,
                         size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                     });
                 }
@@ -623,7 +623,7 @@
                         addressLines.forEach((line, index) => {
                             if (line.trim()) {
                                 firstPage.drawText(line.trim(), {
-                                    x: 420, y: 595 - (index * 15),
+                                    x: 425, y: 595 - (index * 15),
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                             }
@@ -640,7 +640,7 @@
                 let contactY = 580;
                 if (cleanEmail) {
                     firstPage.drawText(`Email: ${cleanEmail}`, {
-                        x: 420, y: contactY,
+                        x: 425, y: contactY,
                         size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     contactY -= 15;
@@ -648,13 +648,13 @@
                 
                 if (cleanTelephone) {
                     firstPage.drawText(`Tel: ${cleanTelephone}`, {
-                        x: 420, y: contactY,
+                        x: 425, y: contactY,
                         size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 }
                 
                 // 4. Tableau des produits
-                let productY = 560;
+                let productY = 520;
                 if (factureData.produits && Array.isArray(factureData.produits)) {
                     factureData.produits.slice(0, 8).forEach((produit, index) => {
                         try {
@@ -672,19 +672,19 @@
                                 
                                 // Prix (colonne 2)
                                 firstPage.drawText(`$${produit.prix || 0}`, {
-                                    x: 395, y: currentY,
+                                    x: 150, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
                                 // Quantité (colonne 3)
                                 firstPage.drawText(`${produit.quantite || 1}`, {
-                                    x: 468, y: currentY,
+                                    x: 200, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
                                 // Total (colonne 4)
                                 firstPage.drawText(`$${produit.total || 0}`, {
-                                    x: 540, y: currentY,
+                                    x: 250, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                             }
