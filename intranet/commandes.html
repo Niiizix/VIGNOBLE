@@ -29,6 +29,16 @@
             border-color: #8B5A9F;
         }
 
+        .commande-card.commande-livree {
+            border-color: #28a745;
+            background: linear-gradient(145deg, #ffffff, #f8fff9);
+        }
+
+        .commande-card.commande-retard {
+            border-color: #dc3545;
+            background: linear-gradient(145deg, #ffffff, #fff8f8);
+        }
+
         .commande-header {
             display: flex;
             justify-content: space-between;
@@ -76,6 +86,24 @@
             border-radius: 10px;
             padding: 1rem;
             margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .commande-livraison.retard {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            animation: pulse-red 2s infinite;
+        }
+
+        .commande-livraison.livree {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
 
         .commande-livraison h4 {
@@ -85,6 +113,14 @@
             align-items: center;
         }
 
+        .commande-livraison.retard h4 {
+            color: #721c24;
+        }
+
+        .commande-livraison.livree h4 {
+            color: #155724;
+        }
+
         .commande-livraison h4 i {
             margin-right: 0.5rem;
         }
@@ -92,6 +128,14 @@
         .livraison-info {
             color: #856404;
             font-size: 0.9rem;
+        }
+
+        .commande-livraison.retard .livraison-info {
+            color: #721c24;
+        }
+
+        .commande-livraison.livree .livraison-info {
+            color: #155724;
         }
 
         .commande-produits {
@@ -192,6 +236,12 @@
             transform: scale(1.05);
         }
 
+        .btn-prepare:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .commande-total {
             background: linear-gradient(135deg, #8B5A9F, #9370DB);
             color: white;
@@ -209,6 +259,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-left: 1rem;
         }
 
         .statut-en-cours {
@@ -224,6 +275,17 @@
         .statut-livree {
             background: #d1ecf1;
             color: #0c5460;
+        }
+
+        .statut-retard {
+            background: #f8d7da;
+            color: #721c24;
+            animation: pulse-badge 1.5s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         /* Modal styles pour nouvelle commande */
@@ -566,11 +628,18 @@
         let commandes = []; // Stockage des commandes
         let currentUser = null; // Utilisateur connecté
         let currentPreparation = null; // Préparation en cours
+        let deliveryCheckInterval = null; // Intervalle de vérification des livraisons
 
         // === GESTION DU STOCKAGE DES COMMANDES ===
         function saveCommandes() {
             try {
-                localStorage.setItem('marlowe_commandes', JSON.stringify(commandes));
+                const dataToSave = commandes.map(commande => ({
+                    ...commande,
+                    lastDeliveryCheck: commande.lastDeliveryCheck || null,
+                    deliveryNotificationSent: commande.deliveryNotificationSent || false,
+                    delayNotificationSent: commande.delayNotificationSent || false
+                }));
+                localStorage.setItem('marlowe_commandes', JSON.stringify(dataToSave));
                 console.log('💾 Commandes sauvegardées:', commandes.length);
             } catch (error) {
                 console.error('❌ Erreur sauvegarde commandes:', error);
@@ -582,6 +651,13 @@
                 const stored = localStorage.getItem('marlowe_commandes');
                 if (stored) {
                     commandes = JSON.parse(stored);
+                    // S'assurer que les nouvelles propriétés existent
+                    commandes = commandes.map(commande => ({
+                        ...commande,
+                        lastDeliveryCheck: commande.lastDeliveryCheck || null,
+                        deliveryNotificationSent: commande.deliveryNotificationSent || false,
+                        delayNotificationSent: commande.delayNotificationSent || false
+                    }));
                     console.log('📂 Commandes chargées:', commandes.length);
                 } else {
                     commandes = [];
@@ -595,14 +671,248 @@
 
         // === RÉCUPÉRATION UTILISATEUR CONNECTÉ ===
         function getCurrentUser() {
-            // Simulation de récupération depuis la session ou DB
-            // Dans un vrai système, ça viendrait de l'authentification
             currentUser = {
-                username: 'admin', // À récupérer depuis la session
+                username: 'admin',
                 fullname: 'STAFF',
                 grade: 'staff'
             };
             console.log('👤 Utilisateur connecté:', currentUser);
+        }
+
+        // === VÉRIFICATION DES LIVRAISONS ===
+        function checkDeliveryStatus() {
+            const now = new Date();
+            let hasChanges = false;
+
+            commandes.forEach(commande => {
+                if (commande.statut === 'livree' || commande.statut === 'retard') {
+                    return; // Déjà traitée
+                }
+
+                const deliveryDateTime = new Date(`${commande.livraison.date}T${commande.livraison.heure}`);
+                
+                if (now > deliveryDateTime) {
+                    const isFullyPrepared = isCommandeFullyPrepared(commande);
+                    
+                    if (isFullyPrepared && !commande.deliveryNotificationSent) {
+                        // Commande livrée
+                        commande.statut = 'livree';
+                        commande.deliveryNotificationSent = true;
+                        sendDeliveryNotification(commande);
+                        hasChanges = true;
+                        console.log(`✅ Commande ${commande.id} marquée comme livrée`);
+                        
+                    } else if (!isFullyPrepared && !commande.delayNotificationSent) {
+                        // Commande en retard
+                        commande.statut = 'retard';
+                        commande.delayNotificationSent = true;
+                        sendDelayNotification(commande);
+                        hasChanges = true;
+                        console.log(`⚠️ Commande ${commande.id} marquée en retard`);
+                    }
+                }
+            });
+
+            if (hasChanges) {
+                saveCommandes();
+                displayCommandes();
+            }
+        }
+
+        function isCommandeFullyPrepared(commande) {
+            return commande.produits.every(produit => produit.quantite === 0);
+        }
+
+        // === NOTIFICATIONS DISCORD POUR LIVRAISONS ===
+        async function sendDeliveryNotification(commande) {
+            try {
+                console.log('🚚 Envoi notification livraison Discord...');
+                
+                const embed = {
+                    title: "✅ Commande Livrée avec Succès",
+                    description: `La commande a été livrée dans les délais prévus.`,
+                    color: 0x28a745,
+                    fields: [
+                        {
+                            name: "📋 Numéro de commande",
+                            value: `\`${commande.id}\``,
+                            inline: true
+                        },
+                        {
+                            name: "👤 Client",
+                            value: `**${commande.client.nom}**`,
+                            inline: true
+                        },
+                        {
+                            name: "💰 Montant",
+                            value: `**${commande.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
+                            inline: true
+                        },
+                        {
+                            name: "🚚 Livraison programmée",
+                            value: `${new Date(commande.livraison.date).toLocaleDateString('fr-FR')} à ${commande.livraison.heure}`,
+                            inline: false
+                        },
+                        {
+                            name: "📍 Adresse de livraison",
+                            value: commande.livraison.adresse,
+                            inline: false
+                        },
+                        {
+                            name: "📦 Statut des produits",
+                            value: "✅ Tous les produits ont été préparés et livrés",
+                            inline: false
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Marlowe Vineyard • Livraisons",
+                        icon_url: null
+                    }
+                };
+
+                const payload = {
+                    content: "🎉 **Livraison réussie !**\n> Une commande a été livrée avec succès dans les délais.",
+                    embeds: [embed],
+                    username: "Marlowe Vineyard - Livraisons"
+                };
+
+                const response = await fetch(DISCORD_WEBHOOK_COMMANDES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Discord error: ${response.status}`);
+                }
+
+                console.log('✅ Notification livraison envoyée sur Discord');
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi notification livraison:', error);
+            }
+        }
+
+        async function sendDelayNotification(commande) {
+            try {
+                console.log('⚠️ Envoi notification retard Discord...');
+                
+                // Calculer les produits non préparés
+                const produitsNonPrepares = commande.produits.filter(p => p.quantite > 0);
+                let produitsDescription = '';
+                produitsNonPrepares.forEach(produit => {
+                    produitsDescription += `• **${produit.nom}** - ${produit.quantite} unité(s) restante(s)\n`;
+                });
+
+                const embed = {
+                    title: "⚠️ Commande en Retard",
+                    description: `La deadline de livraison est dépassée mais la commande n'est pas entièrement préparée.`,
+                    color: 0xdc3545,
+                    fields: [
+                        {
+                            name: "📋 Numéro de commande",
+                            value: `\`${commande.id}\``,
+                            inline: true
+                        },
+                        {
+                            name: "👤 Client",
+                            value: `**${commande.client.nom}**`,
+                            inline: true
+                        },
+                        {
+                            name: "💰 Montant",
+                            value: `**${commande.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
+                            inline: true
+                        },
+                        {
+                            name: "🚚 Livraison prévue",
+                            value: `${new Date(commande.livraison.date).toLocaleDateString('fr-FR')} à ${commande.livraison.heure}`,
+                            inline: false
+                        },
+                        {
+                            name: "📍 Adresse de livraison",
+                            value: commande.livraison.adresse,
+                            inline: false
+                        },
+                        {
+                            name: "⏰ Retard",
+                            value: `Deadline dépassée depuis ${calculateDelay(commande)}`,
+                            inline: false
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Marlowe Vineyard • Retards",
+                        icon_url: null
+                    }
+                };
+
+                if (produitsDescription) {
+                    embed.fields.push({
+                        name: `📦 Produits non préparés (${produitsNonPrepares.length})`,
+                        value: produitsDescription.length > 1000 ? produitsDescription.substring(0, 1000) + '...' : produitsDescription,
+                        inline: false
+                    });
+                }
+
+                // Informations de contact client si disponibles
+                let contactInfo = '';
+                if (commande.client.email) contactInfo += `📧 ${commande.client.email}\n`;
+                if (commande.client.telephone) contactInfo += `📞 ${commande.client.telephone}`;
+                
+                if (contactInfo) {
+                    embed.fields.push({
+                        name: "📞 Contact client",
+                        value: contactInfo,
+                        inline: false
+                    });
+                }
+
+                const payload = {
+                    content: "🚨 **ALERTE RETARD !**\n> Une commande n'a pas pu être livrée dans les délais. Action requise !",
+                    embeds: [embed],
+                    username: "Marlowe Vineyard - Retards"
+                };
+
+                const response = await fetch(DISCORD_WEBHOOK_COMMANDES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Discord error: ${response.status}`);
+                }
+
+                console.log('✅ Notification retard envoyée sur Discord');
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi notification retard:', error);
+            }
+        }
+
+        function calculateDelay(commande) {
+            const now = new Date();
+            const deliveryDateTime = new Date(`${commande.livraison.date}T${commande.livraison.heure}`);
+            const diffMs = now - deliveryDateTime;
+            
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (diffHours > 24) {
+                const diffDays = Math.floor(diffHours / 24);
+                const remainingHours = diffHours % 24;
+                return diffDays === 1 ? 
+                    `1 jour ${remainingHours > 0 ? `et ${remainingHours}h` : ''}` :
+                    `${diffDays} jours ${remainingHours > 0 ? `et ${remainingHours}h` : ''}`;
+            } else if (diffHours > 0) {
+                return diffHours === 1 ? 
+                    `1 heure ${diffMinutes > 0 ? `et ${diffMinutes} min` : ''}` :
+                    `${diffHours} heures ${diffMinutes > 0 ? `et ${diffMinutes} min` : ''}`;
+            } else {
+                return `${diffMinutes} minutes`;
+            }
         }
 
         // === GESTION DES MODALS ===
@@ -636,9 +946,7 @@
             document.getElementById('prep-quantite-preparee').value = produit.quantite;
             document.getElementById('prep-note').value = '';
 
-            // Limiter le max à la quantité restante
             document.getElementById('prep-quantite-preparee').max = produit.quantite;
-
             document.getElementById('preparationModal').style.display = 'flex';
         }
 
@@ -688,7 +996,7 @@
             
             let optionsHTML = '<option value="">Sélectionnez un produit</option>';
             Object.entries(produits).forEach(([key, prod]) => {
-                optionsHTML += `<option value="${key}">${prod.nom} - $${prod.prix}</option>`;
+                optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}</option>`;
             });
             
             productLine.innerHTML = `
@@ -824,6 +1132,8 @@
             commandeData.id = generateCommandeNumber();
             commandeData.dateCreation = new Date().toISOString();
             commandeData.statut = 'en-cours';
+            commandeData.deliveryNotificationSent = false;
+            commandeData.delayNotificationSent = false;
         }
 
         // === AFFICHAGE DES COMMANDES ===
@@ -845,22 +1155,63 @@
             
             commandes.forEach(commande => {
                 const commandeCard = document.createElement('div');
-                commandeCard.className = 'commande-card';
+                let cardClasses = 'commande-card';
+                
+                // Ajouter les classes selon le statut
+                if (commande.statut === 'livree') {
+                    cardClasses += ' commande-livree';
+                } else if (commande.statut === 'retard') {
+                    cardClasses += ' commande-retard';
+                }
+                
+                commandeCard.className = cardClasses;
                 
                 const dateCreation = new Date(commande.dateCreation).toLocaleDateString('fr-FR');
                 const dateLivraison = new Date(commande.livraison.date).toLocaleDateString('fr-FR');
                 
+                // Déterminer le statut de la livraison
+                const now = new Date();
+                const deliveryDateTime = new Date(`${commande.livraison.date}T${commande.livraison.heure}`);
+                let livraisonClass = '';
+                let livraisonIcon = 'fas fa-truck';
+                let livraisonTexte = 'Livraison prévue';
+                let statutBadge = '';
+                
+                if (commande.statut === 'livree') {
+                    livraisonClass = 'livree';
+                    livraisonIcon = 'fas fa-check-circle';
+                    livraisonTexte = 'Livraison effectuée';
+                    statutBadge = '<span class="statut-badge statut-livree">Livrée</span>';
+                } else if (commande.statut === 'retard') {
+                    livraisonClass = 'retard';
+                    livraisonIcon = 'fas fa-exclamation-triangle';
+                    livraisonTexte = 'RETARD DE LIVRAISON';
+                    statutBadge = '<span class="statut-badge statut-retard">En Retard</span>';
+                } else if (now > deliveryDateTime) {
+                    livraisonClass = 'retard';
+                    livraisonIcon = 'fas fa-clock';
+                    livraisonTexte = 'Deadline dépassée';
+                } else {
+                    const isFullyPrepared = isCommandeFullyPrepared(commande);
+                    if (isFullyPrepared) {
+                        statutBadge = '<span class="statut-badge statut-prete">Prête</span>';
+                    } else {
+                        statutBadge = '<span class="statut-badge statut-en-cours">En cours</span>';
+                    }
+                }
+                
                 let produitsHTML = '';
                 commande.produits.forEach((produit, index) => {
+                    const isDisabled = produit.quantite <= 0 || commande.statut === 'livree';
                     produitsHTML += `
                         <div class="produit-item">
                             <div class="produit-details">
                                 <div class="produit-nom">${produit.nom}</div>
                                 <div class="produit-prix">${produit.prix} l'unité</div>
                             </div>
-                            <span class="produit-quantite">${produit.quantite}x</span>
-                            <button class="btn-prepare" onclick="openPreparationModal('${commande.id}', ${index})">
-                                <i class="fas fa-minus"></i> Préparer
+                            <span class="produit-quantite ${produit.quantite === 0 ? 'produit-complet' : ''}">${produit.quantite}x</span>
+                            <button class="btn-prepare" onclick="openPreparationModal('${commande.id}', ${index})" ${isDisabled ? 'disabled' : ''}>
+                                <i class="fas fa-minus"></i> ${produit.quantite === 0 ? 'Complet' : 'Préparer'}
                             </button>
                         </div>
                     `;
@@ -868,7 +1219,10 @@
                 
                 commandeCard.innerHTML = `
                     <div class="commande-header">
-                        <div class="commande-numero">${commande.id}</div>
+                        <div>
+                            <div class="commande-numero">${commande.id}</div>
+                            ${statutBadge}
+                        </div>
                         <div class="commande-date">Créée le ${dateCreation}</div>
                     </div>
                     
@@ -881,11 +1235,12 @@
                         </div>
                     </div>
                     
-                    <div class="commande-livraison">
-                        <h4><i class="fas fa-truck"></i> Livraison</h4>
+                    <div class="commande-livraison ${livraisonClass}">
+                        <h4><i class="${livraisonIcon}"></i> ${livraisonTexte}</h4>
                         <div class="livraison-info">
                             <div><strong>Date:</strong> ${dateLivraison} à ${commande.livraison.heure}</div>
                             <div><strong>Adresse:</strong> ${commande.livraison.adresse}</div>
+                            ${commande.statut === 'retard' ? `<div><strong>Retard:</strong> ${calculateDelay(commande)}</div>` : ''}
                         </div>
                     </div>
                     
@@ -1163,7 +1518,6 @@
             try {
                 notify.info('Traitement en cours...', 'Création de la commande...');
                 
-                // Ajouter la commande à la liste
                 commandes.push({...commandeData});
                 saveCommandes();
                 displayCommandes();
@@ -1208,13 +1562,11 @@
             }
             
             try {
-                // Mettre à jour la quantité restante directement
                 const commande = commandes.find(c => c.id === currentPreparation.commandeId);
                 if (commande) {
                     const produit = commande.produits[currentPreparation.produitIndex];
                     produit.quantite = produit.quantite - quantitePreparee;
                     
-                    // Sauvegarder et réafficher
                     saveCommandes();
                     displayCommandes();
                 }
@@ -1222,7 +1574,7 @@
                 const preparationData = {
                     commandeId: currentPreparation.commandeId,
                     produit: currentPreparation.produit,
-                    quantiteCommandee: currentPreparation.produit.quantite + quantitePreparee, // Quantité originale
+                    quantiteCommandee: currentPreparation.produit.quantite + quantitePreparee,
                     quantitePreparee: quantitePreparee,
                     quantiteRestante: currentPreparation.produit.quantite - quantitePreparee,
                     note: note,
@@ -1247,9 +1599,39 @@
                 
                 closePreparationModal();
                 
+                // Vérifier immédiatement le statut de livraison après la préparation
+                setTimeout(() => {
+                    checkDeliveryStatus();
+                }, 1000);
+                
             } catch (error) {
                 console.error('❌ Erreur préparation:', error);
                 notify.error('Erreur préparation', 'Impossible d\'enregistrer la préparation.');
+            }
+        }
+
+        // === INITIALISATION ET SURVEILLANCE ===
+        function startDeliveryMonitoring() {
+            // Vérification immédiate
+            checkDeliveryStatus();
+            
+            // Vérification toutes les 30 secondes
+            if (deliveryCheckInterval) {
+                clearInterval(deliveryCheckInterval);
+            }
+            
+            deliveryCheckInterval = setInterval(() => {
+                checkDeliveryStatus();
+            }, 30000); // 30 secondes
+            
+            console.log('🔄 Surveillance des livraisons activée (vérification toutes les 30s)');
+        }
+
+        function stopDeliveryMonitoring() {
+            if (deliveryCheckInterval) {
+                clearInterval(deliveryCheckInterval);
+                deliveryCheckInterval = null;
+                console.log('⏹️ Surveillance des livraisons arrêtée');
             }
         }
 
@@ -1257,12 +1639,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Initialisation du système de commandes...');
             
-            // Récupérer l'utilisateur connecté
             getCurrentUser();
-            
-            // Charger les commandes existantes
             loadCommandes();
             displayCommandes();
+            
+            // Démarrer la surveillance des livraisons
+            startDeliveryMonitoring();
             
             // Event listeners
             document.getElementById('nouvelleCommandeBtn').onclick = openCommandeModal;
@@ -1279,7 +1661,22 @@
             document.getElementById('logoutBtn').addEventListener('click', function(e) {
                 e.preventDefault();
                 if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    stopDeliveryMonitoring();
                     window.location.href = '../index.html';
+                }
+            });
+            
+            // Arrêter la surveillance si la page est fermée
+            window.addEventListener('beforeunload', function() {
+                stopDeliveryMonitoring();
+            });
+            
+            // Réactiver la surveillance si la page redevient visible
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    startDeliveryMonitoring();
+                } else {
+                    stopDeliveryMonitoring();
                 }
             });
             
