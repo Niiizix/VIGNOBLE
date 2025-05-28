@@ -553,113 +553,40 @@ window.dbManager = new DatabaseManager();
 
 // === FONCTION ENVOI DISCORD SIMPLIFIÉ (EMBED SEULEMENT) ===
 async function sendEmbedToDiscord(devisData) {
-    if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
-        throw new Error('Webhook Discord non configuré');
-    }
-    
-    try {
-        console.log('📤 Envoi embed Discord...');
-        
-        // Nettoyer et sécuriser les données
-        const safeData = {
-            numero: String(devisData.numeroDevis || 'N/A').replace(/[^\w\-]/g, ''),
-            client: String(devisData.client?.nom || 'Client').replace(/[^\w\s\-\.]/g, '').substring(0, 50),
-            total: parseFloat(devisData.totaux?.total || 0)
-        };
-        
-        // Créer l'embed final (UN SEUL)
-        const embed = {
-            title: "🍷 Nouveau Devis - Marlowe Vineyard",
-            description: `Devis généré le ${new Date().toLocaleDateString('fr-FR')}`,
+    const payload = {
+        content: "📋 Nouveau devis créé !",
+        embeds: [{
+            title: "🍷 Devis Marlowe Vineyard",
             color: 0x8B5A9F,
             fields: [
                 {
-                    name: "📋 Numéro",
-                    value: safeData.numero,
+                    name: "Numéro",
+                    value: devisData.numeroDevis,
                     inline: true
                 },
                 {
-                    name: "👤 Client",
-                    value: safeData.client,
+                    name: "Client", 
+                    value: devisData.client.nom,
                     inline: true
                 },
                 {
-                    name: "💰 Total",
-                    value: `$${safeData.total.toFixed(2)}`,
+                    name: "Total",
+                    value: `$${devisData.totaux.total.toFixed(2)}`,
                     inline: true
                 }
-            ],
-            timestamp: new Date().toISOString(),
-            footer: {
-                text: "Marlowe Vineyard"
-            }
-        };
-        
-        // Payload avec UN SEUL embed
-        const payload = {
-            content: "📋 Nouveau devis créé !",
-            embeds: [embed]
-        };
-        
-        // UN SEUL ENVOI
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Discord error: ${response.status}`);
-        }
-        
-        console.log('✅ UN embed envoyé');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        throw error;
-    }
+            ]
+        }]
+    };
+    
+    const response = await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) throw new Error(`Discord error: ${response.status}`);
+    return true;
 }
-// === FONCTION TÉLÉCHARGEMENT PDF (INCHANGÉE) ===
-async function downloadPDF(devisData) {
-    try {
-        console.log('📄 Génération PDF pour téléchargement...');
-        
-        const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
-        const pdfBytes = await pdfDoc.save();
-        
-        console.log('📄 PDF généré:', pdfBytes.length, 'bytes');
-        
-        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-        
-        const clientName = devisData.client.nom
-            .replace(/[^a-zA-Z0-9\s]/g, '')
-            .replace(/\s+/g, '_')
-            .substring(0, 20);
-        
-        const filename = `Devis_${devisData.numeroDevis}_${clientName}.pdf`;
-        
-        const url = URL.createObjectURL(pdfBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.style.display = 'none';
-        
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        
-        console.log('✅ PDF téléchargé:', filename);
-        return filename;
-        
-    } catch (error) {
-        console.error('❌ Erreur téléchargement PDF:', error);
-        throw error;
-    }
-}
-
 // === FONCTION PRINCIPALE (INCHANGÉE) ===
 async function generateDevisComplete() {
     console.log('🚀 Génération complète du devis...');
