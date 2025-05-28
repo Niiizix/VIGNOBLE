@@ -121,15 +121,11 @@
             </div>
             
             <div class="modal-devis-footer">
-                <button type="button" class="cta-button btn-secondary" id="cancelDevis">Annuler</button>
-                <button type="button" class="cta-button btn-info" id="previewDevis">
-                    <i class="fas fa-eye"></i> Prévisualiser
+                <button type="button" class="cta-button btn-secondary" id="cancelDevis">
+                    <i class="fas fa-times"></i> Annuler
                 </button>
-                <button type="button" class="cta-button btn-success" id="generateDevis">
-                    <i class="fas fa-file-pdf"></i> Générer PDF
-                </button>
-                <button type="button" class="cta-button" style="background: #7289da;" id="generateAndSendDevis">
-                    <i class="fab fa-discord"></i> PDF + Discord
+                <button type="button" class="cta-button btn-success" id="generateDevisComplete">
+                    <i class="fas fa-check"></i> Confirmer le Devis
                 </button>
             </div>
         </div>
@@ -517,124 +513,6 @@
             statusDiv.innerHTML = `<div style="background: ${colors[type]}; padding: 10px; border-radius: 5px; font-size: 14px;">${message}</div>`;
         }
 
-        // === ENVOI DISCORD ===
-        async function sendToDiscord(pdfBlob, devisData) {
-            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
-                throw new Error('Webhook Discord non configuré dans le code');
-            }
-            
-            try {
-                // Vérifier la taille du blob
-                console.log('🔍 Taille du PDF avant envoi:', pdfBlob.size, 'bytes');
-                console.log('🔍 Type du blob:', pdfBlob.type);
-                
-                if (pdfBlob.size > 8 * 1024 * 1024) { // 8MB max pour Discord
-                    throw new Error('PDF trop volumineux pour Discord (max 8MB)');
-                }
-                
-                if (pdfBlob.size < 1000) {
-                    throw new Error('PDF semble corrompu (trop petit)');
-                }
-                
-                // Créer le FormData de manière plus sûre
-                const formData = new FormData();
-                
-                // Nom de fichier sécurisé (très important pour Discord)
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const clientSafe = devisData.client.nom
-                    .replace(/[^a-zA-Z0-9\s]/g, '') // Supprimer caractères spéciaux
-                    .replace(/\s+/g, '_') // Remplacer espaces par underscores
-                    .substring(0, 20); // Limiter la longueur
-                
-                const safeFilename = `Devis_${devisData.numeroDevis}_${clientSafe}.pdf`;
-                
-                console.log('📄 Nom de fichier:', safeFilename);
-                
-                // Créer l'embed avec des données propres
-                const embed = {
-                    title: "🍷 Nouveau Devis Marlowe Vineyard",
-                    color: 0x8B5A9F,
-                    fields: [
-                        { 
-                            name: "📋 Numero", 
-                            value: devisData.numeroDevis || "N/A", 
-                            inline: true 
-                        },
-                        { 
-                            name: "👤 Client", 
-                            value: devisData.client.nom.substring(0, 50) || "N/A", 
-                            inline: true 
-                        },
-                        { 
-                            name: "💰 Total", 
-                            value: `USD ${Math.round(devisData.totaux.total * 100) / 100}`, 
-                            inline: true 
-                        }
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: { 
-                        text: "Marlowe Vineyard - Systeme automatise" 
-                    }
-                };
-                
-                // Ajouter les produits de manière sécurisée
-                if (devisData.produits && devisData.produits.length > 0) {
-                    const produitsText = devisData.produits
-                        .slice(0, 5) // Max 5 produits
-                        .map(p => `• ${p.nom.substring(0, 30)} (${p.quantite}x)`)
-                        .join('\n');
-                    
-                    embed.fields.push({
-                        name: "🛒 Produits",
-                        value: produitsText || "Aucun produit",
-                        inline: false
-                    });
-                }
-                
-                // Payload Discord simplifié
-                const payload = {
-                    content: "📋 **Nouveau devis genere !**",
-                    embeds: [embed],
-                    username: DISCORD_USERNAME || 'Marlowe Vineyard'
-                };
-                
-                // ÉTAPE CRITIQUE : Ajouter le payload_json EN PREMIER
-                formData.append('payload_json', JSON.stringify(payload));
-                
-                // ÉTAPE CRITIQUE : Ajouter le fichier avec les bons paramètres
-                formData.append('file', pdfBlob, safeFilename);
-                
-                console.log('📤 Envoi vers Discord...');
-                
-                // Envoyer avec des headers appropriés
-                const response = await fetch(DISCORD_WEBHOOK_URL, {
-                    method: 'POST',
-                    body: formData
-                    // PAS de Content-Type header - laisse le navigateur gérer
-                });
-                
-                console.log('📥 Réponse Discord:', response.status, response.statusText);
-                
-                if (!response.ok) {
-                    let errorText = 'Erreur inconnue';
-                    try {
-                        errorText = await response.text();
-                        console.error('❌ Détails erreur Discord:', errorText);
-                    } catch (e) {
-                        console.error('❌ Impossible de lire l\'erreur Discord');
-                    }
-                    throw new Error(`Discord API error: ${response.status} - ${errorText}`);
-                }
-                
-                console.log('✅ PDF envoyé avec succès sur Discord');
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Erreur complète envoi Discord:', error);
-                throw error;
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             // Charger le template automatiquement
             tryLoadDefaultTemplate();
@@ -689,9 +567,7 @@
             document.getElementById('closeDevisModal').onclick = closeDevisModal;
             document.getElementById('cancelDevis').onclick = closeDevisModal;
             document.getElementById('addProductBtn').onclick = addProductLine;
-            document.getElementById('generateDevis').onclick = generatePDF;
-            document.getElementById('generateAndSendDevis').onclick = generateAndSendToDiscord;
-            document.getElementById('previewDevis').onclick = previewDevis;
+            document.getElementById('generateDevisComplete').onclick = generateDevisComplete;
         }
 
         function closeDevisModal() {
@@ -831,27 +707,6 @@
             devisData.totaux = { sousTotal, tva, total };
         }
 
-        function previewDevis() {
-            collectDevisData();
-            
-            let preview = `<h3>Devis ${devisData.numeroDevis}</h3>`;
-            preview += `<h4>Client: ${devisData.client.nom}</h4>`;
-            preview += `<p>${devisData.client.adresse}</p>`;
-            
-            if (devisData.client.email) preview += `<p>Email: ${devisData.client.email}</p>`;
-            if (devisData.client.telephone) preview += `<p>Tél: ${devisData.client.telephone}</p>`;
-            
-            preview += '<h4>Produits:</h4><ul>';
-            devisData.produits.forEach(prod => {
-                preview += `<li>${prod.nom} - Quantité: ${prod.quantite} - Total: ${prod.total.toLocaleString('en-US')}.00</li>`;
-            });
-            preview += '</ul>';
-            
-            preview += `<h4>Total: ${devisData.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h4>`;
-            
-            notify.info('Prévisualisation', preview);
-        }
-
         function collectDevisData() {
             devisData.client = {
                 nom: document.getElementById('client-nom').value,
@@ -881,144 +736,6 @@
                     });
                 }
             });
-        }
-
-        function generatePDF() {
-            if (!document.getElementById('client-nom').value || !document.getElementById('client-adresse').value) {
-                notify.error('Formulaire incomplet', 'Nom et adresse requis.');
-                return;
-            }
-            
-            if (!templatePDF) {
-                notify.error('Template manquant', 'Template PDF non chargé.');
-                return;
-            }
-            
-            let hasValidProducts = false;
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`select[data-id="${id}"]`);
-                if (select && select.value) hasValidProducts = true;
-            });
-            
-            if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Sélectionnez au moins un produit.');
-                return;
-            }
-            
-            collectDevisData();
-            
-            try {
-                notify.info('Génération...', 'Création du PDF...');
-                
-                generateMarlowePDFFromTemplate(devisData).then(async (pdfDoc) => {
-                    const pdfBytes = await pdfDoc.save();
-                    
-                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                    const url = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `Devis-${devisData.numeroDevis}-${devisData.client.nom.replace(/\s+/g, '-')}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    notify.success('PDF généré !', `Devis ${devisData.numeroDevis} créé.`);
-                    
-                    setTimeout(() => closeDevisModal(), 2000);
-                }).catch(error => {
-                    notify.error('Erreur PDF', error.message);
-                });
-                
-            } catch (error) {
-                notify.error('Erreur', error.message);
-            }
-        }
-
-       async function generateAndSendToDiscord() {
-            console.log('🚀 Début génération et envoi Discord...');
-            
-            // Vérifications de base
-            if (!document.getElementById('client-nom').value.trim()) {
-                notify.error('Formulaire incomplet', 'Le nom du client est requis.');
-                return;
-            }
-            
-            if (!document.getElementById('client-adresse').value.trim()) {
-                notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
-                return;
-            }
-            
-            if (!templatePDF) {
-                notify.error('Template manquant', 'Le template PDF n\'est pas chargé.');
-                return;
-            }
-            
-            // Vérifier les produits
-            let hasValidProducts = false;
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`select[data-id="${id}"]`);
-                if (select && select.value) hasValidProducts = true;
-            });
-            
-            if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-                return;
-            }
-            
-            // Collecter les données
-            collectDevisData();
-            console.log('📊 Données collectées:', devisData);
-            
-            try {
-                notify.info('Génération...', 'Création du PDF en cours...');
-                
-                // Générer le PDF
-                const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
-                const pdfBytes = await pdfDoc.save();
-                
-                console.log('📄 PDF final:', pdfBytes.length, 'bytes');
-                
-                // Vérifications finales
-                if (pdfBytes.length < 5000) {
-                    throw new Error('PDF généré semble corrompu (trop petit)');
-                }
-                
-                // Créer le blob final
-                const pdfBlob = new Blob([pdfBytes], { 
-                    type: 'application/pdf'
-                });
-                
-                console.log('📦 Blob créé:', pdfBlob.size, 'bytes, type:', pdfBlob.type);
-                
-                notify.info('Envoi Discord...', 'Transmission en cours...');
-                
-                // Envoyer sur Discord
-                await sendToDiscord(pdfBlob, devisData);
-                
-                notify.success('Succès complet !', `Devis ${devisData.numeroDevis} généré et envoyé sur Discord !`);
-                
-                // Optionnel : téléchargement local de sauvegarde
-                const url = URL.createObjectURL(pdfBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Backup-${devisData.numeroDevis}.pdf`;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 1000);
-                
-                setTimeout(() => closeDevisModal(), 3000);
-                
-            } catch (error) {
-                console.error('❌ Erreur complète:', error);
-                notify.error('Erreur', `Problème: ${error.message}`);
-            }
         }
     </script>
 </body>
