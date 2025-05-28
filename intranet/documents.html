@@ -654,11 +654,11 @@
                 }
                 
                 // 4. Tableau des produits
-                let productY = 493;
+                let productY = 492;
                 if (factureData.produits && Array.isArray(factureData.produits)) {
                     factureData.produits.slice(0, 8).forEach((produit, index) => {
                         try {
-                            const currentY = productY - (index * 37);
+                            const currentY = productY - (index * 35);
                             
                             if (currentY > 300) {
                                 const nomProduit = cleanTextForPDF(produit.nom);
@@ -666,7 +666,7 @@
                                 
                                 // Description (colonne 1)
                                 firstPage.drawText(nomTronque, {
-                                    x: 97, y: currentY,
+                                    x: 105, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
@@ -703,13 +703,13 @@
                     
                     // Sous-total
                     firstPage.drawText(`$${formatAmount(factureData.totaux.sousTotal)}`, {
-                        x: 500, y: 140,
+                        x: 480, y: 135,
                         size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // TVA
                     firstPage.drawText(`$${formatAmount(factureData.totaux.tva)}`, {
-                        x: 500, y: 120,
+                        x: 580, y: 115,
                         size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
@@ -718,7 +718,7 @@
                     const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 14);
                     firstPage.drawText(totalText, {
                         x: 525 - totalTextWidth,
-                        y: 80,
+                        y: 77,
                         size: 14, 
                         font: boldFont, 
                         color: PDFLib.rgb(1, 1, 1)
