@@ -79,6 +79,14 @@
                     Besoin d'aide ?
                 </p>
                 <a href="contact.html">Contactez l'administrateur</a>
+                
+                <!-- Aide pour les identifiants -->
+                <div style="margin-top: 1rem; font-size: 0.8rem; color: #666;">
+                    <strong>Identifiants de test :</strong><br>
+                    admin / ML_STAFF<br>
+                    guzman / GJ@Sxzdt8dM&g4Y<br>
+                    nico / $yJA&E&tJY$98E6
+                </div>
             </div>
         </div>
     </section>
@@ -95,54 +103,6 @@
         let maxAttempts = 3;
         let isTimedOut = false;
         let timeoutDuration = 60; // 1 minute en secondes
-
-        async function attemptLogin() {
-            if (isTimedOut) return;
-        
-            const username = usernameInput.value.trim().toLowerCase();
-            const accessCode = accessCodeInput.value.trim();
-        
-            // Attendre que la DB soit prête
-            if (!window.dbManager || !window.dbManager.isReady) {
-                showError('Système en cours de chargement, veuillez patienter...');
-                return;
-            }
-        
-            // Récupérer les utilisateurs depuis la DB
-            const users = window.dbManager.getUsers();
-            const user = users[username];
-        
-            // Vérification des identifiants depuis DB.json
-            if (user && user.password === accessCode) {
-                // Connexion réussie
-                showSuccess();
-                setTimeout(() => {
-                    window.location.href = '../intranet/dashboard.html';
-                }, 1000);
-            } else {
-                // Échec de connexion
-                loginAttempts++;
-                const remainingAttempts = maxAttempts - loginAttempts;
-                
-                if (remainingAttempts > 0) {
-                    showError(`Identifiants incorrects. ${remainingAttempts} tentative(s) restante(s).`);
-                    attemptsLeft.textContent = remainingAttempts;
-                    
-                    // Animation d'erreur
-                    loginForm.style.animation = 'shake 0.5s ease-in-out';
-                    setTimeout(() => {
-                        loginForm.style.animation = '';
-                    }, 500);
-                } else {
-                    // Timeout
-                    initiateTimeout();
-                }
-                
-                // Vider les champs
-                accessCodeInput.value = '';
-                accessCodeInput.focus();
-            }
-        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('loginForm');
@@ -166,50 +126,76 @@
                 }
             });
 
-            function attemptLogin() {
+            async function attemptLogin() {
                 if (isTimedOut) return;
 
                 const username = usernameInput.value.trim().toLowerCase();
                 const accessCode = accessCodeInput.value.trim();
 
-                // Vérification des identifiants
-                if (validCredentials[username] && validCredentials[username] === accessCode) {
-                    // Connexion réussie
-                    showSuccess();
-                    setTimeout(() => {
-                        window.location.href = '../intranet/dashboard.html';
-                    }, 1000);
-                } else {
-                    // Échec de connexion
-                    loginAttempts++;
-                    const remainingAttempts = maxAttempts - loginAttempts;
+                // Vérifier que la DB est prête
+                if (!window.dbManager || !window.dbManager.isReady) {
+                    showError('Système en cours de chargement, veuillez patienter...');
+                    return;
+                }
+
+                try {
+                    // Récupérer les utilisateurs depuis la DB
+                    const users = window.dbManager.getUsers();
+                    console.log('👥 Utilisateurs disponibles:', Object.keys(users));
                     
-                    if (remainingAttempts > 0) {
-                        showError(`Identifiants incorrects. ${remainingAttempts} tentative(s) restante(s).`);
-                        attemptsLeft.textContent = remainingAttempts;
-                        
-                        // Animation d'erreur
-                        loginForm.style.animation = 'shake 0.5s ease-in-out';
+                    const user = users[username];
+                    console.log('🔍 Utilisateur trouvé:', user ? 'Oui' : 'Non');
+
+                    // Vérification des identifiants depuis DB.json
+                    if (user && user.password === accessCode) {
+                        // Connexion réussie
+                        console.log('✅ Connexion réussie pour:', username);
+                        showSuccess();
                         setTimeout(() => {
-                            loginForm.style.animation = '';
-                        }, 500);
+                            window.location.href = '../intranet/dashboard.html';
+                        }, 1000);
                     } else {
-                        // Timeout
-                        initiateTimeout();
+                        // Échec de connexion
+                        console.log('❌ Échec de connexion pour:', username);
+                        loginAttempts++;
+                        const remainingAttempts = maxAttempts - loginAttempts;
+                        
+                        if (remainingAttempts > 0) {
+                            showError(`Identifiants incorrects. ${remainingAttempts} tentative(s) restante(s).`);
+                            attemptsLeft.textContent = remainingAttempts;
+                            
+                            // Animation d'erreur
+                            loginForm.style.animation = 'shake 0.5s ease-in-out';
+                            setTimeout(() => {
+                                loginForm.style.animation = '';
+                            }, 500);
+                        } else {
+                            // Timeout
+                            initiateTimeout();
+                        }
+                        
+                        // Vider les champs
+                        accessCodeInput.value = '';
+                        accessCodeInput.focus();
                     }
-                    
-                    // Vider les champs
-                    accessCodeInput.value = '';
-                    accessCodeInput.focus();
+                } catch (error) {
+                    console.error('❌ Erreur lors de la connexion:', error);
+                    showError('Erreur système, veuillez réessayer.');
                 }
             }
 
             function showError(message) {
-                notify.error('Erreur de connexion', message);
+                if (window.notify) {
+                    window.notify.error('Erreur de connexion', message);
+                } else {
+                    alert('Erreur: ' + message);
+                }
             }
 
             function showSuccess() {
-                notify.success('Connexion réussie !', 'Redirection vers l\'intranet...');
+                if (window.notify) {
+                    window.notify.success('Connexion réussie !', 'Redirection vers l\'intranet...');
+                }
                 loginButton.innerHTML = '<i class="fas fa-check" style="margin-right: 0.5rem;"></i>Connexion réussie !';
                 loginButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
             }
@@ -218,7 +204,9 @@
                 isTimedOut = true;
                 loginAttempts = 0;
                 
-                notify.warning('Trop de tentatives', 'Veuillez patienter 60 secondes avant de réessayer.');
+                if (window.notify) {
+                    window.notify.warning('Trop de tentatives', 'Veuillez patienter 60 secondes avant de réessayer.');
+                }
                 
                 attemptsInfo.style.display = 'none';
                 
@@ -230,21 +218,24 @@
                 usernameInput.disabled = true;
                 accessCodeInput.disabled = true;
 
-                // Compte à rebours avec notifications
+                // Compte à rebours
                 let countdown = timeoutDuration;
                 
                 const timer = setInterval(() => {
                     countdown--;
                     
-                    // Notification de countdown à intervalles
                     if (countdown === 30 || countdown === 10) {
-                        notify.info('Compte à rebours', `${countdown} secondes restantes`);
+                        if (window.notify) {
+                            window.notify.info('Compte à rebours', `${countdown} secondes restantes`);
+                        }
                     }
                     
                     if (countdown <= 0) {
                         clearInterval(timer);
                         resetLogin();
-                        notify.success('Timeout terminé', 'Vous pouvez maintenant vous reconnecter.');
+                        if (window.notify) {
+                            window.notify.success('Timeout terminé', 'Vous pouvez maintenant vous reconnecter.');
+                        }
                     }
                 }, 1000);
             }
