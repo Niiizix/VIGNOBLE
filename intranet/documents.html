@@ -739,6 +739,155 @@
         }
 
         // === FONCTION ENVOI DISCORD SIMPLIFIÉ (EMBED SEULEMENT) ===
+        async function sendEmbedToDiscord(devisData) {
+            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
+                throw new Error('Webhook Discord non configuré');
+            }
+            
+            try {
+                console.log('📤 Envoi embed Discord détaillé...');
+                
+                // Nettoyer les données
+                const safeData = {
+                    numero: String(devisData.numeroDevis || 'N/A'),
+                    client: String(devisData.client?.nom || 'Client'),
+                    email: String(devisData.client?.email || ''),
+                    telephone: String(devisData.client?.telephone || ''),
+                    adresse: String(devisData.client?.adresse || ''),
+                    total: parseFloat(devisData.totaux?.total || 0),
+                    sousTotal: parseFloat(devisData.totaux?.sousTotal || 0),
+                    tva: parseFloat(devisData.totaux?.tva || 0)
+                };
+                
+                // Construire la liste des produits détaillée
+                let produitsDescription = '';
+                if (devisData.produits && Array.isArray(devisData.produits) && devisData.produits.length > 0) {
+                    devisData.produits.forEach(produit => {
+                        const nom = String(produit.nom || 'Produit');
+                        const qty = parseInt(produit.quantite) || 1;
+                        const prix = parseFloat(produit.prix) || 0;
+                        const total = parseFloat(produit.total) || 0;
+                        
+                        produitsDescription += `• **${nom}** (${qty}x) - $${prix.toFixed(2)} = $${total.toFixed(2)}\n`;
+                    });
+                }
+                
+                // Construire les informations client
+                let clientInfo = '';
+                if (safeData.email) clientInfo += `📧 ${safeData.email}\n`;
+                if (safeData.telephone) clientInfo += `📞 ${safeData.telephone}\n`;
+                if (safeData.adresse) {
+                    const adresseFormatted = safeData.adresse.replace(/\n/g, ', ');
+                    clientInfo += `📍 ${adresseFormatted}`;
+                }
+                
+                // Créer l'embed principal
+                const embed = {
+                    title: "🍷 Nouveau Devis Marlowe Vineyard",
+                    description: `Devis généré automatiquement le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+                    color: 0x8B5A9F,
+                    fields: [
+                        {
+                            name: "📋 Numéro de devis",
+                            value: `\`${safeData.numero}\``,
+                            inline: true
+                        },
+                        {
+                            name: "👤 Client",
+                            value: `**${safeData.client}**`,
+                            inline: true
+                        },
+                        {
+                            name: "💰 Montant total",
+                            value: `**$${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
+                            inline: true
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Marlowe Vineyard • Système de gestion",
+                        icon_url: null
+                    }
+                };
+                
+                // Ajouter les informations client si disponibles
+                if (clientInfo.trim()) {
+                    embed.fields.push({
+                        name: "📇 Informations client",
+                        value: clientInfo.trim(),
+                        inline: false
+                    });
+                }
+                
+                // Ajouter la liste détaillée des produits
+                if (produitsDescription) {
+                    // Si trop long, tronquer intelligemment
+                    if (produitsDescription.length > 1000) {
+                        const lines = produitsDescription.split('\n');
+                        let truncated = '';
+                        for (let i = 0; i < lines.length && truncated.length < 900; i++) {
+                            truncated += lines[i] + '\n';
+                        }
+                        if (lines.length > Math.floor(900 / 50)) { // Estimation du nombre de lignes tronquées
+                            truncated += `... et ${devisData.produits.length - Math.floor(900 / 50)} autres produits`;
+                        }
+                        produitsDescription = truncated;
+                    }
+                    
+                    embed.fields.push({
+                        name: `🛒 Produits commandés (${devisData.produits.length})`,
+                        value: produitsDescription,
+                        inline: false
+                    });
+                }
+                
+                // Ajouter le détail financier
+                embed.fields.push({
+                    name: "🧮 Détail financier",
+                    value: `**Sous-total HT:** $${safeData.sousTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                           `**TVA (21%):** $${safeData.tva.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                           `**Total TTC:** $${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`,
+                    inline: false
+                });
+                
+                // Ajouter une section informative
+                embed.fields.push({
+                    name: "ℹ️ Informations",
+                    value: `• Le fichier PDF a été téléchargé automatiquement\n• Devis valable 30 jours\n• Contact: marlowe-vineyard@ml.com`,
+                    inline: false
+                });
+                
+                // Payload final
+                const payload = {
+                    content: "📋 **Nouveau devis créé !**\n> Un nouveau devis vient d'être généré et téléchargé automatiquement.",
+                    embeds: [embed],
+                    username: "Marlowe Vineyard",
+                    avatar_url: null // Vous pouvez ajouter une URL d'avatar ici si vous voulez
+                };
+                
+                console.log('📤 Envoi embed détaillé vers Discord...');
+                
+                // Envoyer l'embed
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur Discord:', response.status, errorText);
+                    throw new Error(`Discord error: ${response.status} - ${errorText}`);
+                }
+                
+                console.log('✅ Embed détaillé envoyé avec succès sur Discord');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi Discord:', error);
+                throw error;
+            }
+        }
         async function downloadPDF(devisData) {
             try {
                 console.log('📄 Génération PDF pour téléchargement...');
