@@ -343,8 +343,8 @@
                 
                 // Écrire les données sur le PDF
                 if (cleanNumero) {
-                    firstPage.drawText(cleanNumero, {
-                        x: 130, y: 743, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
+                    firstPage.drawText(`Devis N° ${cleanNumero}`, {
+                        x: 60, y: 743, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                     });
                 }
                 
