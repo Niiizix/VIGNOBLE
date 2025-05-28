@@ -590,7 +590,7 @@
                 const cleanNumero = cleanTextForPDF(factureData.numeroFacture);
                 if (cleanNumero) {
                     firstPage.drawText(cleanNumero, {
-                        x: 90, y: 696,
+                        x: 85, y: 695,
                         size: 11, 
                         font: boldFont, 
                         color: PDFLib.rgb(0, 0, 0)
@@ -600,7 +600,7 @@
                 // 2. Date (bulle de droite sous FACTURE)
                 if (cleanDate) {
                     firstPage.drawText(cleanDate, {
-                        x: 220, y: 696,
+                        x: 220, y: 695,
                         size: 11, 
                         font: font, 
                         color: PDFLib.rgb(0, 0, 0)
