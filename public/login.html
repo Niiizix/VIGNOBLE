@@ -96,14 +96,53 @@
         let isTimedOut = false;
         let timeoutDuration = 60; // 1 minute en secondes
 
-        // Codes d'accès valides (nom: code)
-        const validCredentials = {
-            'admin': 'MW2025',
-            'manager': 'VINE123',
-            'marlowe': 'GRAPE456',
-            'vincent': 'WINE789',
-            'sophie': 'CELLAR321'
-        };
+        async function attemptLogin() {
+            if (isTimedOut) return;
+        
+            const username = usernameInput.value.trim().toLowerCase();
+            const accessCode = accessCodeInput.value.trim();
+        
+            // Attendre que la DB soit prête
+            if (!window.dbManager || !window.dbManager.isReady) {
+                showError('Système en cours de chargement, veuillez patienter...');
+                return;
+            }
+        
+            // Récupérer les utilisateurs depuis la DB
+            const users = window.dbManager.getUsers();
+            const user = users[username];
+        
+            // Vérification des identifiants depuis DB.json
+            if (user && user.password === accessCode) {
+                // Connexion réussie
+                showSuccess();
+                setTimeout(() => {
+                    window.location.href = '../intranet/dashboard.html';
+                }, 1000);
+            } else {
+                // Échec de connexion
+                loginAttempts++;
+                const remainingAttempts = maxAttempts - loginAttempts;
+                
+                if (remainingAttempts > 0) {
+                    showError(`Identifiants incorrects. ${remainingAttempts} tentative(s) restante(s).`);
+                    attemptsLeft.textContent = remainingAttempts;
+                    
+                    // Animation d'erreur
+                    loginForm.style.animation = 'shake 0.5s ease-in-out';
+                    setTimeout(() => {
+                        loginForm.style.animation = '';
+                    }, 500);
+                } else {
+                    // Timeout
+                    initiateTimeout();
+                }
+                
+                // Vider les champs
+                accessCodeInput.value = '';
+                accessCodeInput.focus();
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('loginForm');
