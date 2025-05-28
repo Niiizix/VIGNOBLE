@@ -131,6 +131,90 @@
         </div>
     </div>
 
+    <!-- Modal Facture -->
+    <div id="factureModal" class="modal-devis">
+        <div class="modal-devis-content">
+            <div class="modal-devis-header">
+                <h3><i class="fas fa-receipt"></i> Créer une Facture</h3>
+                <span class="modal-close" id="closeFactureModal">&times;</span>
+            </div>
+            <div class="modal-devis-body">
+                
+                <!-- Informations Client -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-user"></i> Informations Client</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" id="facture-client-nom" class="form-input" required placeholder="Nom et prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="facture-client-email" class="form-input" placeholder="email@exemple.com">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Adresse complète *</label>
+                        <textarea id="facture-client-adresse" class="form-textarea" rows="3" required placeholder="Adresse, code postal, ville"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" id="facture-client-telephone" class="form-input" placeholder="+33 1 23 45 67 89">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro de facture</label>
+                            <input type="text" id="numero-facture" class="form-input" readonly>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Sélection des Produits -->
+                <div class="devis-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-wine-bottle"></i> Sélection des Produits</h4>
+                        <button type="button" class="btn-add-product" id="addFactureProductBtn">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div id="facture-products-container">
+                        <!-- Les lignes de produits seront ajoutées ici -->
+                    </div>
+                </div>
+    
+                <!-- Totaux -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-calculator"></i> Récapitulatif</h4>
+                    <div class="totals-container">
+                        <div class="total-line">
+                            <span class="total-label">Sous-total HT :</span>
+                            <span class="total-value" id="facture-sous-total">0.00$</span>
+                        </div>
+                        <div class="total-line">
+                            <span class="total-label">TVA (21%) :</span>
+                            <span class="total-value" id="facture-tva-montant">0.00$</span>
+                        </div>
+                        <div class="total-line total-final">
+                            <span class="total-label">Total TTC :</span>
+                            <span class="total-value" id="facture-total-final">0.00$</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-devis-footer">
+                <button type="button" class="cta-button btn-secondary" id="cancelFacture">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="cta-button btn-success" id="generateFactureComplete">
+                    <i class="fas fa-check"></i> Confirmer la Facture
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Documents Section -->
     <section class="documents-section">
         <div class="documents-container">
@@ -481,6 +565,130 @@
                 throw new Error(`Erreur PDF: ${error.message}`);
             }
         }
+
+        // === GÉNÉRATION PDF FACTURE ===
+        async function generateFacturePDFFromTemplate(factureData) {
+            if (!templateFacturePDF) {
+                throw new Error('Template PDF facture non chargé');
+            }
+            
+            try {
+                console.log('📄 Début génération PDF facture...');
+                
+                const originalPdfBytes = await templateFacturePDF.save();
+                const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBytes);
+                const pages = pdfDoc.getPages();
+                const firstPage = pages[0];
+                
+                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+                const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                
+                const cleanNom = cleanTextForPDF(factureData.client.nom);
+                const cleanDate = new Date().toLocaleDateString('fr-FR');
+                
+                // 1. Nom du client (bulle de gauche sous FACTURE)
+                if (cleanNom) {
+                    firstPage.drawText(cleanNom, {
+                        x: 155, y: 668,
+                        size: 11, 
+                        font: boldFont, 
+                        color: PDFLib.rgb(0, 0, 0)
+                    });
+                }
+                
+                // 2. Date (bulle de droite sous FACTURE)
+                if (cleanDate) {
+                    firstPage.drawText(cleanDate, {
+                        x: 380, y: 668,
+                        size: 11, 
+                        font: font, 
+                        color: PDFLib.rgb(0, 0, 0)
+                    });
+                }
+                
+                // 3. Tableau des produits
+                let productY = 560;
+                if (factureData.produits && Array.isArray(factureData.produits)) {
+                    factureData.produits.slice(0, 8).forEach((produit, index) => {
+                        try {
+                            const currentY = productY - (index * 25);
+                            
+                            if (currentY > 300) {
+                                const nomProduit = cleanTextForPDF(produit.nom);
+                                const nomTronque = nomProduit.length > 35 ? nomProduit.substring(0, 32) + '...' : nomProduit;
+                                
+                                // Description (colonne 1)
+                                firstPage.drawText(nomTronque, {
+                                    x: 92, y: currentY,
+                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                                });
+                                
+                                // Prix (colonne 2)
+                                firstPage.drawText(`$${produit.prix || 0}`, {
+                                    x: 395, y: currentY,
+                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                                });
+                                
+                                // Quantité (colonne 3)
+                                firstPage.drawText(`${produit.quantite || 1}`, {
+                                    x: 468, y: currentY,
+                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                                });
+                                
+                                // Total (colonne 4)
+                                firstPage.drawText(`$${produit.total || 0}`, {
+                                    x: 540, y: currentY,
+                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('⚠️ Erreur produit facture', index, ':', e);
+                        }
+                    });
+                }
+                
+                // 4. Totaux
+                try {
+                    const formatAmount = (amount) => {
+                        const num = parseFloat(amount) || 0;
+                        return Math.round(num * 100) / 100;
+                    };
+                    
+                    // Sous-total
+                    firstPage.drawText(`$${formatAmount(factureData.totaux.sousTotal)}`, {
+                        x: 540, y: 360,
+                        size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    });
+                    
+                    // TVA
+                    firstPage.drawText(`$${formatAmount(factureData.totaux.tva)}`, {
+                        x: 540, y: 340,
+                        size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+                    });
+                    
+                    // 5. Total final (dans la barre noire en bas)
+                    const totalText = `$${formatAmount(factureData.totaux.total)}`;
+                    const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 14);
+                    firstPage.drawText(totalText, {
+                        x: 590 - totalTextWidth,
+                        y: 310,
+                        size: 14, 
+                        font: boldFont, 
+                        color: PDFLib.rgb(1, 1, 1)
+                    });
+                    
+                } catch (e) {
+                    console.warn('⚠️ Erreur totaux facture:', e);
+                }
+                
+                console.log('✅ PDF facture généré avec succès');
+                return pdfDoc;
+                
+            } catch (error) {
+                console.error('❌ Erreur génération PDF facture:', error);
+                throw new Error(`Erreur PDF facture: ${error.message}`);
+            }
+        }
         
         // === CHARGEMENT TEMPLATE ===
         async function tryLoadDefaultTemplate() {
@@ -502,6 +710,25 @@
             }
         }
 
+        async function tryLoadFactureTemplate() {
+            try {
+                showTemplateStatus('🔄 Chargement du template facture...', 'info');
+                
+                const response = await fetch('../assets/template-facture.pdf');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const arrayBuffer = await blob.arrayBuffer();
+                    templateFacturePDF = await PDFLib.PDFDocument.load(arrayBuffer);
+                    
+                    showTemplateStatus('✅ Template facture chargé avec succès', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                showTemplateStatus('❌ Template facture non trouvé', 'error');
+            }
+        }
+
         function showTemplateStatus(message, type) {
             const statusDiv = document.getElementById('templateStatus');
             const colors = {
@@ -516,6 +743,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Charger le template automatiquement
             tryLoadDefaultTemplate();
+            tryLoadFactureTemplate();
 
             // Gestion des boutons
             document.querySelectorAll('.document-btn').forEach(btn => {
@@ -528,6 +756,12 @@
                             return;
                         }
                         openDevisForm();
+                    } else if (documentType === 'facture') {
+                        if (!templateFacturePDF) {
+                            notify.warning('Template manquant', 'Le template PDF facture n\'est pas encore chargé.');
+                            return;
+                        }
+                        openFactureForm();
                     } else {
                         notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
                     }
@@ -555,6 +789,9 @@
 
         let productCounter = 0;
         let devisData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
+        let templateFacturePDF = null;  // Template PDF pour les factures
+        let factureProductCounter = 0;
+        let factureData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
 
 
 
@@ -572,6 +809,42 @@
 
         function closeDevisModal() {
             document.getElementById('devisModal').style.display = 'none';
+        }
+
+        function openFactureForm() {
+            document.getElementById('factureModal').style.display = 'flex';
+            resetFactureForm();
+            generateFactureNumber();
+            addFactureProductLine();
+            
+            document.getElementById('closeFactureModal').onclick = closeFactureModal;
+            document.getElementById('cancelFacture').onclick = closeFactureModal;
+            document.getElementById('addFactureProductBtn').onclick = addFactureProductLine;
+            document.getElementById('generateFactureComplete').onclick = generateFactureComplete;
+        }
+        
+        function closeFactureModal() {
+            document.getElementById('factureModal').style.display = 'none';
+        }
+        
+        function resetFactureForm() {
+            document.getElementById('facture-client-nom').value = '';
+            document.getElementById('facture-client-email').value = '';
+            document.getElementById('facture-client-adresse').value = '';
+            document.getElementById('facture-client-telephone').value = '';
+            document.getElementById('facture-products-container').innerHTML = '';
+            factureProductCounter = 0;
+            updateFactureTotals();
+        }
+        
+        function generateFactureNumber() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            document.getElementById('numero-facture').value = `FA${year}${month}${day}-${random}`;
         }
 
         function resetDevisForm() {
@@ -707,6 +980,120 @@
             devisData.totaux = { sousTotal, tva, total };
         }
 
+        // === GESTION PRODUITS FACTURE ===
+        function addFactureProductLine() {
+            factureProductCounter++;
+            const container = document.getElementById('facture-products-container');
+            
+            const productLine = document.createElement('div');
+            productLine.className = 'product-line';
+            productLine.dataset.id = factureProductCounter;
+            
+            let buttonHTML = '';
+            if (factureProductCounter > 1) {
+                buttonHTML = `<button type="button" class="btn-remove-product" onclick="removeFactureProductLine(${factureProductCounter})"><i class="fas fa-trash"></i></button>`;
+            }
+            
+            let optionsHTML = '<option value="">Sélectionnez un produit</option>';
+            Object.entries(produits).forEach(([key, prod]) => {
+                optionsHTML += `<option value="${key}">${prod.nom} - $${prod.prix}</option>`;
+            });
+            
+            productLine.innerHTML = `
+                <div class="product-line-header">
+                    <span class="product-number">Produit ${factureProductCounter}</span>
+                    ${buttonHTML}
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="form-label">Produit</label>
+                        <select class="form-select product-select" data-id="${factureProductCounter}" onchange="updateFactureProductPrice(${factureProductCounter})">
+                            ${optionsHTML}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prix unitaire</label>
+                        <input type="text" class="form-input product-price" data-id="${factureProductCounter}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" class="form-input product-quantity" data-id="${factureProductCounter}" min="1" value="1" onchange="updateFactureLineTotal(${factureProductCounter})">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total HT</label>
+                        <input type="text" class="form-input product-total" data-id="${factureProductCounter}" readonly>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(productLine);
+        }
+        
+        function removeFactureProductLine(id) {
+            const line = document.querySelector(`#facture-products-container [data-id="${id}"]`);
+            if (line) {
+                line.remove();
+                updateFactureTotals();
+            }
+        }
+        
+        function updateFactureProductPrice(id) {
+            const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+            const priceInput = document.querySelector(`#facture-products-container input.product-price[data-id="${id}"]`);
+            
+            if (select.value) {
+                const prix = produits[select.value].prix;
+                priceInput.value = `${prix}.00`;
+                updateFactureLineTotal(id);
+            } else {
+                priceInput.value = '';
+                updateFactureLineTotal(id);
+            }
+        }
+        
+        function updateFactureLineTotal(id) {
+            const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+            const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
+            const totalInput = document.querySelector(`#facture-products-container input.product-total[data-id="${id}"]`);
+            
+            if (select.value && quantityInput.value) {
+                const prix = produits[select.value].prix;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const total = prix * quantity;
+                
+                totalInput.value = `${total.toLocaleString('en-US')}.00`;
+            } else {
+                totalInput.value = '';
+            }
+            
+            updateFactureTotals();
+        }
+        
+        function updateFactureTotals() {
+            let sousTotal = 0;
+            
+            document.querySelectorAll('#facture-products-container .product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+                const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
+                
+                if (select && select.value && quantityInput && quantityInput.value) {
+                    const prix = produits[select.value].prix;
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    sousTotal += prix * quantity;
+                }
+            });
+            
+            const tva = sousTotal * 0.21;
+            const total = sousTotal + tva;
+            
+            document.getElementById('facture-sous-total').textContent = `${sousTotal.toLocaleString('en-US')}.00`;
+            document.getElementById('facture-tva-montant').textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('facture-total-final').textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            factureData.totaux = { sousTotal, tva, total };
+        }
+
         function collectDevisData() {
             devisData.client = {
                 nom: document.getElementById('client-nom').value,
@@ -736,6 +1123,100 @@
                     });
                 }
             });
+        }
+
+        function collectFactureData() {
+            factureData.client = {
+                nom: document.getElementById('facture-client-nom').value,
+                email: document.getElementById('facture-client-email').value,
+                adresse: document.getElementById('facture-client-adresse').value,
+                telephone: document.getElementById('facture-client-telephone').value
+            };
+            
+            factureData.numeroFacture = document.getElementById('numero-facture').value;
+            factureData.dateEmission = new Date().toISOString().split('T')[0];
+            
+            factureData.produits = [];
+            document.querySelectorAll('#facture-products-container .product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+                const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
+                
+                if (select && select.value && quantityInput && quantityInput.value) {
+                    const produit = produits[select.value];
+                    const quantity = parseInt(quantityInput.value);
+                    const total = produit.prix * quantity;
+                    
+                    factureData.produits.push({
+                        nom: produit.nom,
+                        prix: produit.prix,
+                        quantite: quantity,
+                        total: total
+                    });
+                }
+            });
+        }
+        
+        async function generateFactureComplete() {
+            console.log('🚀 Génération complète de la facture...');
+            
+            if (!document.getElementById('facture-client-nom').value.trim()) {
+                notify.error('Formulaire incomplet', 'Le nom du client est requis.');
+                return;
+            }
+            
+            if (!document.getElementById('facture-client-adresse').value.trim()) {
+                notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
+                return;
+            }
+            
+            if (!templateFacturePDF) {
+                notify.error('Template manquant', 'Le template PDF facture n\'est pas chargé.');
+                return;
+            }
+            
+            let hasValidProducts = false;
+            document.querySelectorAll('#facture-products-container .product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+                if (select && select.value) hasValidProducts = true;
+            });
+            
+            if (!hasValidProducts) {
+                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
+                return;
+            }
+            
+            collectFactureData();
+            console.log('📊 Données de la facture:', factureData);
+            
+            try {
+                notify.info('Traitement en cours...', 'Génération du PDF facture...');
+                
+                const filename = await downloadFacturePDF(factureData);
+                console.log('✅ PDF facture téléchargé:', filename);
+                
+                notify.info('Notification Discord...', 'Envoi en cours...');
+                
+                await sendFactureToDiscord(factureData);
+                console.log('✅ Discord notifié pour la facture');
+                
+                notify.success(
+                    'Facture créée avec succès !', 
+                    `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Facture ${factureData.numeroFacture} émise`
+                );
+                
+                setTimeout(() => closeFactureModal(), 3000);
+                
+            } catch (error) {
+                console.error('❌ Erreur complète facture:', error);
+                
+                if (error.message.includes('Discord')) {
+                    notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué.');
+                } else {
+                    notify.error('Erreur de génération', error.message);
+                }
+            }
         }
 
         // === FONCTION ENVOI DISCORD SIMPLIFIÉ (EMBED SEULEMENT) ===
@@ -881,6 +1362,154 @@
                 throw error;
             }
         }
+
+        // === ENVOI DISCORD FACTURE ===
+        async function sendFactureToDiscord(factureData) {
+            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
+                throw new Error('Webhook Discord non configuré');
+            }
+            
+            try {
+                console.log('📤 Envoi facture Discord...');
+                
+                const safeData = {
+                    numero: String(factureData.numeroFacture || 'N/A'),
+                    client: String(factureData.client?.nom || 'Client'),
+                    email: String(factureData.client?.email || ''),
+                    telephone: String(factureData.client?.telephone || ''),
+                    adresse: String(factureData.client?.adresse || ''),
+                    total: parseFloat(factureData.totaux?.total || 0),
+                    sousTotal: parseFloat(factureData.totaux?.sousTotal || 0),
+                    tva: parseFloat(factureData.totaux?.tva || 0),
+                    dateEmission: factureData.dateEmission || new Date().toISOString().split('T')[0]
+                };
+                
+                let produitsDescription = '';
+                if (factureData.produits && Array.isArray(factureData.produits) && factureData.produits.length > 0) {
+                    factureData.produits.forEach(produit => {
+                        const nom = String(produit.nom || 'Produit');
+                        const qty = parseInt(produit.quantite) || 1;
+                        const prix = parseFloat(produit.prix) || 0;
+                        const total = parseFloat(produit.total) || 0;
+                        
+                        produitsDescription += `• **${nom}** (${qty}x) - $${prix.toFixed(2)} = $${total.toFixed(2)}\n`;
+                    });
+                }
+                
+                let clientInfo = '';
+                if (safeData.email) clientInfo += `📧 ${safeData.email}\n`;
+                if (safeData.telephone) clientInfo += `📞 ${safeData.telephone}\n`;
+                if (safeData.adresse) {
+                    const adresseFormatted = safeData.adresse.replace(/\n/g, ', ');
+                    clientInfo += `📍 ${adresseFormatted}`;
+                }
+                
+                const embed = {
+                    title: "🧾 Nouvelle Facture Marlowe Vineyard",
+                    description: `Facture émise le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+                    color: 0xDC3545,
+                    fields: [
+                        {
+                            name: "📋 Numéro de facture",
+                            value: `\`${safeData.numero}\``,
+                            inline: true
+                        },
+                        {
+                            name: "👤 Client",
+                            value: `**${safeData.client}**`,
+                            inline: true
+                        },
+                        {
+                            name: "💰 Montant à payer",
+                            value: `**$${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
+                            inline: true
+                        },
+                        {
+                            name: "📅 Date d'émission",
+                            value: new Date(safeData.dateEmission).toLocaleDateString('fr-FR'),
+                            inline: true
+                        },
+                        {
+                            name: "⏰ Échéance",
+                            value: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
+                            inline: true
+                        },
+                        {
+                            name: "📊 Statut",
+                            value: "🔴 **À PAYER**",
+                            inline: true
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Marlowe Vineyard • Facturation",
+                        icon_url: null
+                    }
+                };
+                
+                if (clientInfo.trim()) {
+                    embed.fields.push({
+                        name: "📇 Informations client",
+                        value: clientInfo.trim(),
+                        inline: false
+                    });
+                }
+                
+                if (produitsDescription) {
+                    if (produitsDescription.length > 1000) {
+                        const lines = produitsDescription.split('\n');
+                        let truncated = '';
+                        for (let i = 0; i < lines.length && truncated.length < 900; i++) {
+                            truncated += lines[i] + '\n';
+                        }
+                        if (lines.length > Math.floor(900 / 50)) {
+                            truncated += `... et ${factureData.produits.length - Math.floor(900 / 50)} autres produits`;
+                        }
+                        produitsDescription = truncated;
+                    }
+                    
+                    embed.fields.push({
+                        name: `🛒 Produits facturés (${factureData.produits.length})`,
+                        value: produitsDescription,
+                        inline: false
+                    });
+                }
+                
+                embed.fields.push({
+                    name: "🧮 Détail financier",
+                    value: `**Sous-total HT:** $${safeData.sousTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                           `**TVA (21%):** $${safeData.tva.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                           `**Total TTC:** $${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`,
+                    inline: false
+                });
+                
+                const payload = {
+                    content: "🧾 **Nouvelle facture émise !**\n> Une facture vient d'être générée et est en attente de paiement.",
+                    embeds: [embed],
+                    username: "Marlowe Vineyard - Facturation"
+                };
+                
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur Discord:', response.status, errorText);
+                    throw new Error(`Discord error: ${response.status} - ${errorText}`);
+                }
+                
+                console.log('✅ Facture envoyée avec succès sur Discord');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi Discord facture:', error);
+                throw error;
+            }
+        }
+        
         async function downloadPDF(devisData) {
             try {
                 console.log('📄 Génération PDF pour téléchargement...');
@@ -916,6 +1545,45 @@
                 
             } catch (error) {
                 console.error('❌ Erreur téléchargement PDF:', error);
+                throw error;
+            }
+        }
+
+        async function downloadFacturePDF(factureData) {
+            try {
+                console.log('📄 Génération PDF facture pour téléchargement...');
+                
+                const pdfDoc = await generateFacturePDFFromTemplate(factureData);
+                const pdfBytes = await pdfDoc.save();
+                
+                console.log('📄 PDF facture généré:', pdfBytes.length, 'bytes');
+                
+                const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+                
+                const clientName = factureData.client.nom
+                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                    .replace(/\s+/g, '_')
+                    .substring(0, 20);
+                
+                const filename = `Facture_${factureData.numeroFacture}_${clientName}.pdf`;
+                
+                const url = URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                
+                console.log('✅ PDF facture téléchargé:', filename);
+                return filename;
+                
+            } catch (error) {
+                console.error('❌ Erreur téléchargement PDF facture:', error);
                 throw error;
             }
         }
