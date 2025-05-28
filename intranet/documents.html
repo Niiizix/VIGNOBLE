@@ -610,7 +610,7 @@
                 // 3. Informations client (coordonnées temporaires)
                 if (cleanNom) {
                     firstPage.drawText(cleanNom, {
-                        x: 400, y: 600,
+                        x: 420, y: 610,
                         size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                     });
                 }
@@ -623,7 +623,7 @@
                         addressLines.forEach((line, index) => {
                             if (line.trim()) {
                                 firstPage.drawText(line.trim(), {
-                                    x: 400, y: 585 - (index * 15),
+                                    x: 420, y: 595 - (index * 15),
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                             }
@@ -637,10 +637,10 @@
                 const cleanEmail = cleanTextForPDF(factureData.client.email);
                 const cleanTelephone = cleanTextForPDF(factureData.client.telephone);
                 
-                let contactY = 560;
+                let contactY = 580;
                 if (cleanEmail) {
                     firstPage.drawText(`Email: ${cleanEmail}`, {
-                        x: 400, y: contactY,
+                        x: 420, y: contactY,
                         size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     contactY -= 15;
@@ -648,7 +648,7 @@
                 
                 if (cleanTelephone) {
                     firstPage.drawText(`Tel: ${cleanTelephone}`, {
-                        x: 400, y: contactY,
+                        x: 420, y: contactY,
                         size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 }
