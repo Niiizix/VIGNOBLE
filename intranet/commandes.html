@@ -683,24 +683,35 @@
         function checkDeliveryStatus() {
             const now = new Date();
             let hasChanges = false;
+            let commandesToRemove = [];
 
-            commandes.forEach(commande => {
-                if (commande.statut === 'livree' || commande.statut === 'retard') {
-                    return; // Déjà traitée
+            commandes.forEach((commande, index) => {
+                const deliveryDateTime = new Date(`${commande.livraison.date}T${commande.livraison.heure}`);
+                const isFullyPrepared = isCommandeFullyPrepared(commande);
+                
+                // Si la commande est déjà livrée, la supprimer du site
+                if (commande.statut === 'livree') {
+                    commandesToRemove.push(index);
+                    console.log(`🗑️ Suppression commande livrée: ${commande.id}`);
+                    return;
+                }
+                
+                // Si la commande est en retard et maintenant entièrement préparée, la supprimer
+                if (commande.statut === 'retard' && isFullyPrepared) {
+                    commandesToRemove.push(index);
+                    console.log(`🗑️ Suppression commande en retard maintenant terminée: ${commande.id}`);
+                    return;
                 }
 
-                const deliveryDateTime = new Date(`${commande.livraison.date}T${commande.livraison.heure}`);
-                
-                if (now > deliveryDateTime) {
-                    const isFullyPrepared = isCommandeFullyPrepared(commande);
-                    
+                // Gestion des nouvelles commandes dont la deadline est dépassée
+                if (now > deliveryDateTime && commande.statut === 'en-cours') {
                     if (isFullyPrepared && !commande.deliveryNotificationSent) {
-                        // Commande livrée
+                        // Commande livrée à temps - sera supprimée au prochain cycle
                         commande.statut = 'livree';
                         commande.deliveryNotificationSent = true;
                         sendDeliveryNotification(commande);
                         hasChanges = true;
-                        console.log(`✅ Commande ${commande.id} marquée comme livrée`);
+                        console.log(`✅ Commande ${commande.id} marquée comme livrée (sera supprimée)`);
                         
                     } else if (!isFullyPrepared && !commande.delayNotificationSent) {
                         // Commande en retard
@@ -711,6 +722,14 @@
                         console.log(`⚠️ Commande ${commande.id} marquée en retard`);
                     }
                 }
+            });
+
+            // Supprimer les commandes terminées (en ordre inverse pour éviter les problèmes d'index)
+            commandesToRemove.sort((a, b) => b - a).forEach(index => {
+                const commandeSupprimee = commandes[index];
+                commandes.splice(index, 1);
+                console.log(`🗑️ Commande ${commandeSupprimee.id} supprimée du système`);
+                hasChanges = true;
             });
 
             if (hasChanges) {
@@ -1593,6 +1612,16 @@
                     message += `\n• Reste ${quantiteRestanteApres} unité(s) à préparer`;
                 } else {
                     message += `\n• ✅ Produit entièrement préparé !`;
+                }
+                
+                // Vérifier si la commande est maintenant entièrement préparée
+                const commandeComplete = commandes.find(c => c.id === currentPreparation.commandeId);
+                if (commandeComplete && isCommandeFullyPrepared(commandeComplete)) {
+                    if (commandeComplete.statut === 'retard') {
+                        message += `\n• 🎉 Commande en retard maintenant terminée - elle sera supprimée automatiquement`;
+                    } else {
+                        message += `\n• 🎉 Commande entièrement préparée !`;
+                    }
                 }
                 
                 notify.success('Préparation enregistrée !', message);
