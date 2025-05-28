@@ -654,11 +654,11 @@
                 }
                 
                 // 4. Tableau des produits
-                let productY = 485;
+                let productY = 495;
                 if (factureData.produits && Array.isArray(factureData.produits)) {
                     factureData.produits.slice(0, 8).forEach((produit, index) => {
                         try {
-                            const currentY = productY - (index * 25);
+                            const currentY = productY - (index * 40);
                             
                             if (currentY > 300) {
                                 const nomProduit = cleanTextForPDF(produit.nom);
@@ -703,13 +703,13 @@
                     
                     // Sous-total
                     firstPage.drawText(`$${formatAmount(factureData.totaux.sousTotal)}`, {
-                        x: 540, y: 100,
+                        x: 520, y: 130,
                         size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
                     // TVA
                     firstPage.drawText(`$${formatAmount(factureData.totaux.tva)}`, {
-                        x: 540, y: 80,
+                        x: 520, y: 110,
                         size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
@@ -717,8 +717,8 @@
                     const totalText = `$${formatAmount(factureData.totaux.total)}`;
                     const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 14);
                     firstPage.drawText(totalText, {
-                        x: 590 - totalTextWidth,
-                        y: 60,
+                        x: 535 - totalTextWidth,
+                        y: 90,
                         size: 14, 
                         font: boldFont, 
                         color: PDFLib.rgb(1, 1, 1)
