@@ -130,8 +130,24 @@ class DatabaseManager {
     async loadFromJSON() {
         try {
             // Détecter le chemin correct selon l'emplacement de la page
-            const isInSubfolder = window.location.pathname.includes('/intranet/');
-            const dbPath = isInSubfolder ? '../DB.json' : './DB.json';
+            const currentPath = window.location.pathname;
+            const isInIntranet = currentPath.includes('/intranet/');
+            const isInPublic = currentPath.includes('/public/');
+            
+            let dbPath;
+            if (isInIntranet) {
+                // Si on est dans /intranet/, on remonte d'un niveau
+                dbPath = '../DB.json';
+            } else if (isInPublic) {
+                // Si on est dans /public/, on remonte d'un niveau
+                dbPath = '../DB.json';
+            } else {
+                // Si on est à la racine
+                dbPath = './DB.json';
+            }
+            
+            console.log('🔍 Chemin détecté:', currentPath);
+            console.log('🔍 Tentative de chargement DB depuis:', dbPath);
             
             const response = await fetch(dbPath);
             if (response.ok) {
@@ -140,7 +156,7 @@ class DatabaseManager {
                 delete this.data.inventory;
                 console.log('📄 DB.json chargé avec succès depuis:', dbPath, '(sans inventaire)');
             } else {
-                throw new Error(`Impossible de charger DB.json depuis ${dbPath}`);
+                throw new Error(`Impossible de charger DB.json depuis ${dbPath} (HTTP ${response.status})`);
             }
         } catch (error) {
             console.error('⚠️ Erreur lors du chargement de DB.json:', error);
