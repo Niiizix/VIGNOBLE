@@ -296,8 +296,8 @@
             if (!text) return '';
             
             return String(text)
-                // Remplacements simples
-                .replace(/[\$]/g, 'USD')
+                // Remplacements spécifiques pour éviter les conflits
+                .replace(/[\$]/g, 'USD ')
                 .replace(/[àáâäå]/gi, 'a')
                 .replace(/[èéêë]/gi, 'e')
                 .replace(/[ìíîï]/gi, 'i')
@@ -308,107 +308,130 @@
                 .replace(/[–—]/g, '-')
                 .replace(/['']/g, "'")
                 .replace(/[""]/g, '"')
-                // Garder seulement les caractères ASCII de base
-                .replace(/[^\x20-\x7E]/g, '');
+                // Plus conservateur : garder plus de caractères
+                .replace(/[^\x20-\x7E\n\r]/g, '?');  // Remplacer par ? au lieu de supprimer
         }
-
-        // === FONCTION MODIFICATION PDF ===
+        
+        // === FONCTION GÉNÉRATION PDF CORRIGÉE ===
         async function generateMarlowePDFFromTemplate(devisData) {
             if (!templatePDF) {
                 throw new Error('Template PDF non chargé');
             }
             
             try {
-                const pdfDoc = await PDFLib.PDFDocument.load(await templatePDF.save());
+                // Créer une NOUVELLE instance du PDF au lieu de modifier l'original
+                const originalPdfBytes = await templatePDF.save();
+                const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBytes);
                 const pages = pdfDoc.getPages();
                 const firstPage = pages[0];
                 
+                // Utiliser les fonts standards pour éviter les problèmes d'encodage
                 const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
                 const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
                 
+                // Données nettoyées
+                const cleanData = {
+                    numeroDevis: cleanTextForPDF(devisData.numeroDevis),
+                    client: {
+                        nom: cleanTextForPDF(devisData.client.nom),
+                        email: cleanTextForPDF(devisData.client.email),
+                        adresse: cleanTextForPDF(devisData.client.adresse),
+                        telephone: cleanTextForPDF(devisData.client.telephone)
+                    },
+                    produits: devisData.produits.map(p => ({
+                        nom: cleanTextForPDF(p.nom),
+                        prix: p.prix,
+                        quantite: p.quantite,
+                        total: p.total
+                    })),
+                    totaux: devisData.totaux
+                };
+                
                 // Numéro de devis
-                firstPage.drawText(cleanTextForPDF(devisData.numeroDevis), {
+                firstPage.drawText(cleanData.numeroDevis, {
                     x: 130, y: 743, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
                 });
                 
                 // Client
-                firstPage.drawText(cleanTextForPDF(devisData.client.nom), {
+                firstPage.drawText(cleanData.client.nom, {
                     x: 60, y: 635, size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Adresse
-                if (devisData.client.adresse) {
-                    const addressLines = devisData.client.adresse.split('\n');
+                // Adresse avec gestion des lignes
+                if (cleanData.client.adresse) {
+                    const addressLines = cleanData.client.adresse.split('\n').slice(0, 4); // Max 4 lignes
                     addressLines.forEach((line, index) => {
-                        firstPage.drawText(cleanTextForPDF(line), {
+                        firstPage.drawText(line, {
                             x: 60, y: 620 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                         });
                     });
                 }
                 
                 // Email et téléphone
-                let infoY = 630 - (devisData.client.adresse ? devisData.client.adresse.split('\n').length * 15 : 0);
+                let infoY = 630 - (cleanData.client.adresse ? cleanData.client.adresse.split('\n').length * 15 : 0);
                 
-                if (devisData.client.email) {
-                    firstPage.drawText(cleanTextForPDF(`Email: ${devisData.client.email}`), {
-                        x: 60, y: infoY - 10, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                if (cleanData.client.email) {
+                    firstPage.drawText(`Email: ${cleanData.client.email}`, {
+                        x: 60, y: Math.max(infoY - 10, 550), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     infoY -= 15;
                 }
                 
-                if (devisData.client.telephone) {
-                    firstPage.drawText(cleanTextForPDF(`Tel: ${devisData.client.telephone}`), {
-                        x: 60, y: infoY - 10, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                if (cleanData.client.telephone) {
+                    firstPage.drawText(`Tel: ${cleanData.client.telephone}`, {
+                        x: 60, y: Math.max(infoY - 10, 535), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                 }
                 
-                // Produits
+                // Produits avec limitation
                 let productY = 480;
-                devisData.produits.forEach((produit, index) => {
+                cleanData.produits.slice(0, 8).forEach((produit, index) => { // Max 8 produits
                     const currentY = productY - (index * 22);
                     
-                    // Description
-                    firstPage.drawText(cleanTextForPDF(produit.nom), {
-                        x: 77, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Prix unitaire
-                    firstPage.drawText(cleanTextForPDF(`$${produit.prix}`), {
-                        x: 257, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Quantité
-                    firstPage.drawText(cleanTextForPDF(produit.quantite.toString()), {
-                        x: 397, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Total HT
-                    firstPage.drawText(cleanTextForPDF(`$${produit.total}`), {
-                        x: 467, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
+                    if (currentY > 200) { // S'assurer qu'on ne déborde pas
+                        // Description (tronquer si trop long)
+                        const nomTronque = produit.nom.length > 35 ? produit.nom.substring(0, 32) + '...' : produit.nom;
+                        firstPage.drawText(nomTronque, {
+                            x: 77, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+                        
+                        // Prix unitaire
+                        firstPage.drawText(`USD${produit.prix}`, {
+                            x: 257, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+                        
+                        // Quantité
+                        firstPage.drawText(produit.quantite.toString(), {
+                            x: 397, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+                        
+                        // Total HT
+                        firstPage.drawText(`USD${produit.total}`, {
+                            x: 467, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+                    }
                 });
                 
-                // Totaux
+                // Totaux avec formatage sécurisé
                 const totalsY = 335;
+                const formatMoney = (amount) => Math.round(amount * 100) / 100;
                 
                 // Sous-total
-                firstPage.drawText(cleanTextForPDF(`$${devisData.totaux.sousTotal}`), {
+                firstPage.drawText(`USD${formatMoney(cleanData.totaux.sousTotal)}`, {
                     x: 467, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 // TVA
-                const tvaFormatted = Math.round(devisData.totaux.tva * 100) / 100;
-                firstPage.drawText(cleanTextForPDF(`$${tvaFormatted}`), {
+                firstPage.drawText(`USD${formatMoney(cleanData.totaux.tva)}`, {
                     x: 467, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
-                // Total - ALIGNÉ À DROITE DE LA BULLE JAUNE
-                const totalFormatted = Math.round(devisData.totaux.total * 100) / 100;
-                const totalText = cleanTextForPDF(`$${totalFormatted}`);
+                // Total final dans la bulle jaune
+                const totalText = `USD${formatMoney(cleanData.totaux.total)}`;
                 const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 12);
-                const rightEdgeOfBubble = 570; // Position droite de la bulle jaune
+                const rightEdgeOfBubble = 570;
                 firstPage.drawText(totalText, {
-                    x: rightEdgeOfBubble - totalTextWidth - 10, // 10px de marge depuis le bord droit
+                    x: rightEdgeOfBubble - totalTextWidth - 10,
                     y: totalsY - 70, 
                     size: 12, 
                     font: boldFont, 
@@ -417,17 +440,19 @@
                 
                 // Date
                 const today = new Date();
-                const dateFormatted = `${today.getDate()}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-                firstPage.drawText(cleanTextForPDF(dateFormatted), {
+                const dateFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+                firstPage.drawText(dateFormatted, {
                     x: 335, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                 });
                 
                 return pdfDoc;
                 
             } catch (error) {
-                throw new Error(`Erreur PDF: ${error.message}`);
+                console.error('Erreur détaillée PDF:', error);
+                throw new Error(`Erreur génération PDF: ${error.message}`);
             }
         }
+        
         // === CHARGEMENT TEMPLATE ===
         async function tryLoadDefaultTemplate() {
             try {
@@ -462,39 +487,66 @@
         // === ENVOI DISCORD ===
         async function sendToDiscord(pdfBlob, devisData) {
             if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
-                throw new Error('Webhook Discord non configuré dans le code');
+                throw new Error('Webhook Discord non configuré');
             }
             
-            const formData = new FormData();
-            
-            const embed = {
-                title: "🍷 Nouveau Devis Marlowe Vineyard",
-                color: 0x8B5A9F,
-                fields: [
-                    { name: "📋 Numéro", value: devisData.numeroDevis, inline: true },
-                    { name: "👤 Client", value: devisData.client.nom, inline: true },
-                    { name: "💰 Total", value: `$${devisData.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`, inline: true },
-                    { name: "🛒 Produits", value: devisData.produits.map(p => `• ${p.nom} (${p.quantite}x)`).join('\n'), inline: false }
-                ],
-                timestamp: new Date().toISOString()
-            };
-            
-            const payload = {
-                content: "📋 **Nouveau devis généré !**",
-                embeds: [embed],
-                username: DISCORD_USERNAME
-            };
-            
-            formData.append('payload_json', JSON.stringify(payload));
-            formData.append('file', pdfBlob, `Devis-${devisData.numeroDevis}.pdf`);
-            
-            const response = await fetch(DISCORD_WEBHOOK_URL, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Erreur Discord: ${response.status}`);
+            try {
+                const formData = new FormData();
+                
+                // Vérifier la taille du blob
+                console.log('Taille du PDF:', pdfBlob.size, 'bytes');
+                
+                if (pdfBlob.size > 8 * 1024 * 1024) { // 8MB max pour Discord
+                    throw new Error('PDF trop volumineux pour Discord (max 8MB)');
+                }
+                
+                const embed = {
+                    title: "🍷 Nouveau Devis Marlowe Vineyard",
+                    color: 0x8B5A9F,
+                    fields: [
+                        { name: "📋 Numéro", value: devisData.numeroDevis, inline: true },
+                        { name: "👤 Client", value: devisData.client.nom.substring(0, 100), inline: true }, // Limiter la longueur
+                        { name: "💰 Total", value: `USD ${devisData.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`, inline: true },
+                        { 
+                            name: "🛒 Produits", 
+                            value: devisData.produits.slice(0, 5).map(p => `• ${p.nom.substring(0, 30)} (${p.quantite}x)`).join('\n') +
+                                   (devisData.produits.length > 5 ? `\n... et ${devisData.produits.length - 5} autres` : ''),
+                            inline: false 
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: { text: "Marlowe Vineyard - Système automatisé" }
+                };
+                
+                const payload = {
+                    content: "📋 **Nouveau devis généré automatiquement !**",
+                    embeds: [embed],
+                    username: DISCORD_USERNAME || 'Marlowe Vineyard'
+                };
+                
+                formData.append('payload_json', JSON.stringify(payload));
+                
+                // Nom de fichier sécurisé
+                const safeFilename = `Devis-${devisData.numeroDevis}-${devisData.client.nom.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)}.pdf`;
+                formData.append('file', pdfBlob, safeFilename);
+                
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Réponse Discord:', errorText);
+                    throw new Error(`Discord API error: ${response.status} - ${errorText}`);
+                }
+                
+                console.log('✅ PDF envoyé avec succès sur Discord');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi Discord:', error);
+                throw error;
             }
         }
 
@@ -800,17 +852,18 @@
             }
         }
 
-        async function generateAndSendToDiscord() {
+       async function generateAndSendToDiscord() {
             if (!document.getElementById('client-nom').value || !document.getElementById('client-adresse').value) {
-                notify.error('Formulaire incomplet', 'Nom et adresse requis.');
+                notify.error('Formulaire incomplet', 'Nom et adresse du client requis.');
                 return;
             }
             
             if (!templatePDF) {
-                notify.error('Template manquant', 'Template PDF non chargé.');
+                notify.error('Template manquant', 'Le template PDF n\'est pas chargé.');
                 return;
             }
             
+            // Vérifier qu'il y a au moins un produit
             let hasValidProducts = false;
             document.querySelectorAll('.product-line').forEach(line => {
                 const id = line.dataset.id;
@@ -819,27 +872,51 @@
             });
             
             if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Sélectionnez au moins un produit.');
+                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
                 return;
             }
             
             collectDevisData();
             
             try {
-                notify.info('Génération...', 'PDF + Discord...');
+                notify.info('Génération en cours...', 'Création du PDF et envoi Discord...');
                 
+                // Générer le PDF
                 const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
                 const pdfBytes = await pdfDoc.save();
-                const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
                 
+                // Vérifier que le PDF est valide
+                if (pdfBytes.length < 1000) {
+                    throw new Error('PDF généré semble corrompu (trop petit)');
+                }
+                
+                console.log('✅ PDF généré:', pdfBytes.length, 'bytes');
+                
+                // Créer le blob
+                const pdfBlob = new Blob([pdfBytes], { 
+                    type: 'application/pdf'
+                });
+                
+                // Envoyer sur Discord
                 await sendToDiscord(pdfBlob, devisData);
                 
-                notify.success('Succès !', `Devis ${devisData.numeroDevis} généré et envoyé !`);
+                notify.success('Succès complet !', `Devis ${devisData.numeroDevis} généré et envoyé sur Discord !`);
+                
+                // Proposer aussi le téléchargement local
+                const url = URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Devis-${devisData.numeroDevis}-Local.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
                 
                 setTimeout(() => closeDevisModal(), 3000);
                 
             } catch (error) {
-                notify.error('Erreur', error.message);
+                console.error('❌ Erreur complète:', error);
+                notify.error('Erreur de génération', `Problème: ${error.message}`);
             }
         }
     </script>
