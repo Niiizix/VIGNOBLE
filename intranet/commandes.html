@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commandes - Marlowe Vineyard Intranet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        /* Styles spécifiques pour les commandes */
+        .commandes-grid {
+            display: grid;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .commande-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(139, 90, 159, 0.1);
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .commande-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(139, 90, 159, 0.15);
+            border-color: #8B5A9F;
+        }
+
+        .commande-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .commande-numero {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #8B5A9F;
+        }
+
+        .commande-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .commande-client {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .commande-client h4 {
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .client-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .commande-livraison {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .commande-livraison h4 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .commande-livraison h4 i {
+            margin-right: 0.5rem;
+        }
+
+        .livraison-info {
+            color: #856404;
+            font-size: 0.9rem;
+        }
+
+        .commande-produits {
+            margin-bottom: 1.5rem;
+        }
+
+        .commande-produits h4 {
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .commande-produits h4 i {
+            color: #8B5A9F;
+            margin-right: 0.5rem;
+        }
+
+        .produit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .produit-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .produit-details {
+            flex: 1;
+        }
+
+        .produit-nom {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.2rem;
+        }
+
+        .produit-prix {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .produit-quantite {
+            background: #8B5A9F;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0 1rem;
+        }
+
+        .btn-prepare {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-prepare:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .commande-total {
+            background: linear-gradient(135deg, #8B5A9F, #9370DB);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .statut-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .statut-en-cours {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .statut-prete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .statut-livree {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Modal styles pour nouvelle commande */
+        .modal-commande {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-commande-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-commande-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-commande-body {
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .modal-commande-footer {
+            background: #f8f9fa;
+            padding: 1.5rem 2rem;
+            border-radius: 0 0 20px 20px;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* Modal préparation */
+        .modal-preparation {
+            display: none;
+            position: fixed;
+            z-index: 10001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-preparation-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-preparation-header {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .no-commandes {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .no-commandes i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .client-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .produit-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .produit-quantite, .btn-prepare {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-shield-alt"></i>
+                Marlowe Intranet
+            </a>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="inventaire.html">Inventaire</a></li>
+                <li><a href="commandes.html" class="active">Commandes</a></li>
+                <li><a href="documents.html">Documents</a></li>
+                <li><a href="configuration.html">Configuration</a></li>
+                <li><a href="../index.html" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero hero-intranet">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <div class="hero-content">
+            <h1>Gestion des Commandes</h1>
+            <p class="subtitle">Suivi et préparation</p>
+            <p>Gérez les commandes clients, suivez les préparations et coordonnez les livraisons.</p>
+        </div>
+    </section>
+
+    <!-- Section des Commandes -->
+    <section class="documents-section">
+        <div class="documents-container">
+            <div class="document-category">
+                <div class="category-header">
+                    <h2><i class="fas fa-shopping-cart"></i> Commandes en Cours</h2>
+                    <button class="cta-button btn-success" id="nouvelleCommandeBtn">
+                        <i class="fas fa-plus"></i> Nouvelle Commande
+                    </button>
+                </div>
+                
+                <div class="commandes-grid" id="commandesContainer">
+                    <!-- Les commandes seront affichées ici -->
+                    <div class="no-commandes">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Aucune commande en cours</h3>
+                        <p>Cliquez sur "Nouvelle Commande" pour créer votre première commande.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Nouvelle Commande -->
+    <div id="commandeModal" class="modal-commande">
+        <div class="modal-commande-content">
+            <div class="modal-commande-header">
+                <h3><i class="fas fa-plus-circle"></i> Nouvelle Commande</h3>
+                <span class="modal-close" id="closeCommandeModal">&times;</span>
+            </div>
+            <div class="modal-commande-body">
+                
+                <!-- Informations Client -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-user"></i> Informations Client</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" id="commande-client-nom" class="form-input" required placeholder="Nom et prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="commande-client-email" class="form-input" placeholder="email@exemple.com">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Adresse complète *</label>
+                        <textarea id="commande-client-adresse" class="form-textarea" rows="3" required placeholder="Adresse, code postal, ville"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Téléphone</label>
+                        <input type="tel" id="commande-client-telephone" class="form-input" placeholder="+33 1 23 45 67 89">
+                    </div>
+                </div>
+
+                <!-- Informations de Livraison -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-truck"></i> Livraison</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Date de livraison *</label>
+                            <input type="date" id="commande-date-livraison" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Heure de livraison *</label>
+                            <input type="time" id="commande-heure-livraison" class="form-input" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Adresse de livraison</label>
+                        <textarea id="commande-adresse-livraison" class="form-textarea" rows="2" placeholder="Si différente de l'adresse client (optionnel)"></textarea>
+                    </div>
+                </div>
+
+                <!-- Sélection des Produits -->
+                <div class="devis-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-wine-bottle"></i> Produits Commandés</h4>
+                        <button type="button" class="btn-add-product" id="addCommandeProductBtn">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div id="commande-products-container">
+                        <!-- Les lignes de produits seront ajoutées ici -->
+                    </div>
+                </div>
+
+                <!-- Totaux -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-calculator"></i> Récapitulatif</h4>
+                    <div class="totals-container">
+                        <div class="total-line">
+                            <span class="total-label">Sous-total HT :</span>
+                            <span class="total-value" id="commande-sous-total">0.00$</span>
+                        </div>
+                        <div class="total-line">
+                            <span class="total-label">TVA (21%) :</span>
+                            <span class="total-value" id="commande-tva-montant">0.00$</span>
+                        </div>
+                        <div class="total-line total-final">
+                            <span class="total-label">Total TTC :</span>
+                            <span class="total-value" id="commande-total-final">0.00$</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-commande-footer">
+                <button type="button" class="cta-button btn-secondary" id="cancelCommande">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="cta-button btn-success" id="createCommandeComplete">
+                    <i class="fas fa-check"></i> Créer la Commande
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Préparation -->
+    <div id="preparationModal" class="modal-preparation">
+        <div class="modal-preparation-content">
+            <div class="modal-preparation-header">
+                <h3><i class="fas fa-minus-circle"></i> Préparation Produit</h3>
+                <span class="modal-close" id="closePreparationModal">&times;</span>
+            </div>
+            <div class="modal-commande-body">
+                <div class="form-group">
+                    <label class="form-label">Produit</label>
+                    <input type="text" id="prep-produit-nom" class="form-input" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Quantité commandée</label>
+                    <input type="number" id="prep-quantite-commandee" class="form-input" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Quantité préparée *</label>
+                    <input type="number" id="prep-quantite-preparee" class="form-input" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Note additionnelle</label>
+                    <textarea id="prep-note" class="form-textarea" rows="3" placeholder="Commentaires sur la préparation (optionnel)"></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-commande-footer">
+                <button type="button" class="cta-button btn-secondary" id="cancelPreparation">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="cta-button btn-success" id="confirmPreparation">
+                    <i class="fas fa-check"></i> Confirmer Préparation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Marlowe Vineyard - Intranet Privé | Accès Restreint</p>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script>
+        // === CONFIGURATION DISCORD ===
+        const DISCORD_WEBHOOK_COMMANDES = 'https://l.webhook.party/hook/p8GEvGjZOXrEAnlh9Czg9Tc0iTQBwifuEMuxxUSXDviB6TigfRf2602NP8WKvfbOKbznpmCc84gFdsh3ReH%2BnwfMPy%2FQuxLaSOKoEhONeF2Sa%2BdlaQeZIF8HnyhTdm%2F139Gp1ZQNINg2u5wL4iv3Gnf4vhyNTH6f2v%2BeDX4gF2wk4Ggtz1JckA7wL2zzdEzp7kngu9sT97mMpEQ7hSGib3GfUgQ3XE4yHljVjprjK2vKD1WrJrbkCigxZhM5evlSs0rWFg4vxjo9ytsVdHnbv%2BXF%2FcNb%2BY9c%2Foyj0WNqRrV7WDawmXYGA7%2B1iwKAMhPxDJvGwfytR64FeOoSQdEEfHlk4wKErY6S4Cdvq3FHsDpfrF2Kr3vByaujn%2BhjOUxk51U%2Bf10knUI%3D/O39Ms6oV6RQnZDds';
+        const DISCORD_WEBHOOK_PREPARATIONS = 'https://l.webhook.party/hook/p8GEvGjZOXrEAnlh9Czg9Tc0iTQBwifuEMuxxUSXDviB6TigfRf2602NP8WKvfbOKbznpmCc84gFdsh3ReH%2BnwfMPy%2FQuxLaSOKoEhONeF2Sa%2BdlaQeZIF8HnyhTdm%2F139Gp1ZQNINg2u5wL4iv3Gnf4vhyNTH6f2v%2BeDX4gF2wk4Ggtz1JckA7wL2zzdEzp7kngu9sT97mMpEQ7hSGib3GfUgQ3XE4yHljVjprjK2vKD1WrJrbkCigxZhM5evlSs0rWFg4vxjo9ytsVdHnbv%2BXF%2FcNb%2BY9c%2Foyj0WNqRrV7WDawmXYGA7%2B1iwKAMhPxDJvGwfytR64FeOoSQdEEfHlk4wKErY6S4Cdvq3FHsDpfrF2Kr3vByaujn%2BhjOUxk51U%2Bf10knUI%3D/O39Ms6oV6RQnZDds';
+
+        // === PRODUITS ===
+        const produits = {
+            'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
+            'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
+            'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
+            'marlowe-rose': { nom: 'Marlowe Rose', prix: 320 },
+            'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
+            'coffret-degustation': { nom: 'Coffret Degustation', prix: 1800 }
+        };
+
+        // === VARIABLES GLOBALES ===
+        let commandeProductCounter = 0;
+        let commandeData = { client: {}, livraison: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
+        let commandes = []; // Stockage des commandes
+        let currentUser = null; // Utilisateur connecté
+        let currentPreparation = null; // Préparation en cours
+
+        // === GESTION DU STOCKAGE DES COMMANDES ===
+        function saveCommandes() {
+            try {
+                localStorage.setItem('marlowe_commandes', JSON.stringify(commandes));
+                console.log('💾 Commandes sauvegardées:', commandes.length);
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde commandes:', error);
+            }
+        }
+
+        function loadCommandes() {
+            try {
+                const stored = localStorage.getItem('marlowe_commandes');
+                if (stored) {
+                    commandes = JSON.parse(stored);
+                    console.log('📂 Commandes chargées:', commandes.length);
+                } else {
+                    commandes = [];
+                    console.log('📂 Aucune commande stockée');
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement commandes:', error);
+                commandes = [];
+            }
+        }
+
+        // === RÉCUPÉRATION UTILISATEUR CONNECTÉ ===
+        function getCurrentUser() {
+            // Simulation de récupération depuis la session ou DB
+            // Dans un vrai système, ça viendrait de l'authentification
+            currentUser = {
+                username: 'admin', // À récupérer depuis la session
+                fullname: 'STAFF',
+                grade: 'staff'
+            };
+            console.log('👤 Utilisateur connecté:', currentUser);
+        }
+
+        // === GESTION DES MODALS ===
+        function openCommandeModal() {
+            document.getElementById('commandeModal').style.display = 'flex';
+            resetCommandeForm();
+            generateCommandeNumber();
+            addCommandeProductLine();
+        }
+
+        function closeCommandeModal() {
+            document.getElementById('commandeModal').style.display = 'none';
+        }
+
+        function openPreparationModal(commandeId, produitIndex) {
+            const commande = commandes.find(c => c.id === commandeId);
+            if (!commande) return;
+
+            const produit = commande.produits[produitIndex];
+            if (!produit) return;
+
+            currentPreparation = { commandeId, produitIndex, produit };
+
+            document.getElementById('prep-produit-nom').value = produit.nom;
+            document.getElementById('prep-quantite-commandee').value = produit.quantite;
+            document.getElementById('prep-quantite-preparee').value = produit.quantite;
+            document.getElementById('prep-note').value = '';
+
+            document.getElementById('preparationModal').style.display = 'flex';
+        }
+
+        function closePreparationModal() {
+            document.getElementById('preparationModal').style.display = 'none';
+            currentPreparation = null;
+        }
+
+        // === GÉNÉRATION NUMÉRO COMMANDE ===
+        function generateCommandeNumber() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            return `CMD${year}${month}${day}-${random}`;
+        }
+
+        // === RESET FORM ===
+        function resetCommandeForm() {
+            document.getElementById('commande-client-nom').value = '';
+            document.getElementById('commande-client-email').value = '';
+            document.getElementById('commande-client-adresse').value = '';
+            document.getElementById('commande-client-telephone').value = '';
+            document.getElementById('commande-date-livraison').value = '';
+            document.getElementById('commande-heure-livraison').value = '';
+            document.getElementById('commande-adresse-livraison').value = '';
+            document.getElementById('commande-products-container').innerHTML = '';
+            commandeProductCounter = 0;
+            updateCommandeTotals();
+        }
+
+        // === GESTION PRODUITS COMMANDE ===
+        function addCommandeProductLine() {
+            commandeProductCounter++;
+            const container = document.getElementById('commande-products-container');
+            
+            const productLine = document.createElement('div');
+            productLine.className = 'product-line';
+            productLine.dataset.id = commandeProductCounter;
+            
+            let buttonHTML = '';
+            if (commandeProductCounter > 1) {
+                buttonHTML = `<button type="button" class="btn-remove-product" onclick="removeCommandeProductLine(${commandeProductCounter})"><i class="fas fa-trash"></i></button>`;
+            }
+            
+            let optionsHTML = '<option value="">Sélectionnez un produit</option>';
+            Object.entries(produits).forEach(([key, prod]) => {
+                optionsHTML += `<option value="${key}">${prod.nom} - $${prod.prix}</option>`;
+            });
+            
+            productLine.innerHTML = `
+                <div class="product-line-header">
+                    <span class="product-number">Produit ${commandeProductCounter}</span>
+                    ${buttonHTML}
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="form-label">Produit</label>
+                        <select class="form-select product-select" data-id="${commandeProductCounter}" onchange="updateCommandeProductPrice(${commandeProductCounter})">
+                            ${optionsHTML}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prix unitaire</label>
+                        <input type="text" class="form-input product-price" data-id="${commandeProductCounter}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" class="form-input product-quantity" data-id="${commandeProductCounter}" min="1" value="1" onchange="updateCommandeLineTotal(${commandeProductCounter})">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total HT</label>
+                        <input type="text" class="form-input product-total" data-id="${commandeProductCounter}" readonly>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(productLine);
+        }
+
+        function removeCommandeProductLine(id) {
+            const line = document.querySelector(`#commande-products-container [data-id="${id}"]`);
+            if (line) {
+                line.remove();
+                updateCommandeTotals();
+            }
+        }
+
+        function updateCommandeProductPrice(id) {
+            const select = document.querySelector(`#commande-products-container select[data-id="${id}"]`);
+            const priceInput = document.querySelector(`#commande-products-container input.product-price[data-id="${id}"]`);
+            
+            if (select.value) {
+                const prix = produits[select.value].prix;
+                priceInput.value = `${prix}.00`;
+                updateCommandeLineTotal(id);
+            } else {
+                priceInput.value = '';
+                updateCommandeLineTotal(id);
+            }
+        }
+
+        function updateCommandeLineTotal(id) {
+            const select = document.querySelector(`#commande-products-container select[data-id="${id}"]`);
+            const quantityInput = document.querySelector(`#commande-products-container input.product-quantity[data-id="${id}"]`);
+            const totalInput = document.querySelector(`#commande-products-container input.product-total[data-id="${id}"]`);
+            
+            if (select.value && quantityInput.value) {
+                const prix = produits[select.value].prix;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const total = prix * quantity;
+                
+                totalInput.value = `${total.toLocaleString('en-US')}.00`;
+            } else {
+                totalInput.value = '';
+            }
+            
+            updateCommandeTotals();
+        }
+
+        function updateCommandeTotals() {
+            let sousTotal = 0;
+            
+            document.querySelectorAll('#commande-products-container .product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`#commande-products-container select[data-id="${id}"]`);
+                const quantityInput = document.querySelector(`#commande-products-container input.product-quantity[data-id="${id}"]`);
+                
+                if (select && select.value && quantityInput && quantityInput.value) {
+                    const prix = produits[select.value].prix;
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    sousTotal += prix * quantity;
+                }
+            });
+            
+            const tva = sousTotal * 0.21;
+            const total = sousTotal + tva;
+            
+            document.getElementById('commande-sous-total').textContent = `${sousTotal.toLocaleString('en-US')}.00`;
+            document.getElementById('commande-tva-montant').textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('commande-total-final').textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            commandeData.totaux = { sousTotal, tva, total };
+        }
+
+        // === COLLECTE DES DONNÉES ===
+        function collectCommandeData() {
+            commandeData.client = {
+                nom: document.getElementById('commande-client-nom').value,
+                email: document.getElementById('commande-client-email').value,
+                adresse: document.getElementById('commande-client-adresse').value,
+                telephone: document.getElementById('commande-client-telephone').value
+            };
+            
+            commandeData.livraison = {
+                date: document.getElementById('commande-date-livraison').value,
+                heure: document.getElementById('commande-heure-livraison').value,
+                adresse: document.getElementById('commande-adresse-livraison').value || commandeData.client.adresse
+            };
+            
+            commandeData.produits = [];
+            document.querySelectorAll('#commande-products-container .product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`#commande-products-container select[data-id="${id}"]`);
+                const quantityInput = document.querySelector(`#commande-products-container input.product-quantity[data-id="${id}"]`);
+                
+                if (select && select.value && quantityInput && quantityInput.value) {
+                    const produit = produits[select.value];
+                    const quantity = parseInt(quantityInput.value);
+                    const total = produit.prix * quantity;
+                    
+                    commandeData.produits.push({
+                        nom: produit.nom,
+                        prix: produit.prix,
+                        quantite: quantity,
+                        total: total,
+                        prepared: false // Suivi de préparation
+                    });
+                }
+            });
+            
+            commandeData.id = generateCommandeNumber();
+            commandeData.dateCreation = new Date().toISOString();
+            commandeData.statut = 'en-cours';
+        }
+
+        // === AFFICHAGE DES COMMANDES ===
+        function displayCommandes() {
+            const container = document.getElementById('commandesContainer');
+            
+            if (commandes.length === 0) {
+                container.innerHTML = `
+                    <div class="no-commandes">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Aucune commande en cours</h3>
+                        <p>Cliquez sur "Nouvelle Commande" pour créer votre première commande.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            commandes.forEach(commande => {
+                const commandeCard = document.createElement('div');
+                commandeCard.className = 'commande-card';
+                
+                const dateCreation = new Date(commande.dateCreation).toLocaleDateString('fr-FR');
+                const dateLivraison = new Date(commande.livraison.date).toLocaleDateString('fr-FR');
+                
+                let produitsHTML = '';
+                commande.produits.forEach((produit, index) => {
+                    produitsHTML += `
+                        <div class="produit-item">
+                            <div class="produit-details">
+                                <div class="produit-nom">${produit.nom}</div>
+                                <div class="produit-prix">${produit.prix} l'unité</div>
+                            </div>
+                            <span class="produit-quantite">${produit.quantite}x</span>
+                            <button class="btn-prepare" onclick="openPreparationModal('${commande.id}', ${index})">
+                                <i class="fas fa-minus"></i> Préparer
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                commandeCard.innerHTML = `
+                    <div class="commande-header">
+                        <div class="commande-numero">${commande.id}</div>
+                        <div class="commande-date">Créée le ${dateCreation}</div>
+                    </div>
+                    
+                    <div class="commande-client">
+                        <h4><i class="fas fa-user"></i> ${commande.client.nom}</h4>
+                        <div class="client-info">
+                            <div><i class="fas fa-envelope"></i> ${commande.client.email || 'Non renseigné'}</div>
+                            <div><i class="fas fa-phone"></i> ${commande.client.telephone || 'Non renseigné'}</div>
+                            <div style="grid-column: 1/-1;"><i class="fas fa-map-marker-alt"></i> ${commande.client.adresse}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="commande-livraison">
+                        <h4><i class="fas fa-truck"></i> Livraison</h4>
+                        <div class="livraison-info">
+                            <div><strong>Date:</strong> ${dateLivraison} à ${commande.livraison.heure}</div>
+                            <div><strong>Adresse:</strong> ${commande.livraison.adresse}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="commande-produits">
+                        <h4><i class="fas fa-wine-bottle"></i> Produits (${commande.produits.length})</h4>
+                        ${produitsHTML}
+                    </div>
+                    
+                    <div class="commande-total">
+                        Total: ${commande.totaux.total.toLocaleString('en-US', {minimumFractionDigits: 2})} TTC
+                    </div>
+                `;
+                
+                container.appendChild(commandeCard);
+            });
+        }
+
+        // === ENVOI DISCORD COMMANDE ===
+        async function sendCommandeToDiscord(commandeData) {
+            try {
+                console.log('📤 Envoi commande Discord...');
+                
+                const safeData = {
+                    numero: String(commandeData.id || 'N/A'),
+                    client: String(commandeData.client?.nom || 'Client'),
+                    email: String(commandeData.client?.email || ''),
+                    telephone: String(commandeData.client?.telephone || ''),
+                    adresse: String(commandeData.client?.adresse || ''),
+                    total: parseFloat(commandeData.totaux?.total || 0),
+                    sousTotal: parseFloat(commandeData.totaux?.sousTotal || 0),
+                    tva: parseFloat(commandeData.totaux?.tva || 0),
+                    dateLivraison: commandeData.livraison?.date || '',
+                    heureLivraison: commandeData.livraison?.heure || '',
+                    adresseLivraison: commandeData.livraison?.adresse || ''
+                };
+                
+                let produitsDescription = '';
+                if (commandeData.produits && Array.isArray(commandeData.produits) && commandeData.produits.length > 0) {
+                    commandeData.produits.forEach(produit => {
+                        const nom = String(produit.nom || 'Produit');
+                        const qty = parseInt(produit.quantite) || 1;
+                        const prix = parseFloat(produit.prix) || 0;
+                        const total = parseFloat(produit.total) || 0;
+                        
+                        produitsDescription += `• **${nom}** (${qty}x) - ${prix.toFixed(2)} = ${total.toFixed(2)}\n`;
+                    });
+                }
+                
+                let clientInfo = '';
+                if (safeData.email) clientInfo += `📧 ${safeData.email}\n`;
+                if (safeData.telephone) clientInfo += `📞 ${safeData.telephone}\n`;
+                if (safeData.adresse) {
+                    const adresseFormatted = safeData.adresse.replace(/\n/g, ', ');
+                    clientInfo += `📍 ${adresseFormatted}`;
+                }
+                
+                const embed = {
+                    title: "🛒 Nouvelle Commande Marlowe Vineyard",
+                    description: `Commande créée le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+                    color: 0x28a745,
+                    fields: [
+                        {
+                            name: "📋 Numéro de commande",
+                            value: `\`${safeData.numero}\``,
+                            inline: true
+                        },
+                        {
+                            name: "👤 Client",
+                            value: `**${safeData.client}**`,
+                            inline: true
+                        },
+                        {
+                            name: "💰 Montant total",
+                            value: `**${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
+                            inline: true
+                        },
+                        {
+                            name: "🚚 Livraison prévue",
+                            value: `**${new Date(safeData.dateLivraison).toLocaleDateString('fr-FR')}** à **${safeData.heureLivraison}**`,
+                            inline: false
+                        },
+                        {
+                            name: "📍 Adresse de livraison",
+                            value: safeData.adresseLivraison,
+                            inline: false
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Marlowe Vineyard • Commandes",
+                        icon_url: null
+                    }
+                };
+                
+                if (clientInfo.trim()) {
+                    embed.fields.push({
+                        name: "📇 Informations client",
+                        value: clientInfo.trim(),
+                        inline: false
+                    });
+                }
+                
+                if (produitsDescription) {
+                    if (produitsDescription.length > 1000) {
+                        const lines = produitsDescription.split('\n');
+                        let truncated = '';
+                        for (let i = 0; i < lines.length && truncated.length < 900; i++) {
+                            truncated += lines[i] + '\n';
+                        }
+                        if (lines.length > Math.floor(900 / 50)) {
+                            truncated += `... et ${commandeData.produits.length - Math.floor(900 / 50)} autres produits`;
+                        }
+                        produitsDescription = truncated;
+                    }
+                    
+                    embed.fields.push({
+                        name: `🛒 Produits commandés (${commandeData.produits.length})`,
+                        value: produitsDescription,
+                        inline: false
+                    });
+                }
+                
+                embed.fields.push({
+                    name: "🧮 Détail financier",
+                    value: `**Sous-total HT:** ${safeData.sousTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                           `**TVA (21%):** ${safeData.tva.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                           `**Total TTC:** ${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`,
+                    inline: false
+                });
+                
+                const payload = {
+                    content: "🛒 **Nouvelle commande reçue !**\n> Une commande vient d'être créée et doit être préparée.",
+                    embeds: [embed],
+                    username: "Marlowe Vineyard - Commandes"
+                };
+                
+                const response = await fetch(DISCORD_WEBHOOK_COMMANDES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur Discord commande:', response.status, errorText);
+                    throw new Error(`Discord error: ${response.status} - ${errorText}`);
+                }
+                
+                console.log('✅ Commande envoyée avec succès sur Discord');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi Discord commande:', error);
+                throw error;
+            }
+        }
+
+        // === ENVOI DISCORD PRÉPARATION ===
+        async function sendPreparationToDiscord(preparationData) {
+            try {
+                console.log('📤 Envoi préparation Discord...');
+                
+                const embed = {
+                    title: "📦 Préparation Produit",
+                    description: `Préparation effectuée le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+                    color: 0xdc3545,
+                    fields: [
+                        {
+                            name: "📋 Commande",
+                            value: `\`${preparationData.commandeId}\``,
+                            inline: true
+                        },
+                        {
+                            name: "👤 Employé",
+                            value: `**${preparationData.employe.fullname}** (${preparationData.employe.username})`,
+                            inline: true
+                        },
+                        {
+                            name: "🏷️ Grade",
+                            value: preparationData.employe.grade.toUpperCase(),
+                            inline: true
+                        },
+                        {
+                            name: "🍷 Produit",
+                            value: `**${preparationData.produit.nom}**`,
+                            inline: false
+                        },
+                        {
+                            name: "📊 Quantités",
+                            value: `**Commandée:** ${preparationData.quantiteCommandee}\n**Préparée:** ${preparationData.quantitePreparee}`,
+                            inline: true
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Marlowe Vineyard • Préparations",
+                        icon_url: null
+                    }
+                };
+                
+                if (preparationData.note && preparationData.note.trim()) {
+                    embed.fields.push({
+                        name: "📝 Note additionnelle",
+                        value: preparationData.note.trim(),
+                        inline: false
+                    });
+                }
+                
+                const payload = {
+                    content: "📦 **Produit préparé !**\n> Un employé vient de préparer un produit de commande.",
+                    embeds: [embed],
+                    username: "Marlowe Vineyard - Préparations"
+                };
+                
+                const response = await fetch(DISCORD_WEBHOOK_PREPARATIONS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur Discord préparation:', response.status, errorText);
+                    throw new Error(`Discord error: ${response.status} - ${errorText}`);
+                }
+                
+                console.log('✅ Préparation envoyée avec succès sur Discord');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erreur envoi Discord préparation:', error);
+                throw error;
+            }
+        }
+
+        // === FONCTIONS PRINCIPALES ===
+        async function createCommandeComplete() {
+            console.log('🚀 Création complète de la commande...');
+            
+            if (!document.getElementById('commande-client-nom').value.trim()) {
+                notify.error('Formulaire incomplet', 'Le nom du client est requis.');
+                return;
+            }
+            
+            if (!document.getElementById('commande-client-adresse').value.trim()) {
+                notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
+                return;
+            }
+            
+            if (!document.getElementById('commande-date-livraison').value) {
+                notify.error('Formulaire incomplet', 'La date de livraison est requise.');
+                return;
+            }
+            
+            if (!document.getElementById('commande-heure-livraison').value) {
+                notify.error('Formulaire incomplet', 'L\'heure de livraison est requise.');
+                return;
+            }
+            
+            let hasValidProducts = false;
+            document.querySelectorAll('#commande-products-container .product-line').forEach(line => {
+                const id = line.dataset.id;
+                const select = document.querySelector(`#commande-products-container select[data-id="${id}"]`);
+                if (select && select.value) hasValidProducts = true;
+            });
+            
+            if (!hasValidProducts) {
+                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
+                return;
+            }
+            
+            collectCommandeData();
+            console.log('📊 Données de la commande:', commandeData);
+            
+            try {
+                notify.info('Traitement en cours...', 'Création de la commande...');
+                
+                // Ajouter la commande à la liste
+                commandes.push({...commandeData});
+                saveCommandes();
+                displayCommandes();
+                
+                notify.info('Notification Discord...', 'Envoi en cours...');
+                
+                await sendCommandeToDiscord(commandeData);
+                console.log('✅ Discord notifié pour la commande');
+                
+                notify.success(
+                    'Commande créée avec succès !', 
+                    `• Commande ${commandeData.id} ajoutée\n• Notification Discord envoyée\n• Visible dans la liste des commandes`
+                );
+                
+                setTimeout(() => closeCommandeModal(), 3000);
+                
+            } catch (error) {
+                console.error('❌ Erreur complète commande:', error);
+                
+                if (error.message.includes('Discord')) {
+                    notify.error('Erreur Discord', 'La commande a été créée mais l\'envoi Discord a échoué.');
+                } else {
+                    notify.error('Erreur de création', error.message);
+                }
+            }
+        }
+
+        async function confirmPreparation() {
+            if (!currentPreparation) return;
+            
+            const quantitePreparee = parseInt(document.getElementById('prep-quantite-preparee').value);
+            const note = document.getElementById('prep-note').value.trim();
+            
+            if (quantitePreparee < 0) {
+                notify.error('Quantité invalide', 'La quantité préparée ne peut pas être négative.');
+                return;
+            }
+            
+            try {
+                const preparationData = {
+                    commandeId: currentPreparation.commandeId,
+                    produit: currentPreparation.produit,
+                    quantiteCommandee: currentPreparation.produit.quantite,
+                    quantitePreparee: quantitePreparee,
+                    note: note,
+                    employe: currentUser,
+                    datePreparation: new Date().toISOString()
+                };
+                
+                notify.info('Traitement en cours...', 'Enregistrement de la préparation...');
+                
+                await sendPreparationToDiscord(preparationData);
+                
+                notify.success(
+                    'Préparation enregistrée !', 
+                    `• ${quantitePreparee} unité(s) de ${currentPreparation.produit.nom} préparée(s)\n• Notification Discord envoyée`
+                );
+                
+                closePreparationModal();
+                
+            } catch (error) {
+                console.error('❌ Erreur préparation:', error);
+                notify.error('Erreur préparation', 'Impossible d\'enregistrer la préparation.');
+            }
+        }
+
+        // === INITIALISATION ===
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initialisation du système de commandes...');
+            
+            // Récupérer l'utilisateur connecté
+            getCurrentUser();
+            
+            // Charger les commandes existantes
+            loadCommandes();
+            displayCommandes();
+            
+            // Event listeners
+            document.getElementById('nouvelleCommandeBtn').onclick = openCommandeModal;
+            document.getElementById('closeCommandeModal').onclick = closeCommandeModal;
+            document.getElementById('cancelCommande').onclick = closeCommandeModal;
+            document.getElementById('addCommandeProductBtn').onclick = addCommandeProductLine;
+            document.getElementById('createCommandeComplete').onclick = createCommandeComplete;
+            
+            document.getElementById('closePreparationModal').onclick = closePreparationModal;
+            document.getElementById('cancelPreparation').onclick = closePreparationModal;
+            document.getElementById('confirmPreparation').onclick = confirmPreparation;
+            
+            // Gestion déconnexion
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    window.location.href = '../index.html';
+                }
+            });
+            
+            console.log('✅ Système de commandes prêt !');
+        });
+    </script>
+</body>
+</html>
