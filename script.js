@@ -564,114 +564,44 @@ async function sendEmbedToDiscord(devisData) {
         const safeData = {
             numero: String(devisData.numeroDevis || 'N/A').replace(/[^\w\-]/g, ''),
             client: String(devisData.client?.nom || 'Client').replace(/[^\w\s\-\.]/g, '').substring(0, 50),
-            total: parseFloat(devisData.totaux?.total || 0),
-            sousTotal: parseFloat(devisData.totaux?.sousTotal || 0),
-            tva: parseFloat(devisData.totaux?.tva || 0),
-            email: String(devisData.client?.email || '').replace(/[^\w@.\-]/g, '').substring(0, 50),
-            telephone: String(devisData.client?.telephone || '').replace(/[^\w\s\-\+\(\)]/g, '').substring(0, 20),
-            adresse: String(devisData.client?.adresse || '').replace(/[^\w\s\-\.,\n]/g, '').substring(0, 100)
+            total: parseFloat(devisData.totaux?.total || 0)
         };
         
-        // Construire les fields
-        const fields = [
-            {
-                name: "📋 Numéro de devis",
-                value: safeData.numero,
-                inline: true
-            },
-            {
-                name: "👤 Client",
-                value: safeData.client,
-                inline: true
-            },
-            {
-                name: "💰 Total TTC",
-                value: `**$${safeData.total.toFixed(2)}**`,
-                inline: true
-            }
-        ];
-        
-        // Informations de contact (si disponibles)
-        let contactInfo = '';
-        if (safeData.adresse) {
-            contactInfo += `📍 ${safeData.adresse.replace(/\n/g, ', ')}\n`;
-        }
-        if (safeData.email) {
-            contactInfo += `📧 ${safeData.email}\n`;
-        }
-        if (safeData.telephone) {
-            contactInfo += `📞 ${safeData.telephone}`;
-        }
-        
-        if (contactInfo.trim()) {
-            fields.push({
-                name: "📇 Informations client",
-                value: contactInfo.trim(),
-                inline: false
-            });
-        }
-        
-        // Liste des produits (sécurisée)
-        if (devisData.produits && Array.isArray(devisData.produits) && devisData.produits.length > 0) {
-            let produitsText = '';
-            const maxProduits = Math.min(devisData.produits.length, 5); // Limiter à 5 produits
-            
-            for (let i = 0; i < maxProduits; i++) {
-                const p = devisData.produits[i];
-                const nom = String(p.nom || 'Produit').replace(/[^\w\s\-]/g, '').substring(0, 30);
-                const qty = parseInt(p.quantite) || 1;
-                const total = parseFloat(p.total) || 0;
-                
-                produitsText += `• **${nom}** × ${qty} → $${total.toFixed(2)}\n`;
-            }
-            
-            if (devisData.produits.length > 5) {
-                produitsText += `... et **${devisData.produits.length - 5} autres produits**`;
-            }
-            
-            // Vérifier que le texte n'est pas trop long
-            if (produitsText.length > 950) {
-                produitsText = produitsText.substring(0, 950) + '...';
-            }
-            
-            fields.push({
-                name: `🍷 Produits commandés (${devisData.produits.length})`,
-                value: produitsText,
-                inline: false
-            });
-        }
-        
-        // Détail des montants
-        fields.push({
-            name: "🧮 Détail financier",
-            value: `Sous-total HT: $${safeData.sousTotal.toFixed(2)}\n` +
-                   `TVA (21%): $${safeData.tva.toFixed(2)}\n` +
-                   `**Total TTC: $${safeData.total.toFixed(2)}**`,
-            inline: false
-        });
-        
-        // Créer l'embed final
+        // Créer l'embed final (UN SEUL)
         const embed = {
             title: "🍷 Nouveau Devis - Marlowe Vineyard",
-            description: `Devis généré automatiquement le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+            description: `Devis généré le ${new Date().toLocaleDateString('fr-FR')}`,
             color: 0x8B5A9F,
-            fields: fields,
+            fields: [
+                {
+                    name: "📋 Numéro",
+                    value: safeData.numero,
+                    inline: true
+                },
+                {
+                    name: "👤 Client",
+                    value: safeData.client,
+                    inline: true
+                },
+                {
+                    name: "💰 Total",
+                    value: `$${safeData.total.toFixed(2)}`,
+                    inline: true
+                }
+            ],
             timestamp: new Date().toISOString(),
             footer: {
-                text: "Marlowe Vineyard • Système de gestion automatisé"
+                text: "Marlowe Vineyard"
             }
         };
         
-        // Payload final
+        // Payload avec UN SEUL embed
         const payload = {
-            content: "📋 **Nouveau devis créé !**\n*Le fichier PDF a été téléchargé automatiquement sur le poste de travail.*",
-            embeds: [embed],
-            username: "Marlowe Vineyard"
+            content: "📋 Nouveau devis créé !",
+            embeds: [embed]
         };
         
-        console.log('📤 Envoi vers Discord...');
-        
-        // Envoyer l'embed
+        // UN SEUL ENVOI
         const response = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -679,20 +609,17 @@ async function sendEmbedToDiscord(devisData) {
         });
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Erreur Discord:', response.status, errorText);
-            throw new Error(`Discord API error: ${response.status} - ${errorText}`);
+            throw new Error(`Discord error: ${response.status}`);
         }
         
-        console.log('✅ Embed envoyé avec succès sur Discord');
+        console.log('✅ UN embed envoyé');
         return true;
         
     } catch (error) {
-        console.error('❌ Erreur envoi Discord:', error);
+        console.error('❌ Erreur:', error);
         throw error;
     }
 }
-
 // === FONCTION TÉLÉCHARGEMENT PDF (INCHANGÉE) ===
 async function downloadPDF(devisData) {
     try {
