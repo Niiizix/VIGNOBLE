@@ -462,17 +462,10 @@ window.getStockThresholds = function() {
 };
 
 window.getConfiguration = function() {
-    if (window.dbManager && window.dbManager.isReady) {
-        return window.dbManager.getConfiguration();
-    }
-    // Valeurs par défaut si la DB n'est pas encore prête
     return {
-        thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
-        notifications: { duration: 4, soundEnabled: true },
-        system: { sessionTimeout: 60, theme: 'light' }
+        thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } }
     };
 };
-
 window.updateGlobalConfig = function(newConfig) {
     // Mise à jour temporaire pour la session en cours uniquement
     Object.keys(newConfig).forEach(section => {
