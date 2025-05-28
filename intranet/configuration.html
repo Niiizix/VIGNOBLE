@@ -145,7 +145,7 @@
         <div class="hero-content">
             <h1>Configuration Système</h1>
             <p class="subtitle">Paramètres de l'intranet</p>
-            <p>Consultez les utilisateurs et configurez les paramètres globaux de votre intranet.</p>
+            <p>Consultez les utilisateurs et configurez les seuils de stock de votre intranet.</p>
         </div>
     </section>
 
@@ -281,100 +281,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Notifications -->
-            <div class="config-category">
-                <div class="config-header">
-                    <h2><i class="fas fa-bell"></i> Notifications</h2>
-                    <p>Paramètres des notifications et alertes système</p>
-                </div>
-                
-                <div class="config-content">
-                    <div class="config-grid">
-                        <div class="config-item">
-                            <h3><i class="fas fa-clock"></i> Durée d'affichage</h3>
-                            <div class="threshold-config">
-                                <div class="threshold-item">
-                                    <label class="form-label">Durée par défaut des notifications</label>
-                                    <div class="input-group">
-                                        <input type="number" id="notification-duration" class="form-input" value="4" min="1" max="10">
-                                        <span class="input-suffix">secondes</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="config-item">
-                            <h3><i class="fas fa-volume-up"></i> Alertes sonores</h3>
-                            <div class="threshold-config">
-                                <div class="threshold-item">
-                                    <label class="form-label">
-                                        <input type="checkbox" id="sound-notifications" checked>
-                                        Activer les alertes sonores
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="config-actions">
-                        <button type="button" class="cta-button btn-secondary" id="resetNotifications">
-                            <i class="fas fa-undo"></i> Réinitialiser
-                        </button>
-                        <button type="button" class="cta-button btn-success" id="saveNotifications">
-                            <i class="fas fa-save"></i> Sauvegarder
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Système -->
-            <div class="config-category">
-                <div class="config-header">
-                    <h2><i class="fas fa-cogs"></i> Système</h2>
-                    <p>Paramètres généraux du système</p>
-                </div>
-                
-                <div class="config-content">
-                    <div class="config-grid">
-                        <div class="config-item">
-                            <h3><i class="fas fa-users"></i> Sessions utilisateurs</h3>
-                            <div class="threshold-config">
-                                <div class="threshold-item">
-                                    <label class="form-label">Durée de session (inactivité)</label>
-                                    <div class="input-group">
-                                        <input type="number" id="session-timeout" class="form-input" value="60" min="15" max="480">
-                                        <span class="input-suffix">minutes</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="config-item">
-                            <h3><i class="fas fa-palette"></i> Thème</h3>
-                            <div class="threshold-config">
-                                <div class="threshold-item">
-                                    <label class="form-label">Mode d'affichage</label>
-                                    <select class="form-select" id="theme-mode">
-                                        <option value="light">Clair</option>
-                                        <option value="dark">Sombre</option>
-                                        <option value="auto">Automatique</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="config-actions">
-                        <button type="button" class="cta-button btn-secondary" id="resetSystem">
-                            <i class="fas fa-undo"></i> Réinitialiser
-                        </button>
-                        <button type="button" class="cta-button btn-success" id="saveSystem">
-                            <i class="fas fa-save"></i> Sauvegarder
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -438,9 +344,7 @@
         function loadConfiguration() {
             if (!currentConfig || !currentConfig.thresholds) {
                 currentConfig = {
-                    thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } },
-                    notifications: { duration: 4, soundEnabled: true },
-                    system: { sessionTimeout: 60, theme: 'light' }
+                    thresholds: { matieres: { critical: 50, warning: 100 }, bouteilles: { critical: 30, warning: 75 } }
                 };
             }
             
@@ -448,21 +352,13 @@
                 'critical-matieres': currentConfig.thresholds.matieres?.critical || 50,
                 'warning-matieres': currentConfig.thresholds.matieres?.warning || 100,
                 'critical-bouteilles': currentConfig.thresholds.bouteilles?.critical || 30,
-                'warning-bouteilles': currentConfig.thresholds.bouteilles?.warning || 75,
-                'notification-duration': currentConfig.notifications?.duration || 4,
-                'session-timeout': currentConfig.system?.sessionTimeout || 60
+                'warning-bouteilles': currentConfig.thresholds.bouteilles?.warning || 75
             };
 
             Object.entries(elements).forEach(([id, value]) => {
                 const element = document.getElementById(id);
                 if (element) element.value = value;
             });
-
-            const soundNotifications = document.getElementById('sound-notifications');
-            const themeMode = document.getElementById('theme-mode');
-            
-            if (soundNotifications) soundNotifications.checked = currentConfig.notifications?.soundEnabled !== false;
-            if (themeMode) themeMode.value = currentConfig.system?.theme || 'light';
 
             updateThresholdInfo();
         }
@@ -549,9 +445,11 @@
                     return;
                 }
 
-                // Mettre à jour la configuration globale (sans localStorage)
+                // Mettre à jour la configuration globale
                 currentConfig.thresholds = newThresholds;
-                window.globalConfig.thresholds = newThresholds;
+                if (window.globalConfig) {
+                    window.globalConfig.thresholds = newThresholds;
+                }
                 
                 updateThresholdInfo();
                 if (window.notify) window.notify.success('Configuration mise à jour', 'Nouveaux seuils appliqués pour cette session.');
@@ -568,7 +466,9 @@
                     };
                     
                     currentConfig.thresholds = defaultThresholds;
-                    window.globalConfig.thresholds = defaultThresholds;
+                    if (window.globalConfig) {
+                        window.globalConfig.thresholds = defaultThresholds;
+                    }
                     loadConfiguration();
                     if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
                 });
@@ -576,60 +476,6 @@
 
             ['warning-matieres', 'warning-bouteilles'].forEach(id => {
                 document.getElementById(id)?.addEventListener('input', updateThresholdInfo);
-            });
-        }
-
-        function setupNotifications() {
-            document.getElementById('saveNotifications')?.addEventListener('click', function() {
-                const newNotifications = {
-                    duration: parseInt(document.getElementById('notification-duration')?.value || 4),
-                    soundEnabled: document.getElementById('sound-notifications')?.checked || false
-                };
-
-                currentConfig.notifications = newNotifications;
-                window.globalConfig.notifications = newNotifications;
-                
-                if (window.notify) window.notify.success('Configuration mise à jour', 'Paramètres de notification appliqués pour cette session.');
-            });
-
-            document.getElementById('resetNotifications')?.addEventListener('click', function() {
-                if (!window.notify) return;
-                
-                const confirmNotification = window.notify.warning('Réinitialiser les notifications', 'Remettre les valeurs par défaut ?', 10000);
-                addConfirmationButtons(confirmNotification, () => {
-                    const defaultNotifications = { duration: 4, soundEnabled: true };
-                    currentConfig.notifications = defaultNotifications;
-                    window.globalConfig.notifications = defaultNotifications;
-                    loadConfiguration();
-                    if (window.notify) window.notify.info('Notifications réinitialisées', 'Paramètres par défaut restaurés.');
-                });
-            });
-        }
-
-        function setupSystem() {
-            document.getElementById('saveSystem')?.addEventListener('click', function() {
-                const newSystem = {
-                    sessionTimeout: parseInt(document.getElementById('session-timeout')?.value || 60),
-                    theme: document.getElementById('theme-mode')?.value || 'light'
-                };
-
-                currentConfig.system = newSystem;
-                window.globalConfig.system = newSystem;
-                
-                if (window.notify) window.notify.success('Configuration mise à jour', 'Paramètres système appliqués pour cette session.');
-            });
-
-            document.getElementById('resetSystem')?.addEventListener('click', function() {
-                if (!window.notify) return;
-                
-                const confirmNotification = window.notify.warning('Réinitialiser le système', 'Remettre les valeurs par défaut ?', 10000);
-                addConfirmationButtons(confirmNotification, () => {
-                    const defaultSystem = { sessionTimeout: 60, theme: 'light' };
-                    currentConfig.system = defaultSystem;
-                    window.globalConfig.system = defaultSystem;
-                    loadConfiguration();
-                    if (window.notify) window.notify.info('Système réinitialisé', 'Paramètres par défaut restaurés.');
-                });
             });
         }
 
@@ -650,7 +496,7 @@
         // === CHARGEMENT DES DONNÉES ===
         async function loadAllData() {
             try {
-                // Charger uniquement depuis DB.json (pas de localStorage)
+                // Charger uniquement depuis DB.json
                 currentUsers = window.dbManager.getUsers();
                 currentConfig = window.dbManager.getConfiguration();
                 
@@ -670,7 +516,7 @@
 
         // === INITIALISATION ===
         function initConfigPage() {
-            console.log('🔄 Initialisation de la page de configuration (mode lecture seule)...');
+            console.log('🔄 Initialisation de la page de configuration...');
             
             if (!window.dbManager || !window.dbManager.waitForReady) {
                 console.log('⏳ En attente du DatabaseManager...');
@@ -690,11 +536,9 @@
                 try {
                     setupUserManagement();
                     setupThresholds();
-                    setupNotifications();
-                    setupSystem();
                     setupLogout();
                     
-                    console.log('✅ Page Configuration chargée en mode lecture seule !');
+                    console.log('✅ Page Configuration chargée !');
                 } catch (setupError) {
                     console.error('❌ Erreur lors de l\'initialisation des gestionnaires:', setupError);
                     if (window.notify) {
@@ -712,7 +556,7 @@
 
         // Démarrer l'initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM chargé, démarrage de l\'initialisation en mode lecture seule...');
+            console.log('📄 DOM chargé, démarrage de l\'initialisation...');
             initConfigPage();
         });
     </script>
