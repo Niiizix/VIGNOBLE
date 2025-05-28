@@ -666,7 +666,7 @@
                                 
                                 // Description (colonne 1)
                                 firstPage.drawText(nomTronque, {
-                                    x: 105, y: currentY,
+                                    x: 110, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
@@ -678,7 +678,7 @@
                                 
                                 // Quantité (colonne 3)
                                 firstPage.drawText(`${produit.quantite || 1}`, {
-                                    x: 385, y: currentY,
+                                    x: 388, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
@@ -709,7 +709,7 @@
                     
                     // TVA
                     firstPage.drawText(`$${formatAmount(factureData.totaux.tva)}`, {
-                        x: 580, y: 115,
+                        x: 480, y: 115,
                         size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
                     });
                     
@@ -718,7 +718,7 @@
                     const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 14);
                     firstPage.drawText(totalText, {
                         x: 525 - totalTextWidth,
-                        y: 77,
+                        y: 80,
                         size: 14, 
                         font: boldFont, 
                         color: PDFLib.rgb(1, 1, 1)
