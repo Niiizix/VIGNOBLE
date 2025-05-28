@@ -739,42 +739,6 @@
         }
 
         // === FONCTION ENVOI DISCORD SIMPLIFIÉ (EMBED SEULEMENT) ===
-        async function sendEmbedToDiscord(devisData) {
-            const payload = {
-                content: "📋 Nouveau devis créé !",
-                embeds: [{
-                    title: "🍷 Devis Marlowe Vineyard",
-                    color: 0x8B5A9F,
-                    fields: [
-                        {
-                            name: "Numéro",
-                            value: devisData.numeroDevis,
-                            inline: true
-                        },
-                        {
-                            name: "Client", 
-                            value: devisData.client.nom,
-                            inline: true
-                        },
-                        {
-                            name: "Total",
-                            value: `$${devisData.totaux.total.toFixed(2)}`,
-                            inline: true
-                        }
-                    ]
-                }]
-            };
-            
-            const response = await fetch(DISCORD_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) throw new Error(`Discord error: ${response.status}`);
-            return true;
-        }
-        
         async function downloadPDF(devisData) {
             try {
                 console.log('📄 Génération PDF pour téléchargement...');
