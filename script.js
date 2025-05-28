@@ -558,185 +558,142 @@ async function sendEmbedToDiscord(devisData) {
     }
     
     try {
-        console.log('🔍 DIAGNOSTIC - Données reçues:', devisData);
+        console.log('📤 Envoi embed Discord...');
         
-        // TEST 1: Embed ultra-minimal
-        console.log('📤 TEST 1 - Embed minimal...');
-        
-        const minimalPayload = {
-            embeds: [{
-                title: "Test Marlowe",
-                color: 0x8B5A9F
-            }]
-        };
-        
-        let response = await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(minimalPayload)
-        });
-        
-        if (!response.ok) {
-            console.error('❌ TEST 1 ÉCHEC:', response.status, await response.text());
-            throw new Error(`Embed minimal échoue: ${response.status}`);
-        }
-        
-        console.log('✅ TEST 1 OK - Embed de base fonctionne');
-        
-        // Pause pour éviter rate limit
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // TEST 2: Embed avec fields basiques
-        console.log('📤 TEST 2 - Embed avec fields...');
-        
-        const basicFieldsPayload = {
-            embeds: [{
-                title: "Devis Marlowe",
-                color: 0x8B5A9F,
-                fields: [
-                    {
-                        name: "Numero",
-                        value: String(devisData.numeroDevis || 'TEST-001'),
-                        inline: true
-                    },
-                    {
-                        name: "Client", 
-                        value: String(devisData.client?.nom || 'Client Test'),
-                        inline: true
-                    }
-                ]
-            }]
-        };
-        
-        response = await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(basicFieldsPayload)
-        });
-        
-        if (!response.ok) {
-            console.error('❌ TEST 2 ÉCHEC:', response.status, await response.text());
-            throw new Error(`Fields basiques échouent: ${response.status}`);
-        }
-        
-        console.log('✅ TEST 2 OK - Fields basiques fonctionnent');
-        
-        // Pause
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // TEST 3: Embed complet mais sécurisé
-        console.log('📤 TEST 3 - Embed complet...');
-        
-        // Nettoyer les données pour éviter les caractères problématiques
+        // Nettoyer et sécuriser les données
         const safeData = {
             numero: String(devisData.numeroDevis || 'N/A').replace(/[^\w\-]/g, ''),
-            client: String(devisData.client?.nom || 'Client').replace(/[^\w\s\-]/g, '').substring(0, 50),
+            client: String(devisData.client?.nom || 'Client').replace(/[^\w\s\-\.]/g, '').substring(0, 50),
             total: parseFloat(devisData.totaux?.total || 0),
+            sousTotal: parseFloat(devisData.totaux?.sousTotal || 0),
+            tva: parseFloat(devisData.totaux?.tva || 0),
             email: String(devisData.client?.email || '').replace(/[^\w@.\-]/g, '').substring(0, 50),
-            telephone: String(devisData.client?.telephone || '').replace(/[^\w\s\-\+]/g, '').substring(0, 20)
+            telephone: String(devisData.client?.telephone || '').replace(/[^\w\s\-\+\(\)]/g, '').substring(0, 20),
+            adresse: String(devisData.client?.adresse || '').replace(/[^\w\s\-\.,\n]/g, '').substring(0, 100)
         };
         
-        console.log('🔍 Données nettoyées:', safeData);
-        
+        // Construire les fields
         const fields = [
             {
-                name: "Numero de devis",
+                name: "📋 Numéro de devis",
                 value: safeData.numero,
                 inline: true
             },
             {
-                name: "Client",
+                name: "👤 Client",
                 value: safeData.client,
                 inline: true
             },
             {
-                name: "Total",
-                value: `$${safeData.total.toFixed(2)}`,
+                name: "💰 Total TTC",
+                value: `**$${safeData.total.toFixed(2)}**`,
                 inline: true
             }
         ];
         
-        // Ajouter contact si disponible
-        if (safeData.email || safeData.telephone) {
-            let contactInfo = '';
-            if (safeData.email) contactInfo += `Email: ${safeData.email}\n`;
-            if (safeData.telephone) contactInfo += `Tel: ${safeData.telephone}`;
-            
+        // Informations de contact (si disponibles)
+        let contactInfo = '';
+        if (safeData.adresse) {
+            contactInfo += `📍 ${safeData.adresse.replace(/\n/g, ', ')}\n`;
+        }
+        if (safeData.email) {
+            contactInfo += `📧 ${safeData.email}\n`;
+        }
+        if (safeData.telephone) {
+            contactInfo += `📞 ${safeData.telephone}`;
+        }
+        
+        if (contactInfo.trim()) {
             fields.push({
-                name: "Contact",
-                value: contactInfo,
+                name: "📇 Informations client",
+                value: contactInfo.trim(),
                 inline: false
             });
         }
         
-        // Ajouter produits de manière très sécurisée
+        // Liste des produits (sécurisée)
         if (devisData.produits && Array.isArray(devisData.produits) && devisData.produits.length > 0) {
             let produitsText = '';
-            const maxProduits = Math.min(devisData.produits.length, 3); // Limiter à 3 produits
+            const maxProduits = Math.min(devisData.produits.length, 5); // Limiter à 5 produits
             
             for (let i = 0; i < maxProduits; i++) {
                 const p = devisData.produits[i];
-                const nom = String(p.nom || 'Produit').replace(/[^\w\s\-]/g, '').substring(0, 25);
+                const nom = String(p.nom || 'Produit').replace(/[^\w\s\-]/g, '').substring(0, 30);
                 const qty = parseInt(p.quantite) || 1;
-                const prix = parseFloat(p.total) || 0;
+                const total = parseFloat(p.total) || 0;
                 
-                produitsText += `${nom} x${qty} - $${prix.toFixed(2)}\n`;
+                produitsText += `• **${nom}** × ${qty} → $${total.toFixed(2)}\n`;
             }
             
-            if (devisData.produits.length > 3) {
-                produitsText += `... et ${devisData.produits.length - 3} autres`;
+            if (devisData.produits.length > 5) {
+                produitsText += `... et **${devisData.produits.length - 5} autres produits**`;
             }
             
-            // Vérifier la longueur (max 1024 pour Discord)
-            if (produitsText.length > 900) {
-                produitsText = produitsText.substring(0, 900) + '...';
+            // Vérifier que le texte n'est pas trop long
+            if (produitsText.length > 950) {
+                produitsText = produitsText.substring(0, 950) + '...';
             }
             
             fields.push({
-                name: `Produits (${devisData.produits.length})`,
+                name: `🍷 Produits commandés (${devisData.produits.length})`,
                 value: produitsText,
                 inline: false
             });
         }
         
-        const finalPayload = {
-            content: "Nouveau devis cree",
-            embeds: [{
-                title: "Devis Marlowe Vineyard",
-                description: `Cree le ${new Date().toLocaleDateString('fr-FR')}`,
-                color: 0x8B5A9F,
-                fields: fields,
-                timestamp: new Date().toISOString(),
-                footer: {
-                    text: "Marlowe Vineyard"
-                }
-            }]
+        // Détail des montants
+        fields.push({
+            name: "🧮 Détail financier",
+            value: `Sous-total HT: $${safeData.sousTotal.toFixed(2)}\n` +
+                   `TVA (21%): $${safeData.tva.toFixed(2)}\n` +
+                   `**Total TTC: $${safeData.total.toFixed(2)}**`,
+            inline: false
+        });
+        
+        // Créer l'embed final
+        const embed = {
+            title: "🍷 Nouveau Devis - Marlowe Vineyard",
+            description: `Devis généré automatiquement le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+            color: 0x8B5A9F,
+            fields: fields,
+            timestamp: new Date().toISOString(),
+            footer: {
+                text: "Marlowe Vineyard • Système de gestion automatisé"
+            }
         };
         
-        console.log('📤 Payload final:', JSON.stringify(finalPayload, null, 2));
+        // Payload final
+        const payload = {
+            content: "📋 **Nouveau devis créé !**\n*Le fichier PDF a été téléchargé automatiquement sur le poste de travail.*",
+            embeds: [embed],
+            username: "Marlowe Vineyard"
+        };
         
-        response = await fetch(DISCORD_WEBHOOK_URL, {
+        console.log('📤 Envoi vers Discord...');
+        
+        // Envoyer l'embed
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(finalPayload)
+            body: JSON.stringify(payload)
         });
         
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ TEST 3 ÉCHEC:', response.status, errorText);
-            throw new Error(`Embed complet échoue: ${response.status} - ${errorText}`);
+            console.error('❌ Erreur Discord:', response.status, errorText);
+            throw new Error(`Discord API error: ${response.status} - ${errorText}`);
         }
         
-        console.log('✅ TEST 3 OK - Embed complet envoyé avec succès !');
+        console.log('✅ Embed envoyé avec succès sur Discord');
         return true;
         
     } catch (error) {
-        console.error('❌ Erreur diagnostic:', error);
+        console.error('❌ Erreur envoi Discord:', error);
         throw error;
     }
 }
 
-// === FONCTION TÉLÉCHARGEMENT INCHANGÉE ===
+// === FONCTION TÉLÉCHARGEMENT PDF (INCHANGÉE) ===
 async function downloadPDF(devisData) {
     try {
         console.log('📄 Génération PDF pour téléchargement...');
@@ -776,7 +733,7 @@ async function downloadPDF(devisData) {
     }
 }
 
-// === FONCTION PRINCIPALE INCHANGÉE ===
+// === FONCTION PRINCIPALE (INCHANGÉE) ===
 async function generateDevisComplete() {
     console.log('🚀 Génération complète du devis...');
     
@@ -816,14 +773,14 @@ async function generateDevisComplete() {
         const filename = await downloadPDF(devisData);
         console.log('✅ PDF téléchargé:', filename);
         
-        notify.info('Envoi Discord...', 'Test progressif en cours...');
+        notify.info('Notification Discord...', 'Envoi en cours...');
         
         await sendEmbedToDiscord(devisData);
         console.log('✅ Discord notifié');
         
         notify.success(
             'Devis créé avec succès !', 
-            `PDF téléchargé: ${filename}\nNotification Discord envoyée\nDevis ${devisData.numeroDevis} finalisé`
+            `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Devis ${devisData.numeroDevis} finalisé`
         );
         
         setTimeout(() => closeDevisModal(), 3000);
@@ -832,7 +789,7 @@ async function generateDevisComplete() {
         console.error('❌ Erreur complète:', error);
         
         if (error.message.includes('Discord')) {
-            notify.error('Erreur Discord', 'Le PDF a été téléchargé mais la notification Discord a échoué.');
+            notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué. Vérifiez la console.');
         } else {
             notify.error('Erreur de génération', error.message);
         }
