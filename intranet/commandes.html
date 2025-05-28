@@ -148,6 +148,28 @@
             font-size: 0.8rem;
             font-weight: 600;
             margin: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .quantite-commandee {
+            font-size: 0.9rem;
+        }
+
+        .quantite-preparee {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .produit-complet {
+            background: #28a745 !important;
+        }
+
+        .produit-partiel {
+            background: #ffc107 !important;
+            color: #000 !important;
         }
 
         .btn-prepare {
@@ -527,7 +549,6 @@
         // === CONFIGURATION DISCORD ===
         const DISCORD_WEBHOOK_COMMANDES = 'https://l.webhook.party/hook/%2FM4rBgChCMU4C0h64KaEOZnDRAtwERxORTQ26Ys6%2BsiMGlLBJo3FQUJehclFhqZRoK51sIMpwIPlVGtQgawTjjH8udxL8Z%2Bpqh57S6pZtkybo8l5420APyeP%2FnhOj0fwOpF6hStUvNUY%2BzSIDjBsQ6lW4JFweXO5jxuhxAOK845Yw6tWXN5nnbpmzeT7DkejC%2FEIycugAJWINo%2B3zGkptzJGO%2FjoFAvF5kmoCCnO%2FP6Zfz54tRzfuHMckUvQUxGUicFd9zlGKytPaJ6cr5Ll%2F4TNerWzV1g7Ow6JASwAG1q23CwWU1RkH1NEY81A942QBtaZsy4NSodqA9EpDwFhLdmBMOMTbXyqgJuaoQ4X%2B74gqwXJvO3D2tV%2BctcrG%2FUSataMw9VjUpQ%3D/pPrmw%2FZCVchUkDLD';
         const DISCORD_WEBHOOK_PREPARATIONS = 'https://l.webhook.party/hook/oAu8WGmapmUBSB%2BgbC9LOH6hjp2MQi5yTzKoZNBnzZMNJn3lT215qMwt3g1AAE5kXswaL5o8LqjgtbRH9EtQLTTVQWg%2FSGBdOSUCtVl9ZHgnITOrUlyLqZtlCqVHD9Az8FIlCn4VGj1KBw3xwP4XcX%2Facxwa8MOmLXyPxX0j348FYKwLVAzI0v9OHgG5b3%2BTjIdvSGvEmlMBJ0qY5ykOMy7N4TLqtGMBUaLTZ9B5GftbYmViBpJ3U%2B8f3pPbQZtZQUKfE4qwpiDmxTExz1O%2FH8iLnFaw6VfeJCWVXWC0VDXGSsHxXlnUmcRifLQImG%2FNzCtBwy0RRG9vjdmN0U4zZzaCmwJPPtJ3xaJNrQ8x5tmx9srkGPtZ4j4krHM72NcmFzZ7EFw4XPY%3D/p6WbLVyAS9ArW41L';
-
         // === PRODUITS ===
         const produits = {
             'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
@@ -602,12 +623,28 @@
             const produit = commande.produits[produitIndex];
             if (!produit) return;
 
-            currentPreparation = { commandeId, produitIndex, produit };
+            const quantiteRestante = produit.quantite - (produit.quantitePreparee || 0);
+            
+            if (quantiteRestante <= 0) {
+                notify.info('Produit complet', 'Ce produit a déjà été entièrement préparé.');
+                return;
+            }
+
+            currentPreparation = { commandeId, produitIndex, produit, quantiteRestante };
 
             document.getElementById('prep-produit-nom').value = produit.nom;
             document.getElementById('prep-quantite-commandee').value = produit.quantite;
-            document.getElementById('prep-quantite-preparee').value = produit.quantite;
+            document.getElementById('prep-quantite-preparee').value = Math.min(quantiteRestante, quantiteRestante);
             document.getElementById('prep-note').value = '';
+
+            // Mettre à jour le label pour montrer ce qui reste
+            const label = document.querySelector('label[for="prep-quantite-preparee"]');
+            if (label) {
+                label.textContent = `Quantité à préparer * (Reste: ${quantiteRestante})`;
+            }
+
+            // Limiter le max à la quantité restante
+            document.getElementById('prep-quantite-preparee').max = quantiteRestante;
 
             document.getElementById('preparationModal').style.display = 'flex';
         }
@@ -787,7 +824,7 @@
                         prix: produit.prix,
                         quantite: quantity,
                         total: total,
-                        prepared: false // Suivi de préparation
+                        quantitePreparee: 0 // Suivi de préparation
                     });
                 }
             });
@@ -1173,12 +1210,29 @@
                 return;
             }
             
+            if (quantitePreparee > currentPreparation.quantiteRestante) {
+                notify.error('Quantité invalide', `Vous ne pouvez pas préparer plus que ${currentPreparation.quantiteRestante} unité(s).`);
+                return;
+            }
+            
             try {
+                // Mettre à jour la commande dans la liste
+                const commande = commandes.find(c => c.id === currentPreparation.commandeId);
+                if (commande) {
+                    const produit = commande.produits[currentPreparation.produitIndex];
+                    produit.quantitePreparee = (produit.quantitePreparee || 0) + quantitePreparee;
+                    
+                    // Sauvegarder et réafficher
+                    saveCommandes();
+                    displayCommandes();
+                }
+                
                 const preparationData = {
                     commandeId: currentPreparation.commandeId,
                     produit: currentPreparation.produit,
                     quantiteCommandee: currentPreparation.produit.quantite,
                     quantitePreparee: quantitePreparee,
+                    quantiteTotalePreparee: (currentPreparation.produit.quantitePreparee || 0) + quantitePreparee,
                     note: note,
                     employe: currentUser,
                     datePreparation: new Date().toISOString()
@@ -1188,10 +1242,16 @@
                 
                 await sendPreparationToDiscord(preparationData);
                 
-                notify.success(
-                    'Préparation enregistrée !', 
-                    `• ${quantitePreparee} unité(s) de ${currentPreparation.produit.nom} préparée(s)\n• Notification Discord envoyée`
-                );
+                const quantiteRestanteApres = currentPreparation.quantiteRestante - quantitePreparee;
+                let message = `• ${quantitePreparee} unité(s) de ${currentPreparation.produit.nom} préparée(s)\n• Notification Discord envoyée`;
+                
+                if (quantiteRestanteApres > 0) {
+                    message += `\n• Reste ${quantiteRestanteApres} unité(s) à préparer`;
+                } else {
+                    message += `\n• ✅ Produit entièrement préparé !`;
+                }
+                
+                notify.success('Préparation enregistrée !', message);
                 
                 closePreparationModal();
                 
