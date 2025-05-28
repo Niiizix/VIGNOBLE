@@ -672,19 +672,19 @@
                                 
                                 // Prix (colonne 2)
                                 firstPage.drawText(`$${produit.prix || 0}`, {
-                                    x: 150, y: currentY,
+                                    x: 250, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
                                 // Quantité (colonne 3)
                                 firstPage.drawText(`${produit.quantite || 1}`, {
-                                    x: 200, y: currentY,
+                                    x: 350, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                                 
                                 // Total (colonne 4)
                                 firstPage.drawText(`$${produit.total || 0}`, {
-                                    x: 250, y: currentY,
+                                    x: 450, y: currentY,
                                     size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
                                 });
                             }
