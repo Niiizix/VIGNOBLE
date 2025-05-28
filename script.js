@@ -587,6 +587,46 @@ async function sendEmbedToDiscord(devisData) {
     if (!response.ok) throw new Error(`Discord error: ${response.status}`);
     return true;
 }
+
+async function downloadPDF(devisData) {
+    try {
+        console.log('📄 Génération PDF pour téléchargement...');
+        
+        const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
+        const pdfBytes = await pdfDoc.save();
+        
+        console.log('📄 PDF généré:', pdfBytes.length, 'bytes');
+        
+        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+        
+        const clientName = devisData.client.nom
+            .replace(/[^a-zA-Z0-9\s]/g, '')
+            .replace(/\s+/g, '_')
+            .substring(0, 20);
+        
+        const filename = `Devis_${devisData.numeroDevis}_${clientName}.pdf`;
+        
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        
+        console.log('✅ PDF téléchargé:', filename);
+        return filename;
+        
+    } catch (error) {
+        console.error('❌ Erreur téléchargement PDF:', error);
+        throw error;
+    }
+}
+
 // === FONCTION PRINCIPALE (INCHANGÉE) ===
 async function generateDevisComplete() {
     console.log('🚀 Génération complète du devis...');
