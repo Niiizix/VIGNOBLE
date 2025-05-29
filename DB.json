@@ -4,6 +4,7 @@
       "dashboard - Accès au tableau de bord principal",
       "inventory - Gestion de l'inventaire (stock, produits)",
       "documents - Gestion des documents (factures, devis, etc.)",
+      "documents_internal - Accès aux documents internes (rapports, commandes fournisseurs)",
       "config - Accès à la configuration système",
       "reports - Génération et consultation des rapports",
       "users - Gestion des utilisateurs (admin uniquement)"
@@ -37,7 +38,7 @@
         "description": "Directeur financier avec accès administratif",
         "color": "#7b1fa2",
         "background": "#f3e5f5",
-        "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports"]
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "documents_internal", "config", "reports"]
       },
       "ceo": {
         "label": "CEO",
@@ -45,7 +46,7 @@
         "color": "#c62828",
         "background": "#ffebee",
         "border": "2px solid #c62828",
-        "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "documents_internal", "config", "reports", "users"]
       },
       "staff": {
         "label": "STAFF",
@@ -53,7 +54,7 @@
         "color": "#c62828",
         "background": "#ffebee",
         "border": "2px solid #c62828",
-        "permissions_par_defaut": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+        "permissions_par_defaut": ["dashboard", "inventory", "documents", "documents_internal", "config", "reports", "users"]
       }
     },
     "permissions": {
@@ -71,6 +72,11 @@
         "label": "Documents",
         "description": "Gestion des documents (factures, devis, etc.)",
         "icon": "📄"
+      },
+      "documents_internal": {
+        "label": "Documents Internes",
+        "description": "Accès aux documents internes (rapports, commandes fournisseurs)",
+        "icon": "🏢"
       },
       "config": {
         "label": "Configuration",
@@ -95,21 +101,28 @@
       "phone": "X",
       "grade": "staff",
       "password": "ML_STAFF",
-      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+      "permissions": ["dashboard", "inventory", "documents", "documents_internal", "config", "reports", "users"]
     },
     "guzman": {
       "fullname": "Guzman Stamkos",
       "phone": "X",
       "grade": "ceo",
       "password": "GJ@Sxzdt8dM&g4Y",
-      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+      "permissions": ["dashboard", "inventory", "documents", "documents_internal", "config", "reports", "users"]
     },
     "nico": {
       "fullname": "Nico Capone",
       "phone": "X",
       "grade": "cfo",
       "password": "$yJA&E&tJY$98E6",
-      "permissions": ["dashboard", "inventory", "documents", "config", "reports", "users"]
+      "permissions": ["dashboard", "inventory", "documents", "documents_internal", "config", "reports", "users"]
+    },
+    "test_employé": {
+      "fullname": "Test",
+      "phone": "X",
+      "grade": "manager",
+      "password": "1234",
+      "permissions": ["dashboard", "inventory", "documents", "reports"]
     }
   },
   "configuration": {
