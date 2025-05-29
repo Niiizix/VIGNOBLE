@@ -373,22 +373,81 @@
 
         // === VÉRIFICATION DES PERMISSIONS ===
         function getCurrentUser() {
-            // Récupérer l'utilisateur connecté (à adapter selon votre système de session)
-            // Pour l'exemple, on utilise un utilisateur par défaut
-            currentUser = {
-                username: 'admin',
-                fullname: 'STAFF',
-                grade: 'staff',
-                permissions: ['dashboard', 'inventory', 'documents', 'documents_internal', 'config', 'reports', 'users']
-            };
-            
-            // Vérifier si l'utilisateur a accès aux documents internes
-            hasInternalAccess = currentUser.permissions.includes('documents_internal');
-            
-            console.log('👤 Utilisateur connecté:', currentUser.username);
-            console.log('🔐 Accès documents internes:', hasInternalAccess ? 'OUI' : 'NON');
-            
-            return currentUser;
+            try {
+                // Récupérer l'utilisateur réellement connecté depuis la session
+                // À adapter selon ton système de session réel
+                
+                // Pour l'instant, on simule en prenant l'utilisateur connecté
+                // Tu peux récupérer cela depuis sessionStorage, localStorage, ou ton système d'auth
+                
+                // REMPLACE CETTE PARTIE par ton système de récupération d'utilisateur connecté
+                const storedUser = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+                let username = 'manager'; // Par défaut, utilisateur sans permissions internes
+                
+                if (storedUser) {
+                    try {
+                        const userData = JSON.parse(storedUser);
+                        username = userData.username || username;
+                    } catch (e) {
+                        console.warn('Erreur parsing utilisateur stocké:', e);
+                    }
+                }
+                
+                // Récupérer les données de l'utilisateur depuis la DB
+                if (window.dbManager && window.dbManager.isReady) {
+                    const users = window.dbManager.getUsers();
+                    const user = users[username];
+                    
+                    if (user) {
+                        currentUser = {
+                            username: username,
+                            fullname: user.fullname,
+                            grade: user.grade,
+                            permissions: user.permissions || []
+                        };
+                    } else {
+                        console.warn('Utilisateur non trouvé dans la DB:', username);
+                        // Utilisateur par défaut sans permissions internes
+                        currentUser = {
+                            username: 'guest',
+                            fullname: 'Invité',
+                            grade: 'employe',
+                            permissions: ['dashboard', 'documents']
+                        };
+                    }
+                } else {
+                    console.warn('DB Manager non prêt');
+                    // Utilisateur par défaut sans permissions internes
+                    currentUser = {
+                        username: 'guest',
+                        fullname: 'Invité',
+                        grade: 'employe',
+                        permissions: ['dashboard', 'documents']
+                    };
+                }
+                
+                // Vérifier si l'utilisateur a accès aux documents internes
+                hasInternalAccess = currentUser.permissions.includes('documents_internal');
+                
+                console.log('👤 Utilisateur connecté:', currentUser.username);
+                console.log('🔐 Permissions:', currentUser.permissions);
+                console.log('🔐 Accès documents internes:', hasInternalAccess ? 'OUI' : 'NON');
+                
+                return currentUser;
+            } catch (error) {
+                console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+                
+                // Utilisateur par défaut en cas d'erreur
+                currentUser = {
+                    username: 'guest',
+                    fullname: 'Invité',
+                    grade: 'employe',
+                    permissions: ['dashboard', 'documents']
+                };
+                hasInternalAccess = false;
+                
+                return currentUser;
+            }
         }
 
         function checkInternalDocumentsAccess() {
@@ -807,8 +866,14 @@
         }
 
         // === INITIALISATION ===
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Initialisation Documents avec contrôle d\'accès...');
+            
+            // Attendre que le DatabaseManager soit prêt
+            if (window.dbManager && window.dbManager.waitForReady) {
+                await window.dbManager.waitForReady();
+                console.log('✅ DatabaseManager prêt');
+            }
             
             // Récupérer l'utilisateur actuel et vérifier les permissions
             getCurrentUser();
