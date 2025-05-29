@@ -85,7 +85,8 @@
                     <strong>Identifiants de test :</strong><br>
                     admin / ML_STAFF<br>
                     guzman / GJ@Sxzdt8dM&g4Y<br>
-                    nico / $yJA&E&tJY$98E6
+                    nico / $yJA&E&tJY$98E6<br>
+                    test_employe / test123
                 </div>
             </div>
         </div>
@@ -98,6 +99,74 @@
 
     <script src="../script.js"></script>
     <script>
+        // === SYSTÈME DE SESSION ===
+        class SessionManager {
+            static SESSION_KEY = 'marlowe_user_session';
+            static SESSION_TIMEOUT = 60 * 60 * 1000; // 1 heure
+
+            static saveSession(userData) {
+                const sessionData = {
+                    user: userData,
+                    loginTime: Date.now(),
+                    expiresAt: Date.now() + this.SESSION_TIMEOUT
+                };
+                
+                try {
+                    localStorage.setItem(this.SESSION_KEY, JSON.stringify(sessionData));
+                    console.log('✅ Session sauvegardée:', userData.username);
+                    return true;
+                } catch (error) {
+                    console.error('❌ Erreur sauvegarde session:', error);
+                    return false;
+                }
+            }
+
+            static getSession() {
+                try {
+                    const sessionData = localStorage.getItem(this.SESSION_KEY);
+                    if (!sessionData) return null;
+
+                    const parsed = JSON.parse(sessionData);
+                    
+                    // Vérifier si la session n'a pas expiré
+                    if (Date.now() > parsed.expiresAt) {
+                        console.log('⏰ Session expirée');
+                        this.clearSession();
+                        return null;
+                    }
+
+                    console.log('✅ Session récupérée:', parsed.user.username);
+                    return parsed.user;
+                } catch (error) {
+                    console.error('❌ Erreur récupération session:', error);
+                    return null;
+                }
+            }
+
+            static clearSession() {
+                try {
+                    localStorage.removeItem(this.SESSION_KEY);
+                    console.log('🗑️ Session supprimée');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Erreur suppression session:', error);
+                    return false;
+                }
+            }
+
+            static isLoggedIn() {
+                return this.getSession() !== null;
+            }
+
+            static renewSession() {
+                const currentSession = this.getSession();
+                if (currentSession) {
+                    this.saveSession(currentSession);
+                    console.log('🔄 Session renouvelée');
+                }
+            }
+        }
+
         // Variables globales pour le système de login
         let loginAttempts = 0;
         let maxAttempts = 3;
@@ -111,6 +180,18 @@
             const attemptsInfo = document.getElementById('attemptsInfo');
             const attemptsLeft = document.getElementById('attemptsLeft');
             const loginButton = document.getElementById('loginButton');
+
+            // Vérifier si l'utilisateur est déjà connecté
+            if (SessionManager.isLoggedIn()) {
+                console.log('👤 Utilisateur déjà connecté, redirection...');
+                if (window.notify) {
+                    window.notify.info('Déjà connecté', 'Redirection vers l\'intranet...');
+                }
+                setTimeout(() => {
+                    window.location.href = '../intranet/dashboard.html';
+                }, 1000);
+                return;
+            }
 
             // Gestion de la soumission du formulaire
             loginForm.addEventListener('submit', function(e) {
@@ -150,10 +231,27 @@
                     if (user && user.password === accessCode) {
                         // Connexion réussie
                         console.log('✅ Connexion réussie pour:', username);
-                        showSuccess();
-                        setTimeout(() => {
-                            window.location.href = '../intranet/dashboard.html';
-                        }, 1000);
+                        
+                        // Créer les données de session complètes
+                        const sessionUserData = {
+                            username: username,
+                            fullname: user.fullname,
+                            phone: user.phone,
+                            grade: user.grade,
+                            permissions: user.permissions || []
+                        };
+
+                        // Sauvegarder la session
+                        const sessionSaved = SessionManager.saveSession(sessionUserData);
+                        
+                        if (sessionSaved) {
+                            showSuccess();
+                            setTimeout(() => {
+                                window.location.href = '../intranet/dashboard.html';
+                            }, 1000);
+                        } else {
+                            showError('Erreur de sauvegarde de session');
+                        }
                     } else {
                         // Échec de connexion
                         console.log('❌ Échec de connexion pour:', username);
@@ -272,6 +370,9 @@
             `;
             document.head.appendChild(style);
         });
+
+        // Exposer SessionManager globalement pour les autres pages
+        window.SessionManager = SessionManager;
     </script>
 </body>
 </html>
