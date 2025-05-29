@@ -1,5 +1,73 @@
 /* === SCRIPT.JS === */
 
+// === SYSTÈME DE SESSION (Partagé) ===
+class SessionManager {
+    static SESSION_KEY = 'marlowe_user_session';
+    static SESSION_TIMEOUT = 60 * 60 * 1000; // 1 heure
+
+    static saveSession(userData) {
+        const sessionData = {
+            user: userData,
+            loginTime: Date.now(),
+            expiresAt: Date.now() + this.SESSION_TIMEOUT
+        };
+        
+        try {
+            localStorage.setItem(this.SESSION_KEY, JSON.stringify(sessionData));
+            console.log('✅ Session sauvegardée:', userData.username);
+            return true;
+        } catch (error) {
+            console.error('❌ Erreur sauvegarde session:', error);
+            return false;
+        }
+    }
+
+    static getSession() {
+        try {
+            const sessionData = localStorage.getItem(this.SESSION_KEY);
+            if (!sessionData) return null;
+
+            const parsed = JSON.parse(sessionData);
+            
+            if (Date.now() > parsed.expiresAt) {
+                console.log('⏰ Session expirée');
+                this.clearSession();
+                return null;
+            }
+
+            return parsed.user;
+        } catch (error) {
+            console.error('❌ Erreur récupération session:', error);
+            return null;
+        }
+    }
+
+    static clearSession() {
+        try {
+            localStorage.removeItem(this.SESSION_KEY);
+            console.log('🗑️ Session supprimée');
+            return true;
+        } catch (error) {
+            console.error('❌ Erreur suppression session:', error);
+            return false;
+        }
+    }
+
+    static isLoggedIn() {
+        return this.getSession() !== null;
+    }
+
+    static renewSession() {
+        const currentSession = this.getSession();
+        if (currentSession) {
+            this.saveSession(currentSession);
+        }
+    }
+}
+
+// Exposer globalement
+window.SessionManager = SessionManager;
+
 // Système de notifications
 class NotificationSystem {
     constructor() {
