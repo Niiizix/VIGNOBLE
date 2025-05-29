@@ -9,51 +9,9 @@
     <!-- PDF-lib pour modifier les PDFs existants -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <style>
-        /* Style pour les sections cachées/bloquées */
-        .restricted-section {
-            opacity: 0.5;
-            pointer-events: none;
-            position: relative;
-        }
-
-        .restricted-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 20px;
-            z-index: 1;
-        }
-
-        .restricted-message {
-            background: #fff;
-            padding: 1.5rem 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            border: 2px solid #ffc107;
-        }
-
-        .restricted-message i {
-            font-size: 2rem;
-            color: #ffc107;
-            margin-bottom: 1rem;
-        }
-
-        .restricted-message h4 {
-            color: #1a1a1a;
-            margin-bottom: 0.5rem;
-        }
-
-        .restricted-message p {
-            color: #6c757d;
-            margin: 0;
-            font-size: 0.9rem;
+        /* Styles pour cacher complètement les sections sans permissions */
+        .hidden-section {
+            display: none !important;
         }
     </style>
 </head>
@@ -373,16 +331,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- Overlay de restriction (caché par défaut) -->
-                <div class="restricted-overlay" id="internal-restricted-overlay" style="display: none;">
-                    <div class="restricted-message">
-                        <i class="fas fa-lock"></i>
-                        <h4>Accès Restreint</h4>
-                        <p>Vous n'avez pas les permissions nécessaires pour accéder aux documents internes.<br>
-                        Contactez votre administrateur pour obtenir la permission <strong>"documents_internal"</strong>.</p>
-                    </div>
-                </div>
             </div>
 
             <!-- Statistiques -->
@@ -445,39 +393,19 @@
 
         function checkInternalDocumentsAccess() {
             const internalSection = document.getElementById('internal-documents-section');
-            const restrictedOverlay = document.getElementById('internal-restricted-overlay');
             
             if (!hasInternalAccess) {
-                console.log('🚫 Accès refusé aux documents internes');
+                console.log('🚫 Accès refusé aux documents internes - Section cachée');
                 
-                // Appliquer la classe de restriction
-                internalSection.classList.add('restricted-section');
+                // Cacher complètement la section
+                internalSection.style.display = 'none';
                 
-                // Afficher l'overlay de restriction
-                restrictedOverlay.style.display = 'flex';
-                
-                // Désactiver tous les boutons dans cette section
-                internalSection.querySelectorAll('.document-btn').forEach(btn => {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                });
-                
-                // Afficher une notification d'information
-                if (window.notify) {
-                    setTimeout(() => {
-                        window.notify.warning(
-                            'Accès Restreint', 
-                            'Certains documents internes sont restreints selon vos permissions.'
-                        );
-                    }, 1000);
-                }
+                console.log('📋 Section documents internes masquée pour cet utilisateur');
             } else {
-                console.log('✅ Accès autorisé aux documents internes');
+                console.log('✅ Accès autorisé aux documents internes - Section visible');
                 
-                // S'assurer que la section est accessible
-                internalSection.classList.remove('restricted-section');
-                restrictedOverlay.style.display = 'none';
+                // S'assurer que la section est visible
+                internalSection.style.display = 'block';
             }
         }
 
@@ -576,20 +504,8 @@
 
         // === GESTION DES BOUTONS AVEC PERMISSIONS ===
         function handleDocumentButtonClick(documentType) {
-            // Vérifier si c'est un document interne et si l'utilisateur a les permissions
-            const internalDocuments = ['inventaire', 'ventes', 'commande', 'production'];
-            
-            if (internalDocuments.includes(documentType) && !hasInternalAccess) {
-                if (window.notify) {
-                    window.notify.error(
-                        'Accès Refusé', 
-                        'Vous n\'avez pas les permissions pour accéder aux documents internes.'
-                    );
-                }
-                return;
-            }
-            
-            // Traitement normal des documents
+            // Les documents internes ne sont plus accessibles ici car la section est cachée
+            // Traitement normal des documents clients uniquement
             if (documentType === 'devis') {
                 if (!templatePDF) {
                     if (window.notify) window.notify.warning('Template manquant', 'Le template PDF n\'est pas encore chargé.');
