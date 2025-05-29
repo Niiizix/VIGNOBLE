@@ -8,6 +8,54 @@
     <link rel="stylesheet" href="../styles.css">
     <!-- PDF-lib pour modifier les PDFs existants -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        /* Style pour les sections cachées/bloquées */
+        .restricted-section {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .restricted-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 1;
+        }
+
+        .restricted-message {
+            background: #fff;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            border: 2px solid #ffc107;
+        }
+
+        .restricted-message i {
+            font-size: 2rem;
+            color: #ffc107;
+            margin-bottom: 1rem;
+        }
+
+        .restricted-message h4 {
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .restricted-message p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -44,8 +92,6 @@
             <p>Générez rapidement vos devis, factures et autres documents commerciaux avec calculs automatiques.</p>
         </div>
     </section>
-
-
 
     <!-- Modal Devis -->
     <div id="devisModal" class="modal-devis">
@@ -275,8 +321,8 @@
                 </div>
             </div>
 
-            <!-- Documents Internes -->
-            <div class="document-category">
+            <!-- Documents Internes (avec contrôle d'accès) -->
+            <div class="document-category" id="internal-documents-section">
                 <div class="category-header">
                     <h2><i class="fas fa-building"></i> Documents Internes</h2>
                     <p>Gérez vos documents internes et rapports d'activité</p>
@@ -327,6 +373,16 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Overlay de restriction (caché par défaut) -->
+                <div class="restricted-overlay" id="internal-restricted-overlay" style="display: none;">
+                    <div class="restricted-message">
+                        <i class="fas fa-lock"></i>
+                        <h4>Accès Restreint</h4>
+                        <p>Vous n'avez pas les permissions nécessaires pour accéder aux documents internes.<br>
+                        Contactez votre administrateur pour obtenir la permission <strong>"documents_internal"</strong>.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Statistiques -->
@@ -363,21 +419,96 @@
 
     <script src="../script.js"></script>
     <script>
+        // === VARIABLES GLOBALES ===
+        let currentUser = null;
+        let hasInternalAccess = false;
+
+        // === VÉRIFICATION DES PERMISSIONS ===
+        function getCurrentUser() {
+            // Récupérer l'utilisateur connecté (à adapter selon votre système de session)
+            // Pour l'exemple, on utilise un utilisateur par défaut
+            currentUser = {
+                username: 'admin',
+                fullname: 'STAFF',
+                grade: 'staff',
+                permissions: ['dashboard', 'inventory', 'documents', 'documents_internal', 'config', 'reports', 'users']
+            };
+            
+            // Vérifier si l'utilisateur a accès aux documents internes
+            hasInternalAccess = currentUser.permissions.includes('documents_internal');
+            
+            console.log('👤 Utilisateur connecté:', currentUser.username);
+            console.log('🔐 Accès documents internes:', hasInternalAccess ? 'OUI' : 'NON');
+            
+            return currentUser;
+        }
+
+        function checkInternalDocumentsAccess() {
+            const internalSection = document.getElementById('internal-documents-section');
+            const restrictedOverlay = document.getElementById('internal-restricted-overlay');
+            
+            if (!hasInternalAccess) {
+                console.log('🚫 Accès refusé aux documents internes');
+                
+                // Appliquer la classe de restriction
+                internalSection.classList.add('restricted-section');
+                
+                // Afficher l'overlay de restriction
+                restrictedOverlay.style.display = 'flex';
+                
+                // Désactiver tous les boutons dans cette section
+                internalSection.querySelectorAll('.document-btn').forEach(btn => {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                });
+                
+                // Afficher une notification d'information
+                if (window.notify) {
+                    setTimeout(() => {
+                        window.notify.warning(
+                            'Accès Restreint', 
+                            'Certains documents internes sont restreints selon vos permissions.'
+                        );
+                    }, 1000);
+                }
+            } else {
+                console.log('✅ Accès autorisé aux documents internes');
+                
+                // S'assurer que la section est accessible
+                internalSection.classList.remove('restricted-section');
+                restrictedOverlay.style.display = 'none';
+            }
+        }
+
         // === CONFIGURATION DISCORD ===
-        // REMPLACEZ 'VOTRE_WEBHOOK_URL_ICI' par votre vraie URL de webhook Discord
         const DISCORD_WEBHOOK_URL = 'https://l.webhook.party/hook/p8GEvGjZOXrEAnlh9Czg9Tc0iTQBwifuEMuxxUSXDviB6TigfRf2602NP8WKvfbOKbznpmCc84gFdsh3ReH%2BnwfMPy%2FQuxLaSOKoEhONeF2Sa%2BdlaQeZIF8HnyhTdm%2F139Gp1ZQNINg2u5wL4iv3Gnf4vhyNTH6f2v%2BeDX4gF2wk4Ggtz1JckA7wL2zzdEzp7kngu9sT97mMpEQ7hSGib3GfUgQ3XE4yHljVjprjK2vKD1WrJrbkCigxZhM5evlSs0rWFg4vxjo9ytsVdHnbv%2BXF%2FcNb%2BY9c%2Foyj0WNqRrV7WDawmXYGA7%2B1iwKAMhPxDJvGwfytR64FeOoSQdEEfHlk4wKErY6S4Cdvq3FHsDpfrF2Kr3vByaujn%2BhjOUxk51U%2Bf10knUI%3D/O39Ms6oV6RQnZDds';
         const DISCORD_USERNAME = 'Marlowe Vineyard';
 
         // === TEMPLATE PDF ===
         let templatePDF = null;
+        let templateFacturePDF = null;
+
+        // === SYSTÈME DE PRODUITS ET MODALS (code existant) ===
+        const produits = {
+            'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
+            'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
+            'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
+            'marlowe-rose': { nom: 'Marlowe Rose', prix: 320 },
+            'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
+            'coffret-degustation': { nom: 'Coffret Degustation', prix: 1800 }
+        };
+
+        let productCounter = 0;
+        let devisData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
+        let factureProductCounter = 0;
+        let factureData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
 
         // === FONCTION NETTOYAGE SIMPLE ET EFFICACE ===
-       function cleanTextForPDF(text) {
+        function cleanTextForPDF(text) {
             if (!text) return '';
             
             return String(text)
-                // Remplacements sécurisés pour PDF
-                
                 .replace(/[àáâäã]/gi, 'a')
                 .replace(/[èéêë]/gi, 'e')
                 .replace(/[ìíîï]/gi, 'i')
@@ -388,356 +519,12 @@
                 .replace(/[–—]/g, '-')
                 .replace(/['']/g, "'")
                 .replace(/[""]/g, '"')
-                // Supprimer les caractères problématiques
                 .replace(/[^\x20-\x7E\n\r\t]/g, '')
-                // Nettoyer les espaces
                 .replace(/\s+/g, ' ')
                 .trim();
         }
-        
-        // === FONCTION GÉNÉRATION PDF CORRIGÉE ===
-        async function generateMarlowePDFFromTemplate(devisData) {
-            if (!templatePDF) {
-                throw new Error('Template PDF non chargé');
-            }
-            
-            try {
-                console.log('📄 Début génération PDF...');
-                
-                // Créer une copie fraîche du template
-                const originalPdfBytes = await templatePDF.save();
-                console.log('📄 Template sauvegardé:', originalPdfBytes.length, 'bytes');
-                
-                const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBytes);
-                const pages = pdfDoc.getPages();
-                const firstPage = pages[0];
-                
-                // Fonts standards
-                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-                const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-                
-                // Nettoyer les données une seule fois
-                const cleanNumero = cleanTextForPDF(devisData.numeroDevis);
-                const cleanNom = cleanTextForPDF(devisData.client.nom);
-                const cleanAdresse = cleanTextForPDF(devisData.client.adresse);
-                const cleanEmail = cleanTextForPDF(devisData.client.email);
-                const cleanTelephone = cleanTextForPDF(devisData.client.telephone);
-                
-                console.log('📄 Données nettoyées:', { cleanNumero, cleanNom });
-                
-                // Écrire les données sur le PDF
-                if (cleanNumero) {
-                    firstPage.drawText(`Devis N° ${cleanNumero}`, {
-                        x: 60, y: 743, size: 14, font: boldFont, color: PDFLib.rgb(1, 1, 1)
-                    });
-                }
-                
-                if (cleanNom) {
-                    firstPage.drawText(cleanNom, {
-                        x: 60, y: 635, size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
-                    });
-                }
-                
-                // Adresse avec gestion des erreurs
-                if (cleanAdresse) {
-                    try {
-                        const addressLines = cleanAdresse.split('\n').slice(0, 3);
-                        addressLines.forEach((line, index) => {
-                            if (line.trim()) {
-                                firstPage.drawText(line.trim(), {
-                                    x: 60, y: 620 - (index * 15), size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                            }
-                        });
-                    } catch (e) {
-                        console.warn('⚠️ Erreur adresse:', e);
-                    }
-                }
-                
-                // Contact avec vérifications
-                let contactY = 605;
-                if (cleanEmail) {
-                    try {
-                        firstPage.drawText(`Email: ${cleanEmail}`, {
-                            x: 60, y: contactY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                        });
-                        contactY -= 15;
-                    } catch (e) {
-                        console.warn('⚠️ Erreur email:', e);
-                    }
-                }
-                
-                if (cleanTelephone) {
-                    try {
-                        firstPage.drawText(`Tel: ${cleanTelephone}`, {
-                            x: 60, y: contactY, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                        });
-                    } catch (e) {
-                        console.warn('⚠️ Erreur téléphone:', e);
-                    }
-                }
-                
-                // Produits avec sécurité renforcée
-                let productY = 480;
-                if (devisData.produits && Array.isArray(devisData.produits)) {
-                    devisData.produits.slice(0, 6).forEach((produit, index) => {
-                        try {
-                            const currentY = productY - (index * 22);
-                            
-                            if (currentY > 250) { // Éviter de déborder
-                                const nomProduit = cleanTextForPDF(produit.nom);
-                                const nomTronque = nomProduit.length > 30 ? nomProduit.substring(0, 27) + '...' : nomProduit;
-                                
-                                // Description
-                                firstPage.drawText(nomTronque, {
-                                    x: 77, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                                
-                                // Prix
-                                firstPage.drawText(`$${produit.prix || 0}`, {
-                                    x: 257, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                                
-                                // Quantité
-                                firstPage.drawText(`${produit.quantite || 1}`, {
-                                    x: 397, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                                
-                                // Total
-                                firstPage.drawText(`$${produit.total || 0}`, {
-                                    x: 467, y: currentY + 15, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                            }
-                        } catch (e) {
-                            console.warn('⚠️ Erreur produit', index, ':', e);
-                        }
-                    });
-                }
-                
-                // Totaux avec formatage sécurisé
-                try {
-                    const totalsY = 335;
-                    const formatAmount = (amount) => {
-                        const num = parseFloat(amount) || 0;
-                        return Math.round(num * 100) / 100;
-                    };
-                    
-                    // Sous-total
-                    firstPage.drawText(`$${formatAmount(devisData.totaux.sousTotal)}`, {
-                        x: 467, y: totalsY, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // TVA
-                    firstPage.drawText(`$${formatAmount(devisData.totaux.tva)}`, {
-                        x: 467, y: totalsY - 25, size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // Total final
-                    const totalText = `$${formatAmount(devisData.totaux.total)}`;
-                    const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 12);
-                    firstPage.drawText(totalText, {
-                        x: 520 - totalTextWidth - 10,
-                        y: totalsY - 70, 
-                        size: 12, 
-                        font: boldFont, 
-                        color: PDFLib.rgb(1, 1, 1)
-                    });
-                } catch (e) {
-                    console.warn('⚠️ Erreur totaux:', e);
-                }
-                
-                // Date
-                try {
-                    const today = new Date();
-                    const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-                    firstPage.drawText(dateStr, {
-                        x: 335, y: 150, size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                } catch (e) {
-                    console.warn('⚠️ Erreur date:', e);
-                }
-                
-                console.log('✅ PDF généré avec succès');
-                return pdfDoc;
-                
-            } catch (error) {
-                console.error('❌ Erreur génération PDF:', error);
-                throw new Error(`Erreur PDF: ${error.message}`);
-            }
-        }
 
-        // === GÉNÉRATION PDF FACTURE ===
-        async function generateFacturePDFFromTemplate(factureData) {
-            if (!templateFacturePDF) {
-                throw new Error('Template PDF facture non chargé');
-            }
-            
-            try {
-                console.log('📄 Début génération PDF facture...');
-                
-                const originalPdfBytes = await templateFacturePDF.save();
-                const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBytes);
-                const pages = pdfDoc.getPages();
-                const firstPage = pages[0];
-                
-                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-                const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-                
-                const cleanNom = cleanTextForPDF(factureData.client.nom);
-                const cleanDate = new Date().toLocaleDateString('fr-FR');
-                
-                // 1. Numéro de facture (bulle de gauche sous FACTURE)
-                const cleanNumero = cleanTextForPDF(factureData.numeroFacture);
-                if (cleanNumero) {
-                    firstPage.drawText(cleanNumero, {
-                        x: 85, y: 695,
-                        size: 11, 
-                        font: boldFont, 
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                }
-                
-                // 2. Date (bulle de droite sous FACTURE)
-                if (cleanDate) {
-                    firstPage.drawText(cleanDate, {
-                        x: 220, y: 695,
-                        size: 11, 
-                        font: font, 
-                        color: PDFLib.rgb(0, 0, 0)
-                    });
-                }
-
-                // 3. Informations client (coordonnées temporaires)
-                if (cleanNom) {
-                    firstPage.drawText(cleanNom, {
-                        x: 425, y: 610,
-                        size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
-                    });
-                }
-                
-                // Adresse client
-                const cleanAdresse = cleanTextForPDF(factureData.client.adresse);
-                if (cleanAdresse) {
-                    try {
-                        const addressLines = cleanAdresse.split('\n').slice(0, 3);
-                        addressLines.forEach((line, index) => {
-                            if (line.trim()) {
-                                firstPage.drawText(line.trim(), {
-                                    x: 425, y: 595 - (index * 15),
-                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                            }
-                        });
-                    } catch (e) {
-                        console.warn('⚠️ Erreur adresse facture:', e);
-                    }
-                }
-                
-                // Contact client
-                const cleanEmail = cleanTextForPDF(factureData.client.email);
-                const cleanTelephone = cleanTextForPDF(factureData.client.telephone);
-                
-                let contactY = 580;
-                if (cleanEmail) {
-                    firstPage.drawText(`Email: ${cleanEmail}`, {
-                        x: 425, y: contactY,
-                        size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    contactY -= 15;
-                }
-                
-                if (cleanTelephone) {
-                    firstPage.drawText(`Tel: ${cleanTelephone}`, {
-                        x: 425, y: contactY,
-                        size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                }
-                
-                // 4. Tableau des produits
-                let productY = 492;
-                if (factureData.produits && Array.isArray(factureData.produits)) {
-                    factureData.produits.slice(0, 10).forEach((produit, index) => {
-                        try {
-                            const currentY = productY - (index * 34);
-                            
-                            if (currentY > 150) {
-                                const nomProduit = cleanTextForPDF(produit.nom);
-                                const nomTronque = nomProduit.length > 35 ? nomProduit.substring(0, 32) + '...' : nomProduit;
-                                
-                                // Description (colonne 1)
-                                firstPage.drawText(nomTronque, {
-                                    x: 110, y: currentY,
-                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                                
-                                // Prix (colonne 2)
-                                firstPage.drawText(`$${produit.prix || 0}`, {
-                                    x: 285, y: currentY,
-                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                                
-                                // Quantité (colonne 3)
-                                firstPage.drawText(`${produit.quantite || 1}`, {
-                                    x: 388, y: currentY,
-                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                                
-                                // Total (colonne 4)
-                                firstPage.drawText(`$${produit.total || 0}`, {
-                                    x: 475, y: currentY,
-                                    size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
-                                });
-                            }
-                        } catch (e) {
-                            console.warn('⚠️ Erreur produit facture', index, ':', e);
-                        }
-                    });
-                }
-                
-                // 5. Totaux
-                try {
-                    const formatAmount = (amount) => {
-                        const num = parseFloat(amount) || 0;
-                        return Math.round(num * 100) / 100;
-                    };
-                    
-                    // Sous-total
-                    firstPage.drawText(`$${formatAmount(factureData.totaux.sousTotal)}`, {
-                        x: 480, y: 135,
-                        size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // TVA
-                    firstPage.drawText(`$${formatAmount(factureData.totaux.tva)}`, {
-                        x: 480, y: 110,
-                        size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
-                    });
-                    
-                    // 5. Total final (dans la barre noire en bas)
-                    const totalText = `$${formatAmount(factureData.totaux.total)}`;
-                    const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 14);
-                    firstPage.drawText(totalText, {
-                        x: 525 - totalTextWidth,
-                        y: 80,
-                        size: 14, 
-                        font: boldFont, 
-                        color: PDFLib.rgb(1, 1, 1)
-                    });
-                    
-                } catch (e) {
-                    console.warn('⚠️ Erreur totaux facture:', e);
-                }
-                
-                console.log('✅ PDF facture généré avec succès');
-                return pdfDoc;
-                
-            } catch (error) {
-                console.error('❌ Erreur génération PDF facture:', error);
-                throw new Error(`Erreur PDF facture: ${error.message}`);
-            }
-        }
-        
-        // === CHARGEMENT TEMPLATE ===
+        // === CHARGEMENT TEMPLATES ===
         async function tryLoadDefaultTemplate() {
             try {
                 showTemplateStatus('🔄 Chargement du template...', 'info');
@@ -787,71 +574,47 @@
             statusDiv.innerHTML = `<div style="background: ${colors[type]}; padding: 10px; border-radius: 5px; font-size: 14px;">${message}</div>`;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Charger le template automatiquement
-            tryLoadDefaultTemplate();
-            tryLoadFactureTemplate();
-
-            // Gestion des boutons
-            document.querySelectorAll('.document-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const documentType = this.dataset.document;
-                    
-                    if (documentType === 'devis') {
-                        if (!templatePDF) {
-                            notify.warning('Template manquant', 'Le template PDF n\'est pas encore chargé.');
-                            return;
-                        }
-                        openDevisForm();
-                    } else if (documentType === 'facture') {
-                        if (!templateFacturePDF) {
-                            notify.warning('Template manquant', 'Le template PDF facture n\'est pas encore chargé.');
-                            return;
-                        }
-                        openFactureForm();
-                    } else {
-                        notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
-                    }
-                });
-            });
-
-            // Gestion déconnexion
-            document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                    window.location.href = '../index.html';
+        // === GESTION DES BOUTONS AVEC PERMISSIONS ===
+        function handleDocumentButtonClick(documentType) {
+            // Vérifier si c'est un document interne et si l'utilisateur a les permissions
+            const internalDocuments = ['inventaire', 'ventes', 'commande', 'production'];
+            
+            if (internalDocuments.includes(documentType) && !hasInternalAccess) {
+                if (window.notify) {
+                    window.notify.error(
+                        'Accès Refusé', 
+                        'Vous n\'avez pas les permissions pour accéder aux documents internes.'
+                    );
                 }
-            });
-        });
+                return;
+            }
+            
+            // Traitement normal des documents
+            if (documentType === 'devis') {
+                if (!templatePDF) {
+                    if (window.notify) window.notify.warning('Template manquant', 'Le template PDF n\'est pas encore chargé.');
+                    return;
+                }
+                openDevisForm();
+            } else if (documentType === 'facture') {
+                if (!templateFacturePDF) {
+                    if (window.notify) window.notify.warning('Template manquant', 'Le template PDF facture n\'est pas encore chargé.');
+                    return;
+                }
+                openFactureForm();
+            } else {
+                if (window.notify) {
+                    window.notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
+                }
+            }
+        }
 
-        // === SYSTÈME DE DEVIS ===
-        const produits = {
-            'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
-            'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
-            'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
-            'marlowe-rose': { nom: 'Marlowe Rose', prix: 320 },
-            'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
-            'coffret-degustation': { nom: 'Coffret Degustation', prix: 1800 }
-        };
-
-        let productCounter = 0;
-        let devisData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
-        let templateFacturePDF = null;  // Template PDF pour les factures
-        let factureProductCounter = 0;
-        let factureData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
-
-
-
+        // === FONCTIONS MODALS DEVIS/FACTURE (version simplifiée) ===
         function openDevisForm() {
             document.getElementById('devisModal').style.display = 'flex';
             resetDevisForm();
             generateDevisNumber();
             addProductLine();
-            
-            document.getElementById('closeDevisModal').onclick = closeDevisModal;
-            document.getElementById('cancelDevis').onclick = closeDevisModal;
-            document.getElementById('addProductBtn').onclick = addProductLine;
-            document.getElementById('generateDevisComplete').onclick = generateDevisComplete;
         }
 
         function closeDevisModal() {
@@ -863,35 +626,10 @@
             resetFactureForm();
             generateFactureNumber();
             addFactureProductLine();
-            
-            document.getElementById('closeFactureModal').onclick = closeFactureModal;
-            document.getElementById('cancelFacture').onclick = closeFactureModal;
-            document.getElementById('addFactureProductBtn').onclick = addFactureProductLine;
-            document.getElementById('generateFactureComplete').onclick = generateFactureComplete;
         }
         
         function closeFactureModal() {
             document.getElementById('factureModal').style.display = 'none';
-        }
-        
-        function resetFactureForm() {
-            document.getElementById('facture-client-nom').value = '';
-            document.getElementById('facture-client-email').value = '';
-            document.getElementById('facture-client-adresse').value = '';
-            document.getElementById('facture-client-telephone').value = '';
-            document.getElementById('facture-products-container').innerHTML = '';
-            factureProductCounter = 0;
-            updateFactureTotals();
-        }
-        
-        function generateFactureNumber() {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            
-            document.getElementById('numero-facture').value = `FA${year}${month}${day}-${random}`;
         }
 
         function resetDevisForm() {
@@ -904,6 +642,16 @@
             updateTotals();
         }
 
+        function resetFactureForm() {
+            document.getElementById('facture-client-nom').value = '';
+            document.getElementById('facture-client-email').value = '';
+            document.getElementById('facture-client-adresse').value = '';
+            document.getElementById('facture-client-telephone').value = '';
+            document.getElementById('facture-products-container').innerHTML = '';
+            factureProductCounter = 0;
+            updateFactureTotals();
+        }
+
         function generateDevisNumber() {
             const date = new Date();
             const year = date.getFullYear();
@@ -914,6 +662,17 @@
             document.getElementById('numero-devis').value = `DV${year}${month}${day}-${random}`;
         }
 
+        function generateFactureNumber() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            document.getElementById('numero-facture').value = `FA${year}${month}${day}-${random}`;
+        }
+
+        // === FONCTIONS PRODUITS (version simplifiée) ===
         function addProductLine() {
             productCounter++;
             const container = document.getElementById('products-container');
@@ -922,20 +681,15 @@
             productLine.className = 'product-line';
             productLine.dataset.id = productCounter;
             
-            let buttonHTML = '';
-            if (productCounter > 1) {
-                buttonHTML = `<button type="button" class="btn-remove-product" onclick="removeProductLine(${productCounter})"><i class="fas fa-trash"></i></button>`;
-            }
-            
             let optionsHTML = '<option value="">Sélectionnez un produit</option>';
             Object.entries(produits).forEach(([key, prod]) => {
-                optionsHTML += `<option value="${key}">${prod.nom} - $${prod.prix}</option>`;
+                optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}</option>`;
             });
             
             productLine.innerHTML = `
                 <div class="product-line-header">
                     <span class="product-number">Produit ${productCounter}</span>
-                    ${buttonHTML}
+                    ${productCounter > 1 ? `<button type="button" class="btn-remove-product" onclick="removeProductLine(${productCounter})"><i class="fas fa-trash"></i></button>` : ''}
                 </div>
                 <div class="form-row">
                     <div class="form-group flex-2">
@@ -962,11 +716,63 @@
             container.appendChild(productLine);
         }
 
+        function addFactureProductLine() {
+            factureProductCounter++;
+            const container = document.getElementById('facture-products-container');
+            
+            const productLine = document.createElement('div');
+            productLine.className = 'product-line';
+            productLine.dataset.id = factureProductCounter;
+            
+            let optionsHTML = '<option value="">Sélectionnez un produit</option>';
+            Object.entries(produits).forEach(([key, prod]) => {
+                optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}</option>`;
+            });
+            
+            productLine.innerHTML = `
+                <div class="product-line-header">
+                    <span class="product-number">Produit ${factureProductCounter}</span>
+                    ${factureProductCounter > 1 ? `<button type="button" class="btn-remove-product" onclick="removeFactureProductLine(${factureProductCounter})"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="form-label">Produit</label>
+                        <select class="form-select product-select" data-id="${factureProductCounter}" onchange="updateFactureProductPrice(${factureProductCounter})">
+                            ${optionsHTML}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prix unitaire</label>
+                        <input type="text" class="form-input product-price" data-id="${factureProductCounter}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" class="form-input product-quantity" data-id="${factureProductCounter}" min="1" value="1" onchange="updateFactureLineTotal(${factureProductCounter})">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total HT</label>
+                        <input type="text" class="form-input product-total" data-id="${factureProductCounter}" readonly>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(productLine);
+        }
+
+        // === FONCTIONS UTILITAIRES ===
         function removeProductLine(id) {
             const line = document.querySelector(`[data-id="${id}"]`);
             if (line) {
                 line.remove();
                 updateTotals();
+            }
+        }
+
+        function removeFactureProductLine(id) {
+            const line = document.querySelector(`#facture-products-container [data-id="${id}"]`);
+            if (line) {
+                line.remove();
+                updateFactureTotals();
             }
         }
 
@@ -981,6 +787,20 @@
             } else {
                 priceInput.value = '';
                 updateLineTotal(id);
+            }
+        }
+
+        function updateFactureProductPrice(id) {
+            const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+            const priceInput = document.querySelector(`#facture-products-container input.product-price[data-id="${id}"]`);
+            
+            if (select.value) {
+                const prix = produits[select.value].prix;
+                priceInput.value = `${prix}.00`;
+                updateFactureLineTotal(id);
+            } else {
+                priceInput.value = '';
+                updateFactureLineTotal(id);
             }
         }
 
@@ -1000,6 +820,24 @@
             }
             
             updateTotals();
+        }
+
+        function updateFactureLineTotal(id) {
+            const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+            const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
+            const totalInput = document.querySelector(`#facture-products-container input.product-total[data-id="${id}"]`);
+            
+            if (select.value && quantityInput.value) {
+                const prix = produits[select.value].prix;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const total = prix * quantity;
+                
+                totalInput.value = `${total.toLocaleString('en-US')}.00`;
+            } else {
+                totalInput.value = '';
+            }
+            
+            updateFactureTotals();
         }
 
         function updateTotals() {
@@ -1027,95 +865,6 @@
             devisData.totaux = { sousTotal, tva, total };
         }
 
-        // === GESTION PRODUITS FACTURE ===
-        function addFactureProductLine() {
-            factureProductCounter++;
-            const container = document.getElementById('facture-products-container');
-            
-            const productLine = document.createElement('div');
-            productLine.className = 'product-line';
-            productLine.dataset.id = factureProductCounter;
-            
-            let buttonHTML = '';
-            if (factureProductCounter > 1) {
-                buttonHTML = `<button type="button" class="btn-remove-product" onclick="removeFactureProductLine(${factureProductCounter})"><i class="fas fa-trash"></i></button>`;
-            }
-            
-            let optionsHTML = '<option value="">Sélectionnez un produit</option>';
-            Object.entries(produits).forEach(([key, prod]) => {
-                optionsHTML += `<option value="${key}">${prod.nom} - $${prod.prix}</option>`;
-            });
-            
-            productLine.innerHTML = `
-                <div class="product-line-header">
-                    <span class="product-number">Produit ${factureProductCounter}</span>
-                    ${buttonHTML}
-                </div>
-                <div class="form-row">
-                    <div class="form-group flex-2">
-                        <label class="form-label">Produit</label>
-                        <select class="form-select product-select" data-id="${factureProductCounter}" onchange="updateFactureProductPrice(${factureProductCounter})">
-                            ${optionsHTML}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Prix unitaire</label>
-                        <input type="text" class="form-input product-price" data-id="${factureProductCounter}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Quantité</label>
-                        <input type="number" class="form-input product-quantity" data-id="${factureProductCounter}" min="1" value="1" onchange="updateFactureLineTotal(${factureProductCounter})">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Total HT</label>
-                        <input type="text" class="form-input product-total" data-id="${factureProductCounter}" readonly>
-                    </div>
-                </div>
-            `;
-            
-            container.appendChild(productLine);
-        }
-        
-        function removeFactureProductLine(id) {
-            const line = document.querySelector(`#facture-products-container [data-id="${id}"]`);
-            if (line) {
-                line.remove();
-                updateFactureTotals();
-            }
-        }
-        
-        function updateFactureProductPrice(id) {
-            const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
-            const priceInput = document.querySelector(`#facture-products-container input.product-price[data-id="${id}"]`);
-            
-            if (select.value) {
-                const prix = produits[select.value].prix;
-                priceInput.value = `${prix}.00`;
-                updateFactureLineTotal(id);
-            } else {
-                priceInput.value = '';
-                updateFactureLineTotal(id);
-            }
-        }
-        
-        function updateFactureLineTotal(id) {
-            const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
-            const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
-            const totalInput = document.querySelector(`#facture-products-container input.product-total[data-id="${id}"]`);
-            
-            if (select.value && quantityInput.value) {
-                const prix = produits[select.value].prix;
-                const quantity = parseInt(quantityInput.value) || 0;
-                const total = prix * quantity;
-                
-                totalInput.value = `${total.toLocaleString('en-US')}.00`;
-            } else {
-                totalInput.value = '';
-            }
-            
-            updateFactureTotals();
-        }
-        
         function updateFactureTotals() {
             let sousTotal = 0;
             
@@ -1141,562 +890,45 @@
             factureData.totaux = { sousTotal, tva, total };
         }
 
-        function collectDevisData() {
-            devisData.client = {
-                nom: document.getElementById('client-nom').value,
-                email: document.getElementById('client-email').value,
-                adresse: document.getElementById('client-adresse').value,
-                telephone: document.getElementById('client-telephone').value
-            };
+        // === INITIALISATION ===
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initialisation Documents avec contrôle d\'accès...');
             
-            devisData.numeroDevis = document.getElementById('numero-devis').value;
+            // Récupérer l'utilisateur actuel et vérifier les permissions
+            getCurrentUser();
+            checkInternalDocumentsAccess();
             
-            devisData.produits = [];
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`select[data-id="${id}"]`);
-                const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-                
-                if (select && select.value && quantityInput && quantityInput.value) {
-                    const produit = produits[select.value];
-                    const quantity = parseInt(quantityInput.value);
-                    const total = produit.prix * quantity;
-                    
-                    devisData.produits.push({
-                        nom: produit.nom,
-                        prix: produit.prix,
-                        quantite: quantity,
-                        total: total
-                    });
+            // Charger les templates automatiquement
+            tryLoadDefaultTemplate();
+            tryLoadFactureTemplate();
+
+            // Gestion des boutons avec vérification des permissions
+            document.querySelectorAll('.document-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const documentType = this.dataset.document;
+                    handleDocumentButtonClick(documentType);
+                });
+            });
+
+            // Gestion des modals
+            document.getElementById('closeDevisModal').onclick = closeDevisModal;
+            document.getElementById('cancelDevis').onclick = closeDevisModal;
+            document.getElementById('addProductBtn').onclick = addProductLine;
+            
+            document.getElementById('closeFactureModal').onclick = closeFactureModal;
+            document.getElementById('cancelFacture').onclick = closeFactureModal;
+            document.getElementById('addFactureProductBtn').onclick = addFactureProductLine;
+
+            // Gestion déconnexion
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    window.location.href = '../index.html';
                 }
             });
-        }
 
-        function collectFactureData() {
-            factureData.client = {
-                nom: document.getElementById('facture-client-nom').value,
-                email: document.getElementById('facture-client-email').value,
-                adresse: document.getElementById('facture-client-adresse').value,
-                telephone: document.getElementById('facture-client-telephone').value
-            };
-            
-            factureData.numeroFacture = document.getElementById('numero-facture').value;
-            factureData.dateEmission = new Date().toISOString().split('T')[0];
-            
-            factureData.produits = [];
-            document.querySelectorAll('#facture-products-container .product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
-                const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
-                
-                if (select && select.value && quantityInput && quantityInput.value) {
-                    const produit = produits[select.value];
-                    const quantity = parseInt(quantityInput.value);
-                    const total = produit.prix * quantity;
-                    
-                    factureData.produits.push({
-                        nom: produit.nom,
-                        prix: produit.prix,
-                        quantite: quantity,
-                        total: total
-                    });
-                }
-            });
-        }
-        
-        async function generateFactureComplete() {
-            console.log('🚀 Génération complète de la facture...');
-            
-            if (!document.getElementById('facture-client-nom').value.trim()) {
-                notify.error('Formulaire incomplet', 'Le nom du client est requis.');
-                return;
-            }
-            
-            if (!document.getElementById('facture-client-adresse').value.trim()) {
-                notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
-                return;
-            }
-            
-            if (!templateFacturePDF) {
-                notify.error('Template manquant', 'Le template PDF facture n\'est pas chargé.');
-                return;
-            }
-            
-            let hasValidProducts = false;
-            document.querySelectorAll('#facture-products-container .product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
-                if (select && select.value) hasValidProducts = true;
-            });
-            
-            if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-                return;
-            }
-            
-            collectFactureData();
-            console.log('📊 Données de la facture:', factureData);
-            
-            try {
-                notify.info('Traitement en cours...', 'Génération du PDF facture...');
-                
-                const filename = await downloadFacturePDF(factureData);
-                console.log('✅ PDF facture téléchargé:', filename);
-                
-                notify.info('Notification Discord...', 'Envoi en cours...');
-                
-                await sendFactureToDiscord(factureData);
-                console.log('✅ Discord notifié pour la facture');
-                
-                notify.success(
-                    'Facture créée avec succès !', 
-                    `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Facture ${factureData.numeroFacture} émise`
-                );
-                
-                setTimeout(() => closeFactureModal(), 3000);
-                
-            } catch (error) {
-                console.error('❌ Erreur complète facture:', error);
-                
-                if (error.message.includes('Discord')) {
-                    notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué.');
-                } else {
-                    notify.error('Erreur de génération', error.message);
-                }
-            }
-        }
-
-        // === FONCTION ENVOI DISCORD SIMPLIFIÉ (EMBED SEULEMENT) ===
-        async function sendEmbedToDiscord(devisData) {
-            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
-                throw new Error('Webhook Discord non configuré');
-            }
-            
-            try {
-                console.log('📤 Envoi embed Discord détaillé...');
-                
-                // Nettoyer les données
-                const safeData = {
-                    numero: String(devisData.numeroDevis || 'N/A'),
-                    client: String(devisData.client?.nom || 'Client'),
-                    email: String(devisData.client?.email || ''),
-                    telephone: String(devisData.client?.telephone || ''),
-                    adresse: String(devisData.client?.adresse || ''),
-                    total: parseFloat(devisData.totaux?.total || 0),
-                    sousTotal: parseFloat(devisData.totaux?.sousTotal || 0),
-                    tva: parseFloat(devisData.totaux?.tva || 0)
-                };
-                
-                // Construire la liste des produits détaillée
-                let produitsDescription = '';
-                if (devisData.produits && Array.isArray(devisData.produits) && devisData.produits.length > 0) {
-                    devisData.produits.forEach(produit => {
-                        const nom = String(produit.nom || 'Produit');
-                        const qty = parseInt(produit.quantite) || 1;
-                        const prix = parseFloat(produit.prix) || 0;
-                        const total = parseFloat(produit.total) || 0;
-                        
-                        produitsDescription += `• **${nom}** (${qty}x) - $${prix.toFixed(2)} = $${total.toFixed(2)}\n`;
-                    });
-                }
-                
-                // Construire les informations client
-                let clientInfo = '';
-                if (safeData.email) clientInfo += `📧 ${safeData.email}\n`;
-                if (safeData.telephone) clientInfo += `📞 ${safeData.telephone}\n`;
-                if (safeData.adresse) {
-                    const adresseFormatted = safeData.adresse.replace(/\n/g, ', ');
-                    clientInfo += `📍 ${adresseFormatted}`;
-                }
-                
-                // Créer l'embed principal
-                const embed = {
-                    title: "🍷 Nouveau Devis Marlowe Vineyard",
-                    description: `Devis généré automatiquement le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
-                    color: 0x8B5A9F,
-                    fields: [
-                        {
-                            name: "📋 Numéro de devis",
-                            value: `\`${safeData.numero}\``,
-                            inline: true
-                        },
-                        {
-                            name: "👤 Client",
-                            value: `**${safeData.client}**`,
-                            inline: true
-                        },
-                        {
-                            name: "💰 Montant total",
-                            value: `**$${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
-                            inline: true
-                        }
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: {
-                        text: "Marlowe Vineyard • Système de gestion",
-                        icon_url: null
-                    }
-                };
-                
-                // Ajouter les informations client si disponibles
-                if (clientInfo.trim()) {
-                    embed.fields.push({
-                        name: "📇 Informations client",
-                        value: clientInfo.trim(),
-                        inline: false
-                    });
-                }
-                
-                // Ajouter la liste détaillée des produits
-                if (produitsDescription) {
-                    // Si trop long, tronquer intelligemment
-                    if (produitsDescription.length > 1000) {
-                        const lines = produitsDescription.split('\n');
-                        let truncated = '';
-                        for (let i = 0; i < lines.length && truncated.length < 900; i++) {
-                            truncated += lines[i] + '\n';
-                        }
-                        if (lines.length > Math.floor(900 / 50)) { // Estimation du nombre de lignes tronquées
-                            truncated += `... et ${devisData.produits.length - Math.floor(900 / 50)} autres produits`;
-                        }
-                        produitsDescription = truncated;
-                    }
-                    
-                    embed.fields.push({
-                        name: `🛒 Produits commandés (${devisData.produits.length})`,
-                        value: produitsDescription,
-                        inline: false
-                    });
-                }
-                
-                // Ajouter le détail financier
-                embed.fields.push({
-                    name: "🧮 Détail financier",
-                    value: `**Sous-total HT:** $${safeData.sousTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
-                           `**TVA (21%):** $${safeData.tva.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
-                           `**Total TTC:** $${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`,
-                    inline: false
-                });
-                
-                // Payload final
-                const payload = {
-                    content: "📋 **Nouveau devis créé !**\n> Un nouveau devis vient d'être généré et téléchargé automatiquement.",
-                    embeds: [embed],
-                    username: "Marlowe Vineyard",
-                    avatar_url: null // Vous pouvez ajouter une URL d'avatar ici si vous voulez
-                };
-                
-                console.log('📤 Envoi embed détaillé vers Discord...');
-                
-                // Envoyer l'embed
-                const response = await fetch(DISCORD_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Erreur Discord:', response.status, errorText);
-                    throw new Error(`Discord error: ${response.status} - ${errorText}`);
-                }
-                
-                console.log('✅ Embed détaillé envoyé avec succès sur Discord');
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Erreur envoi Discord:', error);
-                throw error;
-            }
-        }
-
-        // === ENVOI DISCORD FACTURE ===
-        async function sendFactureToDiscord(factureData) {
-            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('VOTRE_WEBHOOK_URL_ICI')) {
-                throw new Error('Webhook Discord non configuré');
-            }
-            
-            try {
-                console.log('📤 Envoi facture Discord...');
-                
-                const safeData = {
-                    numero: String(factureData.numeroFacture || 'N/A'),
-                    client: String(factureData.client?.nom || 'Client'),
-                    email: String(factureData.client?.email || ''),
-                    telephone: String(factureData.client?.telephone || ''),
-                    adresse: String(factureData.client?.adresse || ''),
-                    total: parseFloat(factureData.totaux?.total || 0),
-                    sousTotal: parseFloat(factureData.totaux?.sousTotal || 0),
-                    tva: parseFloat(factureData.totaux?.tva || 0),
-                    dateEmission: factureData.dateEmission || new Date().toISOString().split('T')[0]
-                };
-                
-                let produitsDescription = '';
-                if (factureData.produits && Array.isArray(factureData.produits) && factureData.produits.length > 0) {
-                    factureData.produits.forEach(produit => {
-                        const nom = String(produit.nom || 'Produit');
-                        const qty = parseInt(produit.quantite) || 1;
-                        const prix = parseFloat(produit.prix) || 0;
-                        const total = parseFloat(produit.total) || 0;
-                        
-                        produitsDescription += `• **${nom}** (${qty}x) - $${prix.toFixed(2)} = $${total.toFixed(2)}\n`;
-                    });
-                }
-                
-                let clientInfo = '';
-                if (safeData.email) clientInfo += `📧 ${safeData.email}\n`;
-                if (safeData.telephone) clientInfo += `📞 ${safeData.telephone}\n`;
-                if (safeData.adresse) {
-                    const adresseFormatted = safeData.adresse.replace(/\n/g, ', ');
-                    clientInfo += `📍 ${adresseFormatted}`;
-                }
-                
-                const embed = {
-                    title: "🧾 Nouvelle Facture Marlowe Vineyard",
-                    description: `Facture émise le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
-                    color: 0xDC3545,
-                    fields: [
-                        {
-                            name: "📋 Numéro de facture",
-                            value: `\`${safeData.numero}\``,
-                            inline: true
-                        },
-                        {
-                            name: "👤 Client",
-                            value: `**${safeData.client}**`,
-                            inline: true
-                        },
-                        {
-                            name: "💰 Montant à payer",
-                            value: `**$${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}**`,
-                            inline: true
-                        },
-                        {
-                            name: "📅 Date d'émission",
-                            value: new Date(safeData.dateEmission).toLocaleDateString('fr-FR'),
-                            inline: true
-                        },
-                        {
-                            name: "⏰ Échéance",
-                            value: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-                            inline: true
-                        },
-                        {
-                            name: "📊 Statut",
-                            value: "🔴 **À PAYER**",
-                            inline: true
-                        }
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: {
-                        text: "Marlowe Vineyard • Facturation",
-                        icon_url: null
-                    }
-                };
-                
-                if (clientInfo.trim()) {
-                    embed.fields.push({
-                        name: "📇 Informations client",
-                        value: clientInfo.trim(),
-                        inline: false
-                    });
-                }
-                
-                if (produitsDescription) {
-                    if (produitsDescription.length > 1000) {
-                        const lines = produitsDescription.split('\n');
-                        let truncated = '';
-                        for (let i = 0; i < lines.length && truncated.length < 900; i++) {
-                            truncated += lines[i] + '\n';
-                        }
-                        if (lines.length > Math.floor(900 / 50)) {
-                            truncated += `... et ${factureData.produits.length - Math.floor(900 / 50)} autres produits`;
-                        }
-                        produitsDescription = truncated;
-                    }
-                    
-                    embed.fields.push({
-                        name: `🛒 Produits facturés (${factureData.produits.length})`,
-                        value: produitsDescription,
-                        inline: false
-                    });
-                }
-                
-                embed.fields.push({
-                    name: "🧮 Détail financier",
-                    value: `**Sous-total HT:** $${safeData.sousTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
-                           `**TVA (21%):** $${safeData.tva.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
-                           `**Total TTC:** $${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}`,
-                    inline: false
-                });
-                
-                const payload = {
-                    content: "🧾 **Nouvelle facture émise !**\n> Une facture vient d'être générée et est en attente de paiement.",
-                    embeds: [embed],
-                    username: "Marlowe Vineyard - Facturation"
-                };
-                
-                const response = await fetch(DISCORD_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Erreur Discord:', response.status, errorText);
-                    throw new Error(`Discord error: ${response.status} - ${errorText}`);
-                }
-                
-                console.log('✅ Facture envoyée avec succès sur Discord');
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Erreur envoi Discord facture:', error);
-                throw error;
-            }
-        }
-        
-        async function downloadPDF(devisData) {
-            try {
-                console.log('📄 Génération PDF pour téléchargement...');
-                
-                const pdfDoc = await generateMarlowePDFFromTemplate(devisData);
-                const pdfBytes = await pdfDoc.save();
-                
-                console.log('📄 PDF généré:', pdfBytes.length, 'bytes');
-                
-                const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-                
-                const clientName = devisData.client.nom
-                    .replace(/[^a-zA-Z0-9\s]/g, '')
-                    .replace(/\s+/g, '_')
-                    .substring(0, 20);
-                
-                const filename = `Devis_${devisData.numeroDevis}_${clientName}.pdf`;
-                
-                const url = URL.createObjectURL(pdfBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                a.style.display = 'none';
-                
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-                
-                console.log('✅ PDF téléchargé:', filename);
-                return filename;
-                
-            } catch (error) {
-                console.error('❌ Erreur téléchargement PDF:', error);
-                throw error;
-            }
-        }
-
-        async function downloadFacturePDF(factureData) {
-            try {
-                console.log('📄 Génération PDF facture pour téléchargement...');
-                
-                const pdfDoc = await generateFacturePDFFromTemplate(factureData);
-                const pdfBytes = await pdfDoc.save();
-                
-                console.log('📄 PDF facture généré:', pdfBytes.length, 'bytes');
-                
-                const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-                
-                const clientName = factureData.client.nom
-                    .replace(/[^a-zA-Z0-9\s]/g, '')
-                    .replace(/\s+/g, '_')
-                    .substring(0, 20);
-                
-                const filename = `Facture_${factureData.numeroFacture}_${clientName}.pdf`;
-                
-                const url = URL.createObjectURL(pdfBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                a.style.display = 'none';
-                
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-                
-                console.log('✅ PDF facture téléchargé:', filename);
-                return filename;
-                
-            } catch (error) {
-                console.error('❌ Erreur téléchargement PDF facture:', error);
-                throw error;
-            }
-        }
-        
-        // === FONCTION PRINCIPALE (INCHANGÉE) ===
-        async function generateDevisComplete() {
-            console.log('🚀 Génération complète du devis...');
-            
-            if (!document.getElementById('client-nom').value.trim()) {
-                notify.error('Formulaire incomplet', 'Le nom du client est requis.');
-                return;
-            }
-            
-            if (!document.getElementById('client-adresse').value.trim()) {
-                notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
-                return;
-            }
-            
-            if (!templatePDF) {
-                notify.error('Template manquant', 'Le template PDF n\'est pas chargé.');
-                return;
-            }
-            
-            let hasValidProducts = false;
-            document.querySelectorAll('.product-line').forEach(line => {
-                const id = line.dataset.id;
-                const select = document.querySelector(`select[data-id="${id}"]`);
-                if (select && select.value) hasValidProducts = true;
-            });
-            
-            if (!hasValidProducts) {
-                notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-                return;
-            }
-            
-            collectDevisData();
-            console.log('📊 Données du devis:', devisData);
-            
-            try {
-                notify.info('Traitement en cours...', 'Génération du PDF...');
-                
-                const filename = await downloadPDF(devisData);
-                console.log('✅ PDF téléchargé:', filename);
-                
-                notify.info('Notification Discord...', 'Envoi en cours...');
-                
-                await sendEmbedToDiscord(devisData);
-                console.log('✅ Discord notifié');
-                
-                notify.success(
-                    'Devis créé avec succès !', 
-                    `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Devis ${devisData.numeroDevis} finalisé`
-                );
-                
-                setTimeout(() => closeDevisModal(), 3000);
-                
-            } catch (error) {
-                console.error('❌ Erreur complète:', error);
-                
-                if (error.message.includes('Discord')) {
-                    notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué. Vérifiez la console.');
-                } else {
-                    notify.error('Erreur de génération', error.message);
-                }
-            }
-        }
+            console.log('✅ Documents initialisés avec succès !');
+        });
     </script>
 </body>
 </html>
