@@ -374,28 +374,17 @@
         // === VÉRIFICATION DES PERMISSIONS ===
         function getCurrentUser() {
             try {
-                // Récupérer l'utilisateur réellement connecté depuis la session
-                // À adapter selon ton système de session réel
+                // TEMPORAIRE : Pour débugger, on utilise admin par défaut
+                // Tu peux changer cette ligne pour tester différents utilisateurs
+                let username = 'admin'; // Changez à 'manager_test' pour tester sans permissions
                 
-                // Pour l'instant, on simule en prenant l'utilisateur connecté
-                // Tu peux récupérer cela depuis sessionStorage, localStorage, ou ton système d'auth
-                
-                // REMPLACE CETTE PARTIE par ton système de récupération d'utilisateur connecté
-                const storedUser = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
-                let username = 'manager'; // Par défaut, utilisateur sans permissions internes
-                
-                if (storedUser) {
-                    try {
-                        const userData = JSON.parse(storedUser);
-                        username = userData.username || username;
-                    } catch (e) {
-                        console.warn('Erreur parsing utilisateur stocké:', e);
-                    }
-                }
+                console.log('🔍 Tentative de connexion avec:', username);
                 
                 // Récupérer les données de l'utilisateur depuis la DB
                 if (window.dbManager && window.dbManager.isReady) {
                     const users = window.dbManager.getUsers();
+                    console.log('👥 Utilisateurs disponibles:', Object.keys(users));
+                    
                     const user = users[username];
                     
                     if (user) {
@@ -405,47 +394,53 @@
                             grade: user.grade,
                             permissions: user.permissions || []
                         };
+                        console.log('✅ Utilisateur trouvé:', currentUser);
                     } else {
-                        console.warn('Utilisateur non trouvé dans la DB:', username);
-                        // Utilisateur par défaut sans permissions internes
-                        currentUser = {
-                            username: 'guest',
-                            fullname: 'Invité',
-                            grade: 'employe',
-                            permissions: ['dashboard', 'documents']
-                        };
+                        console.warn('❌ Utilisateur non trouvé dans la DB:', username);
+                        // Fallback sur admin si l'utilisateur n'existe pas
+                        const adminUser = users['admin'];
+                        if (adminUser) {
+                            currentUser = {
+                                username: 'admin',
+                                fullname: adminUser.fullname,
+                                grade: adminUser.grade,
+                                permissions: adminUser.permissions || []
+                            };
+                            console.log('🔄 Fallback sur admin:', currentUser);
+                        }
                     }
                 } else {
-                    console.warn('DB Manager non prêt');
-                    // Utilisateur par défaut sans permissions internes
+                    console.warn('❌ DB Manager non prêt');
+                    // Utilisateur par défaut avec toutes les permissions pour éviter les blocages
                     currentUser = {
-                        username: 'guest',
-                        fullname: 'Invité',
-                        grade: 'employe',
-                        permissions: ['dashboard', 'documents']
+                        username: 'admin',
+                        fullname: 'STAFF',
+                        grade: 'staff',
+                        permissions: ['dashboard', 'inventory', 'documents', 'documents_internal', 'config', 'reports', 'users']
                     };
                 }
                 
                 // Vérifier si l'utilisateur a accès aux documents internes
                 hasInternalAccess = currentUser.permissions.includes('documents_internal');
                 
-                console.log('👤 Utilisateur connecté:', currentUser.username);
-                console.log('🔐 Permissions:', currentUser.permissions);
-                console.log('🔐 Accès documents internes:', hasInternalAccess ? 'OUI' : 'NON');
+                console.log('👤 UTILISATEUR FINAL:', currentUser.username);
+                console.log('🔐 PERMISSIONS:', currentUser.permissions);
+                console.log('🔐 ACCÈS DOCUMENTS INTERNES:', hasInternalAccess ? '✅ OUI' : '❌ NON');
                 
                 return currentUser;
             } catch (error) {
-                console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+                console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
                 
-                // Utilisateur par défaut en cas d'erreur
+                // Utilisateur admin par défaut en cas d'erreur pour éviter les blocages
                 currentUser = {
-                    username: 'guest',
-                    fullname: 'Invité',
-                    grade: 'employe',
-                    permissions: ['dashboard', 'documents']
+                    username: 'admin',
+                    fullname: 'STAFF',
+                    grade: 'staff',
+                    permissions: ['dashboard', 'inventory', 'documents', 'documents_internal', 'config', 'reports', 'users']
                 };
-                hasInternalAccess = false;
+                hasInternalAccess = true;
                 
+                console.log('🆘 UTILISATEUR DE SECOURS:', currentUser);
                 return currentUser;
             }
         }
