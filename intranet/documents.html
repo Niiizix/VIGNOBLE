@@ -374,74 +374,39 @@
         // === VÉRIFICATION DES PERMISSIONS ===
         function getCurrentUser() {
             try {
-                // TEMPORAIRE : Pour débugger, on utilise admin par défaut
-                // Tu peux changer cette ligne pour tester différents utilisateurs
-                let username = 'admin'; // Changez à 'manager_test' pour tester sans permissions
+                // Récupérer l'utilisateur depuis le système de session
+                const sessionUser = window.SessionManager ? window.SessionManager.getSession() : null;
                 
-                console.log('🔍 Tentative de connexion avec:', username);
-                
-                // Récupérer les données de l'utilisateur depuis la DB
-                if (window.dbManager && window.dbManager.isReady) {
-                    const users = window.dbManager.getUsers();
-                    console.log('👥 Utilisateurs disponibles:', Object.keys(users));
-                    
-                    const user = users[username];
-                    
-                    if (user) {
-                        currentUser = {
-                            username: username,
-                            fullname: user.fullname,
-                            grade: user.grade,
-                            permissions: user.permissions || []
-                        };
-                        console.log('✅ Utilisateur trouvé:', currentUser);
-                    } else {
-                        console.warn('❌ Utilisateur non trouvé dans la DB:', username);
-                        // Fallback sur admin si l'utilisateur n'existe pas
-                        const adminUser = users['admin'];
-                        if (adminUser) {
-                            currentUser = {
-                                username: 'admin',
-                                fullname: adminUser.fullname,
-                                grade: adminUser.grade,
-                                permissions: adminUser.permissions || []
-                            };
-                            console.log('🔄 Fallback sur admin:', currentUser);
-                        }
-                    }
+                if (sessionUser) {
+                    console.log('✅ Utilisateur récupéré depuis la session:', sessionUser.username);
+                    currentUser = sessionUser;
                 } else {
-                    console.warn('❌ DB Manager non prêt');
-                    // Utilisateur par défaut avec toutes les permissions pour éviter les blocages
-                    currentUser = {
-                        username: 'admin',
-                        fullname: 'STAFF',
-                        grade: 'staff',
-                        permissions: ['dashboard', 'inventory', 'documents', 'documents_internal', 'config', 'reports', 'users']
-                    };
+                    console.log('❌ Aucune session active, redirection vers login...');
+                    // Rediriger vers la page de connexion si pas de session
+                    window.location.href = '../public/login.html';
+                    return null;
                 }
                 
                 // Vérifier si l'utilisateur a accès aux documents internes
                 hasInternalAccess = currentUser.permissions.includes('documents_internal');
                 
-                console.log('👤 UTILISATEUR FINAL:', currentUser.username);
+                console.log('👤 UTILISATEUR CONNECTÉ:', currentUser.username);
+                console.log('🏷️ GRADE:', currentUser.grade);
                 console.log('🔐 PERMISSIONS:', currentUser.permissions);
                 console.log('🔐 ACCÈS DOCUMENTS INTERNES:', hasInternalAccess ? '✅ OUI' : '❌ NON');
+                
+                // Renouveler la session pour prolonger la durée de vie
+                if (window.SessionManager) {
+                    window.SessionManager.renewSession();
+                }
                 
                 return currentUser;
             } catch (error) {
                 console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
                 
-                // Utilisateur admin par défaut en cas d'erreur pour éviter les blocages
-                currentUser = {
-                    username: 'admin',
-                    fullname: 'STAFF',
-                    grade: 'staff',
-                    permissions: ['dashboard', 'inventory', 'documents', 'documents_internal', 'config', 'reports', 'users']
-                };
-                hasInternalAccess = true;
-                
-                console.log('🆘 UTILISATEUR DE SECOURS:', currentUser);
-                return currentUser;
+                // Redirection vers login en cas d'erreur
+                window.location.href = '../public/login.html';
+                return null;
             }
         }
 
@@ -895,10 +860,14 @@
             document.getElementById('cancelFacture').onclick = closeFactureModal;
             document.getElementById('addFactureProductBtn').onclick = addFactureProductLine;
 
-            // Gestion déconnexion
+            // Gestion déconnexion avec nettoyage de session
             document.getElementById('logoutBtn').addEventListener('click', function(e) {
                 e.preventDefault();
                 if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    // Nettoyer la session
+                    if (window.SessionManager) {
+                        window.SessionManager.clearSession();
+                    }
                     window.location.href = '../index.html';
                 }
             });
