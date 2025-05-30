@@ -1443,10 +1443,15 @@ DocumentsManager.prototype.openDevisForm = function() {
         window.notify.warning('Template manquant', 'Le template PDF n\'est pas encore chargé.');
         return;
     }
-    document.getElementById('devisModal').style.display = 'flex';
-    this.resetDevisForm();
-    this.generateDevisNumber();
-    this.addProductLine();
+    const devisModal = document.getElementById('devisModal');
+    if (devisModal) {
+        devisModal.style.display = 'flex';
+        this.resetDevisForm();
+        this.generateDevisNumber();
+        this.addProductLine();
+    } else {
+        window.notify.warning('Modal introuvable', 'Le modal de devis n\'existe pas dans cette page.');
+    }
 };
 
 DocumentsManager.prototype.closeDevisModal = function() {
@@ -1966,10 +1971,15 @@ DocumentsManager.prototype.openFactureForm = function() {
         window.notify.warning('Template manquant', 'Le template PDF facture n\'est pas encore chargé.');
         return;
     }
-    document.getElementById('factureModal').style.display = 'flex';
-    this.resetFactureForm();
-    this.generateFactureNumber();
-    this.addFactureProductLine();
+    const factureModal = document.getElementById('factureModal');
+    if (factureModal) {
+        factureModal.style.display = 'flex';
+        this.resetFactureForm();
+        this.generateFactureNumber();
+        this.addFactureProductLine();
+    } else {
+        window.notify.warning('Modal introuvable', 'Le modal de facture n\'existe pas dans cette page.');
+    }
 };
 
 DocumentsManager.prototype.closeFactureModal = function() {
