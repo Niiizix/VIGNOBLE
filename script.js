@@ -29,10 +29,24 @@ PageManager.prototype.setupInventoryEventListeners = function(currentCategory, l
             currentCategory = this.dataset.category;
             const action = this.dataset.action;
             
+            console.log('🔧 Action:', action, 'Catégorie:', currentCategory); // Debug
+            
             if (action === 'add') {
-                openAddProductModal(currentCategory);
+                // Utiliser la fonction globale
+                if (window.openAddProductModal) {
+                    window.openAddProductModal(currentCategory);
+                } else {
+                    console.error('❌ openAddProductModal non définie');
+                    window.notify.error('Erreur', 'Fonction d\'ajout non disponible');
+                }
             } else if (action === 'modify') {
-                openStockModal(currentCategory);
+                // Utiliser la fonction globale
+                if (window.openStockModal) {
+                    window.openStockModal(currentCategory);
+                } else {
+                    console.error('❌ openStockModal non définie');
+                    window.notify.error('Erreur', 'Fonction de modification non disponible');
+                }
             }
         });
     });
@@ -1472,6 +1486,62 @@ var productCounter = 0;
 var factureProductCounter = 0;
 var devisData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
 var factureData = { client: {}, produits: [], totaux: { sousTotal: 0, tva: 0, total: 0 } };
+
+// === FONCTIONS GLOBALES POUR L'INVENTAIRE (DÉPLACÉES) ===
+window.openAddProductModal = function(category) {
+    const modal = document.getElementById('addProductModal');
+    const priceGroup = document.getElementById('priceGroup');
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        
+        // Afficher le champ prix seulement pour les bouteilles
+        if (priceGroup) {
+            priceGroup.style.display = category === 'bouteilles' ? 'block' : 'none';
+        }
+        
+        // Reset du formulaire
+        const form = document.getElementById('addProductForm');
+        if (form) form.reset();
+        
+        // Focus sur le nom du produit
+        const productNameInput = document.getElementById('productName');
+        if (productNameInput) {
+            setTimeout(function() { productNameInput.focus(); }, 100);
+        }
+    }
+};
+
+window.openStockModal = function(category) {
+    const modal = document.getElementById('stockModal');
+    const productSelect = document.getElementById('productSelect');
+    
+    if (modal && productSelect) {
+        modal.style.display = 'flex';
+        
+        // Charger les produits de la catégorie
+        const inventoryData = window.dbManager.getInventory();
+        const products = inventoryData[category] || {};
+        
+        productSelect.innerHTML = '<option value="">Sélectionnez un produit</option>';
+        
+        Object.entries(products).forEach(function([productId, product]) {
+            const option = document.createElement('option');
+            option.value = productId;
+            option.textContent = `${product.name} (Stock actuel: ${product.stock})`;
+            productSelect.appendChild(option);
+        });
+        
+        // Reset des autres champs
+        const currentStockElement = document.getElementById('currentStock');
+        const newStockElement = document.getElementById('newStock');
+        const noteElement = document.getElementById('stockNote');
+        
+        if (currentStockElement) currentStockElement.textContent = '0';
+        if (newStockElement) newStockElement.value = '';
+        if (noteElement) noteElement.value = '';
+    }
+};
 
 // === GESTIONNAIRE DE DOCUMENTS ===
 function DocumentsManager() {
@@ -3504,59 +3574,3 @@ PageManager.prototype.initConfigurationPage = async function() {
 PageManager.prototype.initHomePage = function() {
     console.log('🏠 Initialisation page d\'accueil');
 };
-
-// === FONCTIONS GLOBALES POUR L'INVENTAIRE ===
-function openAddProductModal(category) {
-    const modal = document.getElementById('addProductModal');
-    const priceGroup = document.getElementById('priceGroup');
-    
-    if (modal) {
-        modal.style.display = 'flex';
-        
-        // Afficher le champ prix seulement pour les bouteilles
-        if (priceGroup) {
-            priceGroup.style.display = category === 'bouteilles' ? 'block' : 'none';
-        }
-        
-        // Reset du formulaire
-        const form = document.getElementById('addProductForm');
-        if (form) form.reset();
-        
-        // Focus sur le nom du produit
-        const productNameInput = document.getElementById('productName');
-        if (productNameInput) {
-            setTimeout(() => productNameInput.focus(), 100);
-        }
-    }
-}
-
-function openStockModal(category) {
-    const modal = document.getElementById('stockModal');
-    const productSelect = document.getElementById('productSelect');
-    
-    if (modal && productSelect) {
-        modal.style.display = 'flex';
-        
-        // Charger les produits de la catégorie
-        const inventoryData = window.dbManager.getInventory();
-        const products = inventoryData[category] || {};
-        
-        productSelect.innerHTML = '<option value="">Sélectionnez un produit</option>';
-        
-        Object.entries(products).forEach(([productId, product]) => {
-            const option = document.createElement('option');
-            option.value = productId;
-            option.textContent = `${product.name} (Stock actuel: ${product.stock})`;
-            productSelect.appendChild(option);
-        });
-        
-        // Reset des autres champs
-        const currentStockElement = document.getElementById('currentStock');
-        const newStockElement = document.getElementById('newStock');
-        const noteElement = document.getElementById('stockNote');
-        
-        if (currentStockElement) currentStockElement.textContent = '0';
-        if (newStockElement) newStockElement.value = '';
-        if (noteElement) noteElement.value = '';
-    }
-}
