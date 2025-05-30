@@ -1535,7 +1535,7 @@ window.addEventListener('DOMContentLoaded', function() {
 // === BON DE VENTE - À ajouter dans initDocumentsPage() dans script.js ===
 
 // URL du webhook Discord pour les bons de vente
-const DISCORD_WEBHOOK_BON_VENTE = 'https://discord.com/api/webhooks/TON_WEBHOOK_URL_ICI';
+const DISCORD_WEBHOOK_BON_VENTE = 'https://l.webhook.party/hook/yTVrXTfa4MIwKFSYv85i1rqZbmnsgxfFmKlbV3hmdPtX6g99eNILk5T9xZSaAhFlDnL14lusbHqfxc7sLxxO6jJdscI6N1FoyNLhqtSNa68t7m6mILPq5ZZt1dAaVDt1xKGRGsBuz%2Fh42TyYLPrCeRqL2zKi%2FOyxn1iEXZVOcnGb1wX6LwEaq8h0UmHndra0W9gHaTHB0V74Il51BftAtplG7T5OqsVEbj%2F9Appv9MfmpKJlfW6uvn0yzzUfU8ZB0ogcq4%2BZGOVRhr%2BvG8%2F3g5ZGRsj9qWn%2FcLwZ5kM7sVy9WhZmyEjOtinaFvH6Wlws592mVPfVJsflv0lcnwcf5WnBd%2BBQ%2BjWAOQ%2FpFwJ1r8AP8ho6%2B1dJ3d6GF6MzvKlEDP35ZtkuMPk%3D/GUuAOodfhEbGBTET';
 
 // Produits disponibles avec leurs prix
 const produitsBonVente = {
