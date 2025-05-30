@@ -106,11 +106,45 @@ PageManager.prototype.setupDocumentsEventListeners = function() {
                 self.documentsManager.openFactureForm();
             } else if (documentType === 'bon-vente') {
                 self.documentsManager.openBonVenteModal();
+            } else if (documentType === 'bon-livraison') {
+                self.documentsManager.openBonLivraisonModal();
             } else {
                 window.notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
             }
         });
     });
+
+    // Event listeners pour le modal bon de livraison
+    const closeBonLivraisonModal = document.getElementById('closeBonLivraisonModal');
+    if (closeBonLivraisonModal) {
+        closeBonLivraisonModal.addEventListener('click', function() {
+            self.documentsManager.closeBonLivraisonModal();
+        });
+    }
+
+    const cancelBonLivraison = document.getElementById('cancelBonLivraison');
+    if (cancelBonLivraison) {
+        cancelBonLivraison.addEventListener('click', function() {
+            self.documentsManager.closeBonLivraisonModal();
+        });
+    }
+
+    const addProduitLivraisonBtn = document.getElementById('addProduitLivraisonBtn');
+    if (addProduitLivraisonBtn) {
+        addProduitLivraisonBtn.addEventListener('click', function() {
+            self.documentsManager.addProduitLivraisonLine();
+        });
+    }
+
+    // Soumission du formulaire bon de livraison
+    const bonLivraisonForm = document.getElementById('bonLivraisonForm');
+    if (bonLivraisonForm) {
+        bonLivraisonForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(bonLivraisonForm);
+            await self.documentsManager.submitBonLivraison(formData);
+        });
+    }
 
     // Event listeners pour les modals de devis
     const closeDevisModal = document.getElementById('closeDevisModal');
@@ -2796,6 +2830,205 @@ DocumentsManager.prototype.saveBonVenteLocally = function(bonVente) {
         
         localStorage.setItem('marlowe_bons_vente', JSON.stringify(bonsVente));
         console.log('✅ Bon de vente sauvegardé localement');
+    } catch (error) {
+        console.error('❌ Erreur sauvegarde locale:', error);
+    }
+};
+
+// === GESTION BON DE LIVRAISON ===
+DocumentsManager.prototype.openBonLivraisonModal = function() {
+    const modal = document.getElementById('bonLivraisonModal');
+    const currentUser = SessionManager.getSession();
+        
+    if (!currentUser) {
+        window.notify.error('Erreur', 'Vous devez être connecté pour créer un bon de livraison');
+        return;
+    }
+        
+    const employeInput = document.getElementById('employeLivraison');
+    if (employeInput) {
+        employeInput.value = currentUser.fullname || currentUser.username;
+    }
+        
+    const form = document.getElementById('bonLivraisonForm');
+    if (form) form.reset();
+        
+    if (employeInput) {
+        employeInput.value = currentUser.fullname || currentUser.username;
+    }
+
+    // Réinitialiser le conteneur de produits
+    const container = document.getElementById('produits-livraison-container');
+    if (container) {
+        container.innerHTML = '';
+        this.addProduitLivraisonLine(); // Ajouter une première ligne
+    }
+        
+    if (modal) modal.style.display = 'flex';
+};
+
+DocumentsManager.prototype.closeBonLivraisonModal = function() {
+    const modal = document.getElementById('bonLivraisonModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+        
+    const form = document.getElementById('bonLivraisonForm');
+    if (form) form.reset();
+};
+
+DocumentsManager.prototype.addProduitLivraisonLine = function() {
+    const container = document.getElementById('produits-livraison-container');
+    if (!container) return;
+
+    const lineId = Date.now(); // ID unique basé sur timestamp
+    const line = document.createElement('div');
+    line.className = 'produit-livraison-line';
+    line.dataset.id = lineId;
+
+    line.innerHTML = `
+        <div class="form-group">
+            <label class="form-label">Produit</label>
+            <select class="form-select produit-livraison-select" required>
+                <option value="">Sélectionnez un produit</option>
+                <option value="marlowe-rouge">Marlowe Rouge Reserve</option>
+                <option value="marlowe-blanc">Marlowe Blanc Premium</option>
+                <option value="marlowe-prestige">Marlowe Prestige</option>
+                <option value="marlowe-rose">Marlowe Rosé</option>
+                <option value="marlowe-vintage">Marlowe Vintage</option>
+                <option value="coffret-degustation">Coffret Dégustation</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Quantité</label>
+            <input type="number" class="form-input quantite-livraison" min="1" required placeholder="1">
+        </div>
+        <button type="button" class="btn-remove-produit" onclick="this.parentElement.remove()">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+
+    container.appendChild(line);
+};
+
+DocumentsManager.prototype.submitBonLivraison = async function(formData) {
+    const employeNom = document.getElementById('employeLivraison')?.value;
+    const numeroCommande = document.getElementById('numeroCommande')?.value;
+     
+    if (!numeroCommande || !numeroCommande.trim()) {
+        window.notify.error('Erreur', 'Veuillez renseigner le numéro de commande');
+        return;
+    }
+
+    // Récupérer tous les produits
+    const produits = [];
+    const lines = document.querySelectorAll('.produit-livraison-line');
+    
+    lines.forEach(function(line) {
+        const produitSelect = line.querySelector('.produit-livraison-select');
+        const quantiteInput = line.querySelector('.quantite-livraison');
+        
+        if (produitSelect.value && quantiteInput.value && quantiteInput.value > 0) {
+            produits.push({
+                produit: produitSelect.options[produitSelect.selectedIndex].text,
+                quantite: parseInt(quantiteInput.value)
+            });
+        }
+    });
+
+    if (produits.length === 0) {
+        window.notify.error('Erreur', 'Veuillez ajouter au moins un produit');
+        return;
+    }
+
+    // Créer la description des produits pour Discord
+    let produitsDescription = '';
+    produits.forEach(function(item) {
+        produitsDescription += `• **${item.produit}** - Quantité: ${item.quantite}\n`;
+    });
+        
+    const bonLivraisonData = {
+        embeds: [{
+            title: "🚚 Nouveau Bon de Livraison",
+            color: 0x17a2b8,
+            fields: [
+                {
+                    name: "👤 Employé",
+                    value: employeNom,
+                    inline: true
+                },
+                {
+                    name: "📋 N° Commande",
+                    value: numeroCommande,
+                    inline: true
+                },
+                {
+                    name: "📦 Produits à livrer",
+                    value: produitsDescription,
+                    inline: false
+                },
+                {
+                    name: "📅 Date de préparation",
+                    value: new Date().toLocaleString('fr-FR'),
+                    inline: true
+                }
+            ],
+            footer: {
+                text: "Marlowe Vineyard - Système de Livraison"
+            },
+            timestamp: new Date().toISOString()
+        }]
+    };
+        
+    try {
+        // Utiliser le même webhook que les bons de vente
+        const response = await fetch(DISCORD_WEBHOOK_BON_VENTE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bonLivraisonData)
+        });
+            
+        if (response.ok) {
+            window.notify.success(
+                'Bon de livraison créé !', 
+                `Commande ${numeroCommande} - ${produits.length} produit(s) - Notification envoyée`
+            );
+            this.closeBonLivraisonModal();
+                
+            this.saveBonLivraisonLocally({
+                id: `BL${Date.now()}`,
+                employe: employeNom,
+                numeroCommande: numeroCommande,
+                produits: produits,
+                date: new Date().toISOString()
+            });
+                
+        } else {
+            throw new Error('Erreur lors de l\'envoi vers Discord');
+        }
+            
+    } catch (error) {
+        console.error('Erreur envoi Discord:', error);
+        window.notify.error(
+            'Erreur d\'envoi', 
+            'Le bon de livraison n\'a pas pu être envoyé sur Discord. Vérifiez votre connexion.'
+        );
+    }
+};
+
+DocumentsManager.prototype.saveBonLivraisonLocally = function(bonLivraison) {
+    try {
+        const bonsLivraison = JSON.parse(localStorage.getItem('marlowe_bons_livraison') || '[]');
+        bonsLivraison.push(bonLivraison);
+        
+        if (bonsLivraison.length > 100) {
+            bonsLivraison.splice(0, bonsLivraison.length - 100);
+        }
+        
+        localStorage.setItem('marlowe_bons_livraison', JSON.stringify(bonsLivraison));
+        console.log('✅ Bon de livraison sauvegardé localement');
     } catch (error) {
         console.error('❌ Erreur sauvegarde locale:', error);
     }
