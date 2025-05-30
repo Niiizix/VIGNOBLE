@@ -213,254 +213,6 @@ PageManager.prototype.setupDocumentsEventListeners = function() {
     }
 };
 
-DocumentsManager.prototype.generateFactureComplete = async function() {
-    console.log('🚀 Génération complète de la facture...');
-
-    if (!document.getElementById('facture-client-nom').value.trim()) {
-        window.notify.error('Formulaire incomplet', 'Le nom du client est requis.');
-        return;
-    }
-
-    if (!document.getElementById('facture-client-adresse').value.trim()) {
-        window.notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
-        return;
-    }
-
-    if (!templateFacturePDF) {
-        window.notify.error('Template manquant', 'Le template PDF facture n\'est pas chargé.');
-        return;
-    }
-
-    let hasValidProducts = false;
-    document.querySelectorAll('#facture-products-container .product-line').forEach(function(line) {
-        const id = line.dataset.id;
-        const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
-        if (select && select.value) hasValidProducts = true;
-    });
-
-    if (!hasValidProducts) {
-        window.notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-        return;
-    }
-
-    this.collectFactureData();
-    console.log('📊 Données de la facture:', factureData);
-
-    try {
-        window.notify.info('Traitement en cours...', 'Génération du PDF facture...');
-
-        const filename = await this.downloadFacturePDF(factureData);
-        console.log('✅ PDF facture téléchargé:', filename);
-
-        window.notify.info('Notification Discord...', 'Envoi en cours...');
-
-        await this.sendFactureToDiscord(factureData);
-        console.log('✅ Discord notifié pour la facture');
-
-        window.notify.success(
-            'Facture créée avec succès !', 
-            `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Facture ${factureData.numeroFacture} émise`
-        );
-
-        setTimeout(() => this.closeFactureModal(), 3000);
-
-    } catch (error) {
-        console.error('❌ Erreur complète facture:', error);
-
-        if (error.message.includes('Discord')) {
-            window.notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué.');
-        } else {
-            window.notify.error('Erreur de génération', error.message);
-        }
-    }
-};
-
-// Dans ton script.js, remplace la fonction setupDocumentsEventListeners par celle-ci :
-
-PageManager.prototype.setupDocumentsEventListeners = function() {
-    const self = this;
-    
-    document.querySelectorAll('.document-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const documentType = this.dataset.document;
-            
-            if (documentType === 'devis') {
-                self.documentsManager.openDevisForm();
-            } else if (documentType === 'facture') {
-                self.documentsManager.openFactureForm();
-            } else if (documentType === 'bon-vente') {
-                self.documentsManager.openBonVenteModal();
-            } else {
-                window.notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
-            }
-        });
-    });
-
-    // Event listeners pour les modals de devis
-    const closeDevisModal = document.getElementById('closeDevisModal');
-    if (closeDevisModal) {
-        closeDevisModal.addEventListener('click', function() {
-            self.documentsManager.closeDevisModal();
-        });
-    }
-
-    const cancelDevis = document.getElementById('cancelDevis');
-    if (cancelDevis) {
-        cancelDevis.addEventListener('click', function() {
-            self.documentsManager.closeDevisModal();
-        });
-    }
-
-    const addProductBtn = document.getElementById('addProductBtn');
-    if (addProductBtn) {
-        addProductBtn.addEventListener('click', function() {
-            self.documentsManager.addProductLine();
-        });
-    }
-
-    const generateDevisComplete = document.getElementById('generateDevisComplete');
-    if (generateDevisComplete) {
-        generateDevisComplete.addEventListener('click', function() {
-            self.documentsManager.generateDevisComplete();
-        });
-    }
-
-    // Event listeners pour les modals de facture - CETTE PARTIE MANQUAIT !
-    const closeFactureModal = document.getElementById('closeFactureModal');
-    if (closeFactureModal) {
-        closeFactureModal.addEventListener('click', function() {
-            self.documentsManager.closeFactureModal();
-        });
-    }
-
-    const cancelFacture = document.getElementById('cancelFacture');
-    if (cancelFacture) {
-        cancelFacture.addEventListener('click', function() {
-            self.documentsManager.closeFactureModal();
-        });
-    }
-
-    const addFactureProductBtn = document.getElementById('addFactureProductBtn');
-    if (addFactureProductBtn) {
-        addFactureProductBtn.addEventListener('click', function() {
-            self.documentsManager.addFactureProductLine();
-        });
-    }
-
-    // ⭐ VOICI LE EVENT LISTENER MANQUANT POUR LA VALIDATION DES FACTURES ⭐
-    const generateFactureComplete = document.getElementById('generateFactureComplete');
-    if (generateFactureComplete) {
-        generateFactureComplete.addEventListener('click', function() {
-            console.log('🔧 Bouton facture cliqué !'); // Debug
-            self.documentsManager.generateFactureComplete();
-        });
-    }
-
-    // Event listeners pour le modal bon de vente
-    const closeBonVenteModal = document.getElementById('closeBonVenteModal');
-    if (closeBonVenteModal) {
-        closeBonVenteModal.addEventListener('click', function() {
-            self.documentsManager.closeBonVenteModal();
-        });
-    }
-
-    const cancelBonVente = document.getElementById('cancelBonVente');
-    if (cancelBonVente) {
-        cancelBonVente.addEventListener('click', function() {
-            self.documentsManager.closeBonVenteModal();
-        });
-    }
-
-    // Calcul automatique du total pour bon de vente
-    const produitVendu = document.getElementById('produitVendu');
-    const quantiteVendue = document.getElementById('quantiteVendue');
-    
-    if (produitVendu) {
-        produitVendu.addEventListener('change', function() {
-            self.documentsManager.calculateBonVenteTotal();
-        });
-    }
-    
-    if (quantiteVendue) {
-        quantiteVendue.addEventListener('input', function() {
-            self.documentsManager.calculateBonVenteTotal();
-        });
-    }
-
-    // Soumission du formulaire bon de vente
-    const bonVenteForm = document.getElementById('bonVenteForm');
-    if (bonVenteForm) {
-        bonVenteForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(bonVenteForm);
-            await self.documentsManager.submitBonVente(formData);
-        });
-    }
-};
-
-// Assure-toi aussi que cette fonction existe dans DocumentsManager (elle devrait déjà y être)
-DocumentsManager.prototype.generateFactureComplete = async function() {
-    console.log('🚀 Génération complète de la facture...');
-
-    if (!document.getElementById('facture-client-nom').value.trim()) {
-        window.notify.error('Formulaire incomplet', 'Le nom du client est requis.');
-        return;
-    }
-
-    if (!document.getElementById('facture-client-adresse').value.trim()) {
-        window.notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
-        return;
-    }
-
-    if (!templateFacturePDF) {
-        window.notify.error('Template manquant', 'Le template PDF facture n\'est pas chargé.');
-        return;
-    }
-
-    let hasValidProducts = false;
-    document.querySelectorAll('#facture-products-container .product-line').forEach(function(line) {
-        const id = line.dataset.id;
-        const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
-        if (select && select.value) hasValidProducts = true;
-    });
-
-    if (!hasValidProducts) {
-        window.notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
-        return;
-    }
-
-    this.collectFactureData();
-    console.log('📊 Données de la facture:', factureData);
-
-    try {
-        window.notify.info('Traitement en cours...', 'Génération du PDF facture...');
-
-        const filename = await this.downloadFacturePDF(factureData);
-        console.log('✅ PDF facture téléchargé:', filename);
-
-        window.notify.info('Notification Discord...', 'Envoi en cours...');
-
-        await this.sendFactureToDiscord(factureData);
-        console.log('✅ Discord notifié pour la facture');
-
-        window.notify.success(
-            'Facture créée avec succès !', 
-            `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Facture ${factureData.numeroFacture} émise`
-        );
-
-        setTimeout(() => this.closeFactureModal(), 3000);
-
-    } catch (error) {
-        console.error('❌ Erreur complète facture:', error);
-
-        if (error.message.includes('Discord')) {
-            window.notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué.');
-        } else {
-            window.notify.error('Erreur de génération', error.message);
-        }
-    }
-};
-
 PageManager.prototype.setupConfigurationEventListeners = function(currentUsers, currentConfig, updateUsersTable) {
     const searchUsers = document.getElementById('searchUsers');
     if (searchUsers) {
@@ -2239,6 +1991,120 @@ DocumentsManager.prototype.generateDevisComplete = async function() {
         } else {
             window.notify.error('Erreur de génération', error.message);
         }
+    }
+};
+
+DocumentsManager.prototype.collectFactureData = function() {
+    console.log('📊 Collecte des données facture...');
+    
+    factureData.client = {
+        nom: document.getElementById('facture-client-nom')?.value || '',
+        email: document.getElementById('facture-client-email')?.value || '',
+        adresse: document.getElementById('facture-client-adresse')?.value || '',
+        telephone: document.getElementById('facture-client-telephone')?.value || ''
+    };
+    
+    factureData.numeroFacture = document.getElementById('numero-facture')?.value || '';
+    factureData.produits = [];
+    
+    document.querySelectorAll('#facture-products-container .product-line').forEach(function(line) {
+        const id = line.dataset.id;
+        const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+        const quantityInput = document.querySelector(`#facture-products-container input.product-quantity[data-id="${id}"]`);
+        
+        if (select && select.value && quantityInput && quantityInput.value) {
+            const produit = produitsBonVente[select.value];
+            const quantity = parseInt(quantityInput.value);
+            const total = produit.prix * quantity;
+            
+            factureData.produits.push({
+                nom: produit.nom,
+                prix: produit.prix,
+                quantite: quantity,
+                total: total
+            });
+        }
+    });
+    
+    console.log('✅ Données collectées:', factureData);
+};
+
+DocumentsManager.prototype.downloadFacturePDF = async function(factureData) {
+    try {
+        // Réutilise la même logique que pour les devis mais adapté aux factures
+        const pdfDoc = await this.generateMarlowePDFFromTemplate(factureData);
+        const pdfBytes = await pdfDoc.save();
+        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+        
+        const clientName = factureData.client.nom
+            .replace(/[^a-zA-Z0-9\s]/g, '')
+            .replace(/\s+/g, '_')
+            .substring(0, 20);
+        
+        const filename = `Facture_${factureData.numeroFacture}_${clientName}.pdf`;
+        
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        return filename;
+        
+    } catch (error) {
+        console.error('❌ Erreur téléchargement PDF facture:', error);
+        throw error;
+    }
+};
+
+DocumentsManager.prototype.sendFactureToDiscord = async function(factureData) {
+    try {
+        const embedData = {
+            embeds: [{
+                title: "🧾 Nouvelle Facture Marlowe Vineyard",
+                color: 0x28a745,
+                fields: [
+                    {
+                        name: "📋 Numéro de facture",
+                        value: factureData.numeroFacture,
+                        inline: true
+                    },
+                    {
+                        name: "👤 Client",
+                        value: factureData.client.nom,
+                        inline: true
+                    },
+                    {
+                        name: "💰 Total TTC",
+                        value: `${factureData.totaux.total.toLocaleString()}$`,
+                        inline: true
+                    }
+                ],
+                footer: { text: "Marlowe Vineyard - Système de Facturation" },
+                timestamp: new Date().toISOString()
+            }]
+        };
+
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(embedData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Discord error: ${response.status}`);
+        }
+
+        console.log('✅ Facture envoyée sur Discord');
+        return true;
+
+    } catch (error) {
+        console.error('❌ Erreur envoi Discord facture:', error);
+        throw error;
     }
 };
 
