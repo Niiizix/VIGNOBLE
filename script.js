@@ -16,7 +16,7 @@ PageManager.prototype.setupLogoutButton = function() {
                 window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
                 SessionManager.clearSession();
                 setTimeout(function() {
-                    window.location.href = '../index.html';
+                    window.location.href = '../public/login.html';
                 }, 1000);
             }, 'Déconnexion');
         });
@@ -432,6 +432,11 @@ window.alertError = function(title, message) {
 window.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initialisation Marlowe Vineyard...');
     
+    // VÉRIFICATION SÉCURITÉ EN PREMIER
+    if (!SecurityManager.checkIntranetAccess()) {
+        return; // Stop l'initialisation si redirection
+    }
+    
     window.SessionManager = SessionManager;
     window.notify = new NotificationSystem();
     window.dbManager = new DatabaseManager();
@@ -605,6 +610,40 @@ document.addEventListener('change', function(e) {
 var SESSION_KEY = 'marlowe_user_session';
 var SESSION_TIMEOUT = 60 * 60 * 1000; // 1 heure
 
+// === SYSTÈME DE SÉCURITÉ INTRANET ===
+var SecurityManager = {
+    checkIntranetAccess: function() {
+        const currentPath = window.location.pathname;
+        const isInIntranet = currentPath.includes('/intranet/');
+        
+        if (isInIntranet) {
+            const session = SessionManager.getSession();
+            
+            if (!session) {
+                console.log('🚫 Accès refusé : Aucune session active');
+                this.redirectToLogin();
+                return false;
+            }
+            
+            console.log('✅ Accès autorisé : Session valide pour', session.username);
+            return true;
+        }
+        
+        return true; // Pages publiques = accès libre
+    },
+    
+    redirectToLogin: function() {
+        const currentPath = window.location.pathname;
+        const isInIntranet = currentPath.includes('/intranet/');
+        
+        if (isInIntranet) {
+            window.location.href = '../public/login.html';
+        } else {
+            window.location.href = './public/login.html';
+        }
+    }
+};
+
 var SessionManager = {
     saveSession: function(userData) {
         const sessionData = {
@@ -633,6 +672,15 @@ var SessionManager = {
             if (Date.now() > parsed.expiresAt) {
                 console.log('⏰ Session expirée');
                 this.clearSession();
+                
+                // Rediriger si on est dans l'intranet
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/intranet/')) {
+                    setTimeout(function() {
+                        window.location.href = '../public/login.html';
+                    }, 100);
+                }
+                
                 return null;
             }
 
@@ -2927,7 +2975,13 @@ PageManager.prototype.initLoginPage = async function() {
                         loginButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
                     }
                     setTimeout(function() {
-                        window.location.href = '../intranet/dashboard.html';
+                        // Déterminer le bon chemin selon la localisation
+                        const currentPath = window.location.pathname;
+                        if (currentPath.includes('/public/')) {
+                            window.location.href = '../intranet/dashboard.html';
+                        } else {
+                            window.location.href = './intranet/dashboard.html';
+                        }
                     }, 1000);
                 } else {
                     window.notify.error('Erreur de session', 'Impossible de sauvegarder la session.');
