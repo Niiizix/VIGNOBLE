@@ -163,6 +163,14 @@ PageManager.prototype.setupDocumentsEventListeners = function() {
         });
     }
 
+    const generateFactureComplete = document.getElementById('generateFactureComplete');
+    if (generateFactureComplete) {
+        generateFactureComplete.addEventListener('click', function() {
+            console.log('🔧 Bouton facture cliqué !'); // Debug
+            self.documentsManager.generateFactureComplete();
+        });
+    }
+
     // Event listeners pour le modal bon de vente
     const closeBonVenteModal = document.getElementById('closeBonVenteModal');
     if (closeBonVenteModal) {
@@ -202,6 +210,68 @@ PageManager.prototype.setupDocumentsEventListeners = function() {
             const formData = new FormData(bonVenteForm);
             await self.documentsManager.submitBonVente(formData);
         });
+    }
+};
+
+DocumentsManager.prototype.generateFactureComplete = async function() {
+    console.log('🚀 Génération complète de la facture...');
+
+    if (!document.getElementById('facture-client-nom').value.trim()) {
+        window.notify.error('Formulaire incomplet', 'Le nom du client est requis.');
+        return;
+    }
+
+    if (!document.getElementById('facture-client-adresse').value.trim()) {
+        window.notify.error('Formulaire incomplet', 'L\'adresse du client est requise.');
+        return;
+    }
+
+    if (!templateFacturePDF) {
+        window.notify.error('Template manquant', 'Le template PDF facture n\'est pas chargé.');
+        return;
+    }
+
+    let hasValidProducts = false;
+    document.querySelectorAll('#facture-products-container .product-line').forEach(function(line) {
+        const id = line.dataset.id;
+        const select = document.querySelector(`#facture-products-container select[data-id="${id}"]`);
+        if (select && select.value) hasValidProducts = true;
+    });
+
+    if (!hasValidProducts) {
+        window.notify.error('Aucun produit', 'Veuillez sélectionner au moins un produit.');
+        return;
+    }
+
+    this.collectFactureData();
+    console.log('📊 Données de la facture:', factureData);
+
+    try {
+        window.notify.info('Traitement en cours...', 'Génération du PDF facture...');
+
+        const filename = await this.downloadFacturePDF(factureData);
+        console.log('✅ PDF facture téléchargé:', filename);
+
+        window.notify.info('Notification Discord...', 'Envoi en cours...');
+
+        await this.sendFactureToDiscord(factureData);
+        console.log('✅ Discord notifié pour la facture');
+
+        window.notify.success(
+            'Facture créée avec succès !', 
+            `• PDF téléchargé: ${filename}\n• Notification Discord envoyée\n• Facture ${factureData.numeroFacture} émise`
+        );
+
+        setTimeout(() => this.closeFactureModal(), 3000);
+
+    } catch (error) {
+        console.error('❌ Erreur complète facture:', error);
+
+        if (error.message.includes('Discord')) {
+            window.notify.error('Erreur Discord', 'Le PDF a été téléchargé mais l\'envoi Discord a échoué.');
+        } else {
+            window.notify.error('Erreur de génération', error.message);
+        }
     }
 };
 
