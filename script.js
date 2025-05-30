@@ -114,38 +114,6 @@ PageManager.prototype.setupDocumentsEventListeners = function() {
         });
     });
 
-    // Event listeners pour le modal bon de livraison
-    const closeBonLivraisonModal = document.getElementById('closeBonLivraisonModal');
-    if (closeBonLivraisonModal) {
-        closeBonLivraisonModal.addEventListener('click', function() {
-            self.documentsManager.closeBonLivraisonModal();
-        });
-    }
-
-    const cancelBonLivraison = document.getElementById('cancelBonLivraison');
-    if (cancelBonLivraison) {
-        cancelBonLivraison.addEventListener('click', function() {
-            self.documentsManager.closeBonLivraisonModal();
-        });
-    }
-
-    const addProduitLivraisonBtn = document.getElementById('addProduitLivraisonBtn');
-    if (addProduitLivraisonBtn) {
-        addProduitLivraisonBtn.addEventListener('click', function() {
-            self.documentsManager.addProduitLivraisonLine();
-        });
-    }
-
-    // Soumission du formulaire bon de livraison
-    const bonLivraisonForm = document.getElementById('bonLivraisonForm');
-    if (bonLivraisonForm) {
-        bonLivraisonForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(bonLivraisonForm);
-            await self.documentsManager.submitBonLivraison(formData);
-        });
-    }
-
     // Event listeners pour les modals de devis
     const closeDevisModal = document.getElementById('closeDevisModal');
     if (closeDevisModal) {
@@ -243,6 +211,38 @@ PageManager.prototype.setupDocumentsEventListeners = function() {
             e.preventDefault();
             const formData = new FormData(bonVenteForm);
             await self.documentsManager.submitBonVente(formData);
+        });
+    }
+
+    // Event listeners pour le modal bon de livraison
+    const closeBonLivraisonModal = document.getElementById('closeBonLivraisonModal');
+    if (closeBonLivraisonModal) {
+        closeBonLivraisonModal.addEventListener('click', function() {
+            self.documentsManager.closeBonLivraisonModal();
+        });
+    }
+
+    const cancelBonLivraison = document.getElementById('cancelBonLivraison');
+    if (cancelBonLivraison) {
+        cancelBonLivraison.addEventListener('click', function() {
+            self.documentsManager.closeBonLivraisonModal();
+        });
+    }
+
+    const addProduitLivraisonBtn = document.getElementById('addProduitLivraisonBtn');
+    if (addProduitLivraisonBtn) {
+        addProduitLivraisonBtn.addEventListener('click', function() {
+            self.documentsManager.addProduitLivraisonLine();
+        });
+    }
+
+    // Soumission du formulaire bon de livraison
+    const bonLivraisonForm = document.getElementById('bonLivraisonForm');
+    if (bonLivraisonForm) {
+        bonLivraisonForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(bonLivraisonForm);
+            await self.documentsManager.submitBonLivraison(formData);
         });
     }
 };
