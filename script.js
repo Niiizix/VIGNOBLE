@@ -1488,8 +1488,13 @@ DocumentsManager.prototype.resetDevisForm = function() {
 };
 
 DocumentsManager.prototype.addProductLine = function() {
-    productCounter++;
     const container = document.getElementById('products-container');
+    if (!container) {
+        console.log('Container products-container non trouvé');
+        return;
+    }
+    
+    productCounter++;
     const productLine = document.createElement('div');
     productLine.className = 'product-line';
     productLine.dataset.id = productCounter;
@@ -2032,8 +2037,13 @@ DocumentsManager.prototype.resetFactureForm = function() {
 };
 
 DocumentsManager.prototype.addFactureProductLine = function() {
-    factureProductCounter++;
     const container = document.getElementById('facture-products-container');
+    if (!container) {
+        console.log('Container facture-products-container non trouvé');
+        return;
+    }
+    
+    factureProductCounter++;
     const productLine = document.createElement('div');
     productLine.className = 'product-line';
     productLine.dataset.id = factureProductCounter;
