@@ -1459,20 +1459,30 @@ DocumentsManager.prototype.closeDevisModal = function() {
 };
 
 DocumentsManager.prototype.generateDevisNumber = function() {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    document.getElementById('numero-devis').value = `DV${year}${month}${day}-${random}`;
+    const numeroDevisElement = document.getElementById('numero-devis');
+    if (numeroDevisElement) {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        numeroDevisElement.value = `DV${year}${month}${day}-${random}`;
+    }
 };
 
 DocumentsManager.prototype.resetDevisForm = function() {
-    document.getElementById('client-nom').value = '';
-    document.getElementById('client-email').value = '';
-    document.getElementById('client-adresse').value = '';
-    document.getElementById('client-telephone').value = '';
-    document.getElementById('products-container').innerHTML = '';
+    const clientNom = document.getElementById('client-nom');
+    const clientEmail = document.getElementById('client-email');
+    const clientAdresse = document.getElementById('client-adresse');
+    const clientTelephone = document.getElementById('client-telephone');
+    const productsContainer = document.getElementById('products-container');
+    
+    if (clientNom) clientNom.value = '';
+    if (clientEmail) clientEmail.value = '';
+    if (clientAdresse) clientAdresse.value = '';
+    if (clientTelephone) clientTelephone.value = '';
+    if (productsContainer) productsContainer.innerHTML = '';
+    
     productCounter = 0;
     this.updateTotals();
 };
@@ -1573,9 +1583,15 @@ DocumentsManager.prototype.updateTotals = function() {
     });
     const tva = sousTotal * 0.21;
     const total = sousTotal + tva;
-    document.getElementById('sous-total').textContent = `${sousTotal.toLocaleString('en-US')}.00`;
-    document.getElementById('tva-montant').textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('total-final').textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
+    const sousToolElement = document.getElementById('sous-total');
+    const tvaElement = document.getElementById('tva-montant');
+    const totalElement = document.getElementById('total-final');
+    
+    if (sousToolElement) sousToolElement.textContent = `${sousTotal.toLocaleString('en-US')}.00`;
+    if (tvaElement) tvaElement.textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    if (totalElement) totalElement.textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
     devisData.totaux = { sousTotal, tva, total };
 };
 
@@ -1987,20 +2003,30 @@ DocumentsManager.prototype.closeFactureModal = function() {
 };
 
 DocumentsManager.prototype.generateFactureNumber = function() {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    document.getElementById('numero-facture').value = `FA${year}${month}${day}-${random}`;
+    const numeroFactureElement = document.getElementById('numero-facture');
+    if (numeroFactureElement) {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        numeroFactureElement.value = `FA${year}${month}${day}-${random}`;
+    }
 };
 
 DocumentsManager.prototype.resetFactureForm = function() {
-    document.getElementById('facture-client-nom').value = '';
-    document.getElementById('facture-client-email').value = '';
-    document.getElementById('facture-client-adresse').value = '';
-    document.getElementById('facture-client-telephone').value = '';
-    document.getElementById('facture-products-container').innerHTML = '';
+    const factureClientNom = document.getElementById('facture-client-nom');
+    const factureClientEmail = document.getElementById('facture-client-email');
+    const factureClientAdresse = document.getElementById('facture-client-adresse');
+    const factureClientTelephone = document.getElementById('facture-client-telephone');
+    const factureProductsContainer = document.getElementById('facture-products-container');
+    
+    if (factureClientNom) factureClientNom.value = '';
+    if (factureClientEmail) factureClientEmail.value = '';
+    if (factureClientAdresse) factureClientAdresse.value = '';
+    if (factureClientTelephone) factureClientTelephone.value = '';
+    if (factureProductsContainer) factureProductsContainer.innerHTML = '';
+    
     factureProductCounter = 0;
     this.updateFactureTotals();
 };
@@ -2101,9 +2127,15 @@ DocumentsManager.prototype.updateFactureTotals = function() {
     });
     const tva = sousTotal * 0.21;
     const total = sousTotal + tva;
-    document.getElementById('facture-sous-total').textContent = `${sousTotal.toLocaleString('en-US')}.00`;
-    document.getElementById('facture-tva-montant').textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('facture-total-final').textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
+    const factureSousTotal = document.getElementById('facture-sous-total');
+    const factureTvaMontant = document.getElementById('facture-tva-montant');
+    const factureTotalFinal = document.getElementById('facture-total-final');
+    
+    if (factureSousTotal) factureSousTotal.textContent = `${sousTotal.toLocaleString('en-US')}.00`;
+    if (factureTvaMontant) factureTvaMontant.textContent = `${tva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    if (factureTotalFinal) factureTotalFinal.textContent = `${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
     factureData.totaux = { sousTotal, tva, total };
 };
 
