@@ -2963,12 +2963,12 @@ DocumentsManager.prototype.submitBonLivraison = async function(formData) {
                     inline: true
                 },
                 {
-                    name: "📦 Produits à livrer",
+                    name: "📦 Produits livrés",
                     value: produitsDescription,
                     inline: false
                 },
                 {
-                    name: "📅 Date de préparation",
+                    name: "📅 Date de livraison",
                     value: new Date().toLocaleString('fr-FR'),
                     inline: true
                 }
