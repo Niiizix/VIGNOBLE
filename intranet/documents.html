@@ -186,6 +186,174 @@
         </div>
     </section>
 
+    <!-- Modal Devis -->
+    <div id="devisModal" class="modal-devis">
+        <div class="modal-devis-content">
+            <div class="modal-devis-header">
+                <h3><i class="fas fa-file-invoice-dollar"></i> Créer un Devis</h3>
+                <span class="modal-close" id="closeDevisModal">&times;</span>
+            </div>
+            <div class="modal-devis-body">
+
+                <!-- Informations Client -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-user"></i> Informations Client</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" id="client-nom" class="form-input" required placeholder="Nom et prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="client-email" class="form-input" placeholder="email@exemple.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Adresse complète *</label>
+                        <textarea id="client-adresse" class="form-textarea" rows="3" required placeholder="Adresse, code postal, ville"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" id="client-telephone" class="form-input" placeholder="+33 1 23 45 67 89">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro de devis</label>
+                            <input type="text" id="numero-devis" class="form-input" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sélection des Produits -->
+                <div class="devis-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-wine-bottle"></i> Sélection des Produits</h4>
+                        <button type="button" class="btn-add-product" id="addProductBtn">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div id="products-container">
+                        <!-- Les lignes de produits seront ajoutées ici -->
+                    </div>
+                </div>
+
+                <!-- Totaux -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-calculator"></i> Récapitulatif</h4>
+                    <div class="totals-container">
+                        <div class="total-line">
+                            <span class="total-label">Sous-total HT :</span>
+                            <span class="total-value" id="sous-total">0.00$</span>
+                        </div>
+                        <div class="total-line">
+                            <span class="total-label">TVA (21%) :</span>
+                            <span class="total-value" id="tva-montant">0.00$</span>
+                        </div>
+                        <div class="total-line total-final">
+                            <span class="total-label">Total TTC :</span>
+                            <span class="total-value" id="total-final">0.00$</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-devis-footer">
+                <button type="button" class="cta-button btn-secondary" id="cancelDevis">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="cta-button btn-success" id="generateDevisComplete">
+                    <i class="fas fa-check"></i> Confirmer le Devis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Facture -->
+    <div id="factureModal" class="modal-devis">
+        <div class="modal-devis-content">
+            <div class="modal-devis-header">
+                <h3><i class="fas fa-receipt"></i> Créer une Facture</h3>
+                <span class="modal-close" id="closeFactureModal">&times;</span>
+            </div>
+            <div class="modal-devis-body">
+
+                <!-- Informations Client -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-user"></i> Informations Client</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" id="facture-client-nom" class="form-input" required placeholder="Nom et prénom du client">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="facture-client-email" class="form-input" placeholder="email@exemple.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Adresse complète *</label>
+                        <textarea id="facture-client-adresse" class="form-textarea" rows="3" required placeholder="Adresse, code postal, ville"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" id="facture-client-telephone" class="form-input" placeholder="+33 1 23 45 67 89">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro de facture</label>
+                            <input type="text" id="numero-facture" class="form-input" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sélection des Produits -->
+                <div class="devis-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-wine-bottle"></i> Sélection des Produits</h4>
+                        <button type="button" class="btn-add-product" id="addFactureProductBtn">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div id="facture-products-container">
+                        <!-- Les lignes de produits seront ajoutées ici -->
+                    </div>
+                </div>
+
+                <!-- Totaux -->
+                <div class="devis-section">
+                    <h4><i class="fas fa-calculator"></i> Récapitulatif</h4>
+                    <div class="totals-container">
+                        <div class="total-line">
+                            <span class="total-label">Sous-total HT :</span>
+                            <span class="total-value" id="facture-sous-total">0.00$</span>
+                        </div>
+                        <div class="total-line">
+                            <span class="total-label">TVA (21%) :</span>
+                            <span class="total-value" id="facture-tva-montant">0.00$</span>
+                        </div>
+                        <div class="total-line total-final">
+                            <span class="total-label">Total TTC :</span>
+                            <span class="total-value" id="facture-total-final">0.00$</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-devis-footer">
+                <button type="button" class="cta-button btn-secondary" id="cancelFacture">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="cta-button btn-success" id="generateFactureComplete">
+                    <i class="fas fa-check"></i> Confirmer la Facture
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Bon de Vente -->
     <div id="bonVenteModal" class="modal">
         <div class="modal-content">
