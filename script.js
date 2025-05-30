@@ -2301,43 +2301,120 @@ DocumentsManager.prototype.generateFacturePDFFromTemplate = async function(factu
 
 DocumentsManager.prototype.sendFactureToDiscord = async function(factureData) {
     try {
-        const embedData = {
-            embeds: [{
-                title: "🧾 Nouvelle Facture Marlowe Vineyard",
-                color: 0x28a745,
-                fields: [
-                    {
-                        name: "📋 Numéro de facture",
-                        value: factureData.numeroFacture,
-                        inline: true
-                    },
-                    {
-                        name: "👤 Client",
-                        value: factureData.client.nom,
-                        inline: true
-                    },
-                    {
-                        name: "💰 Total TTC",
-                        value: `${factureData.totaux.total.toLocaleString()}$`,
-                        inline: true
-                    }
-                ],
-                footer: { text: "Marlowe Vineyard - Système de Facturation" },
-                timestamp: new Date().toISOString()
-            }]
+        const safeData = {
+            numero: String(factureData.numeroFacture || 'N/A'),
+            client: String(factureData.client?.nom || 'Client'),
+            email: String(factureData.client?.email || ''),
+            telephone: String(factureData.client?.telephone || ''),
+            adresse: String(factureData.client?.adresse || ''),
+            total: parseFloat(factureData.totaux?.total || 0),
+            sousTotal: parseFloat(factureData.totaux?.sousTotal || 0),
+            tva: parseFloat(factureData.totaux?.tva || 0)
+        };
+
+        let produitsDescription = '';
+        if (factureData.produits && Array.isArray(factureData.produits) && factureData.produits.length > 0) {
+            factureData.produits.forEach(function(produit) {
+                const nom = String(produit.nom || 'Produit');
+                const qty = parseInt(produit.quantite) || 1;
+                const prix = parseFloat(produit.prix) || 0;
+                const total = parseFloat(produit.total) || 0;
+                produitsDescription += `• **${nom}** (${qty}x) - ${prix.toFixed(2)}$ = ${total.toFixed(2)}$\n`;
+            });
+        }
+
+        let clientInfo = '';
+        if (safeData.email) clientInfo += `📧 ${safeData.email}\n`;
+        if (safeData.telephone) clientInfo += `📞 ${safeData.telephone}\n`;
+        if (safeData.adresse) {
+            const adresseFormatted = safeData.adresse.replace(/\n/g, ', ');
+            clientInfo += `📍 ${adresseFormatted}`;
+        }
+
+        const embed = {
+            title: "🧾 Nouvelle Facture Marlowe Vineyard",
+            description: `Facture générée automatiquement le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`,
+            color: 0x28a745, // Vert pour les factures (différent du violet des devis)
+            fields: [
+                {
+                    name: "📋 Numéro de facture",
+                    value: `\`${safeData.numero}\``,
+                    inline: true
+                },
+                {
+                    name: "👤 Client",
+                    value: `**${safeData.client}**`,
+                    inline: true
+                },
+                {
+                    name: "💰 Montant total",
+                    value: `**${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}$**`,
+                    inline: true
+                }
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+                text: "Marlowe Vineyard • Système de facturation",
+                icon_url: null
+            }
+        };
+
+        if (clientInfo.trim()) {
+            embed.fields.push({
+                name: "📇 Informations client",
+                value: clientInfo.trim(),
+                inline: false
+            });
+        }
+
+        if (produitsDescription) {
+            if (produitsDescription.length > 1000) {
+                const lines = produitsDescription.split('\n');
+                let truncated = '';
+                for (let i = 0; i < lines.length && truncated.length < 900; i++) {
+                    truncated += lines[i] + '\n';
+                }
+                if (lines.length > Math.floor(900 / 50)) {
+                    truncated += `... et ${factureData.produits.length - Math.floor(900 / 50)} autres produits`;
+                }
+                produitsDescription = truncated;
+            }
+
+            embed.fields.push({
+                name: `🍷 Produits facturés (${factureData.produits.length})`,
+                value: produitsDescription,
+                inline: false
+            });
+        }
+
+        embed.fields.push({
+            name: "🧮 Détail financier",
+            value: `**Sous-total HT:** ${safeData.sousTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}$\n` +
+                    `**TVA (21%):** ${safeData.tva.toLocaleString('en-US', {minimumFractionDigits: 2})}$\n` +
+                    `**Total TTC:** ${safeData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}$`,
+            inline: false
+        });
+
+        const payload = {
+            content: "🧾 **Nouvelle facture émise !**\n> Une nouvelle facture vient d'être générée et téléchargée automatiquement.",
+            embeds: [embed],
+            username: "Marlowe Vineyard",
+            avatar_url: null
         };
 
         const response = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(embedData)
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-            throw new Error(`Discord error: ${response.status}`);
+            const errorText = await response.text();
+            console.error('❌ Erreur Discord:', response.status, errorText);
+            throw new Error(`Discord error: ${response.status} - ${errorText}`);
         }
 
-        console.log('✅ Facture envoyée sur Discord');
+        console.log('✅ Embed détaillé de facture envoyé avec succès sur Discord');
         return true;
 
     } catch (error) {
