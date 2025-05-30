@@ -2097,8 +2097,8 @@ DocumentsManager.prototype.collectFactureData = function() {
 
 DocumentsManager.prototype.downloadFacturePDF = async function(factureData) {
     try {
-        // Réutilise la même logique que pour les devis mais adapté aux factures
-        const pdfDoc = await this.generateMarlowePDFFromTemplate(factureData);
+        // Utilise le template FACTURE au lieu du template devis
+        const pdfDoc = await this.generateFacturePDFFromTemplate(factureData);
         const pdfBytes = await pdfDoc.save();
         const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
         
@@ -2124,6 +2124,178 @@ DocumentsManager.prototype.downloadFacturePDF = async function(factureData) {
     } catch (error) {
         console.error('❌ Erreur téléchargement PDF facture:', error);
         throw error;
+    }
+};
+
+DocumentsManager.prototype.generateFacturePDFFromTemplate = async function(factureData) {
+    if (!templateFacturePDF) {
+        throw new Error('Template PDF facture non chargé');
+    }
+
+    try {
+        console.log('📄 Début génération PDF facture...');
+
+        const originalPdfBytes = await templateFacturePDF.save();
+        const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBytes);
+        const pages = pdfDoc.getPages();
+        const firstPage = pages[0];
+
+        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        const boldFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+        const cleanNom = this.cleanTextForPDF(factureData.client.nom);
+        const cleanDate = new Date().toLocaleDateString('fr-FR');
+
+        // 1. Numéro de facture (bulle de gauche sous FACTURE)
+        const cleanNumero = this.cleanTextForPDF(factureData.numeroFacture);
+        if (cleanNumero) {
+            firstPage.drawText(cleanNumero, {
+                x: 85, y: 695,
+                size: 11, 
+                font: boldFont, 
+                color: PDFLib.rgb(0, 0, 0)
+            });
+        }
+
+        // 2. Date (bulle de droite sous FACTURE)
+        if (cleanDate) {
+            firstPage.drawText(cleanDate, {
+                x: 220, y: 695,
+                size: 11, 
+                font: font, 
+                color: PDFLib.rgb(0, 0, 0)
+            });
+        }
+
+        // 3. Informations client (coordonnées temporaires)
+        if (cleanNom) {
+            firstPage.drawText(cleanNom, {
+                x: 425, y: 610,
+                size: 11, font: boldFont, color: PDFLib.rgb(0, 0, 0)
+            });
+        }
+
+        // Adresse client
+        const cleanAdresse = this.cleanTextForPDF(factureData.client.adresse);
+        if (cleanAdresse) {
+            try {
+                const addressLines = cleanAdresse.split('\n').slice(0, 3);
+                const self = this;
+                addressLines.forEach(function(line, index) {
+                    if (line.trim()) {
+                        firstPage.drawText(line.trim(), {
+                            x: 425, y: 595 - (index * 15),
+                            size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+                    }
+                });
+            } catch (e) {
+                console.warn('⚠️ Erreur adresse facture:', e);
+            }
+        }
+
+        // Contact client
+        const cleanEmail = this.cleanTextForPDF(factureData.client.email);
+        const cleanTelephone = this.cleanTextForPDF(factureData.client.telephone);
+
+        let contactY = 580;
+        if (cleanEmail) {
+            firstPage.drawText(`Email: ${cleanEmail}`, {
+                x: 425, y: contactY,
+                size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+            });
+            contactY -= 15;
+        }
+
+        if (cleanTelephone) {
+            firstPage.drawText(`Tel: ${cleanTelephone}`, {
+                x: 425, y: contactY,
+                size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+            });
+        }
+
+        // 4. Tableau des produits
+        let productY = 492;
+        if (factureData.produits && Array.isArray(factureData.produits)) {
+            const self = this;
+            factureData.produits.slice(0, 10).forEach(function(produit, index) {
+                try {
+                    const currentY = productY - (index * 34);
+
+                    if (currentY > 150) {
+                        const nomProduit = self.cleanTextForPDF(produit.nom);
+                        const nomTronque = nomProduit.length > 35 ? nomProduit.substring(0, 32) + '...' : nomProduit;
+
+                        // Description (colonne 1)
+                        firstPage.drawText(nomTronque, {
+                            x: 110, y: currentY,
+                            size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+
+                        // Prix (colonne 2)
+                        firstPage.drawText(`$${produit.prix || 0}`, {
+                            x: 285, y: currentY,
+                            size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+
+                        // Quantité (colonne 3)
+                        firstPage.drawText(`${produit.quantite || 1}`, {
+                            x: 388, y: currentY,
+                            size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+
+                        // Total (colonne 4)
+                        firstPage.drawText(`$${produit.total || 0}`, {
+                            x: 475, y: currentY,
+                            size: 10, font: font, color: PDFLib.rgb(0, 0, 0)
+                        });
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Erreur produit facture', index, ':', e);
+                }
+            });
+        }
+
+        // 5. Totaux
+        try {
+            const formatAmount = function(amount) {
+                const num = parseFloat(amount) || 0;
+                return Math.round(num * 100) / 100;
+            };
+
+            // Sous-total
+            firstPage.drawText(`$${formatAmount(factureData.totaux.sousTotal)}`, {
+                x: 480, y: 135,
+                size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+            });
+
+            // TVA
+            firstPage.drawText(`$${formatAmount(factureData.totaux.tva)}`, {
+                x: 480, y: 110,
+                size: 11, font: font, color: PDFLib.rgb(0, 0, 0)
+            });
+
+            // 5. Total final (dans la barre noire en bas)
+            const totalText = `$${formatAmount(factureData.totaux.total)}`;
+            const totalTextWidth = boldFont.widthOfTextAtSize(totalText, 14);
+            firstPage.drawText(totalText, {
+                x: 525 - totalTextWidth,
+                y: 80,
+                size: 14, 
+                font: boldFont, 
+                color: PDFLib.rgb(1, 1, 1)
+            });
+
+        } catch (e) {
+            console.warn('⚠️ Erreur totaux facture:', e);
+        }
+
+        console.log('✅ PDF facture généré avec succès');
+        return pdfDoc;
+
+    } catch (error) {
+        console.error('❌ Erreur génération PDF facture:', error);
+        throw new Error(`Erreur PDF facture: ${error.message}`);
     }
 };
 
