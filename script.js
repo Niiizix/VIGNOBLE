@@ -1531,3 +1531,211 @@ window.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Marlowe Vineyard initialisé avec succès!');
 });
+
+// === BON DE VENTE - À ajouter dans initDocumentsPage() dans script.js ===
+
+// URL du webhook Discord pour les bons de vente
+const DISCORD_WEBHOOK_BON_VENTE = 'https://discord.com/api/webhooks/TON_WEBHOOK_URL_ICI';
+
+// Produits disponibles avec leurs prix
+const produitsBonVente = {
+    'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
+    'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
+    'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
+    'marlowe-rose': { nom: 'Marlowe Rosé', prix: 320 },
+    'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
+    'coffret-degustation': { nom: 'Coffret Dégustation', prix: 1800 }
+};
+
+// Dans la gestion des boutons documents, ajouter le cas pour bon-vente
+document.querySelectorAll('.document-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const documentType = this.dataset.document;
+        
+        if (documentType === 'bon-vente') {
+            openBonVenteModal();
+        } else if (documentType === 'devis' || documentType === 'facture') {
+            window.notify.info('Fonctionnalité', 'Génération de documents en développement');
+        } else {
+            window.notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
+        }
+    });
+});
+
+// Fonction pour ouvrir le modal bon de vente
+function openBonVenteModal() {
+    const modal = document.getElementById('bonVenteModal');
+    const currentUser = SessionManager.getSession();
+    
+    if (!currentUser) {
+        window.notify.error('Erreur', 'Vous devez être connecté pour créer un bon de vente');
+        return;
+    }
+    
+    // Pré-remplir le nom de l'employé
+    document.getElementById('employeNom').value = currentUser.fullname || currentUser.username;
+    
+    // Reset du formulaire
+    document.getElementById('bonVenteForm').reset();
+    document.getElementById('employeNom').value = currentUser.fullname || currentUser.username;
+    document.getElementById('totalVente').value = '';
+    
+    modal.style.display = 'flex';
+}
+
+// Fonction pour fermer le modal
+function closeBonVenteModal() {
+    document.getElementById('bonVenteModal').style.display = 'none';
+    document.getElementById('bonVenteForm').reset();
+}
+
+// Event listeners pour le modal
+document.getElementById('closeBonVenteModal').onclick = closeBonVenteModal;
+document.getElementById('cancelBonVente').onclick = closeBonVenteModal;
+
+// Fermer le modal en cliquant à l'extérieur
+document.getElementById('bonVenteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeBonVenteModal();
+    }
+});
+
+// Calcul automatique du total
+document.getElementById('produitVendu').addEventListener('change', calculateTotal);
+document.getElementById('quantiteVendue').addEventListener('input', calculateTotal);
+
+function calculateTotal() {
+    const produitSelect = document.getElementById('produitVendu');
+    const quantiteInput = document.getElementById('quantiteVendue');
+    const totalInput = document.getElementById('totalVente');
+    
+    const produitId = produitSelect.value;
+    const quantite = parseInt(quantiteInput.value) || 0;
+    
+    if (produitId && quantite > 0) {
+        const prix = produitsBonVente[produitId].prix;
+        const total = prix * quantite;
+        totalInput.value = `${total.toLocaleString()}$`;
+    } else {
+        totalInput.value = '';
+    }
+}
+
+// Soumission du formulaire
+document.getElementById('bonVenteForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const employeNom = document.getElementById('employeNom').value;
+    const produitId = document.getElementById('produitVendu').value;
+    const quantite = parseInt(document.getElementById('quantiteVendue').value);
+    
+    if (!produitId || !quantite || quantite <= 0) {
+        window.notify.error('Erreur', 'Veuillez remplir tous les champs correctement');
+        return;
+    }
+    
+    const produit = produitsBonVente[produitId];
+    const total = produit.prix * quantite;
+    
+    // Préparer les données pour Discord
+    const bonVenteData = {
+        embeds: [{
+            title: "🧾 Nouveau Bon de Vente",
+            color: 0x8B5A9F,
+            fields: [
+                {
+                    name: "👤 Employé",
+                    value: employeNom,
+                    inline: true
+                },
+                {
+                    name: "🍷 Produit",
+                    value: produit.nom,
+                    inline: true
+                },
+                {
+                    name: "📦 Quantité",
+                    value: quantite.toString(),
+                    inline: true
+                },
+                {
+                    name: "💰 Prix unitaire",
+                    value: `${produit.prix.toLocaleString()}$`,
+                    inline: true
+                },
+                {
+                    name: "💵 Total",
+                    value: `${total.toLocaleString()}$`,
+                    inline: true
+                },
+                {
+                    name: "📅 Date",
+                    value: new Date().toLocaleString('fr-FR'),
+                    inline: true
+                }
+            ],
+            footer: {
+                text: "Marlowe Vineyard - Système de Vente"
+            },
+            timestamp: new Date().toISOString()
+        }]
+    };
+    
+    try {
+        // Envoi vers Discord
+        const response = await fetch(DISCORD_WEBHOOK_BON_VENTE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bonVenteData)
+        });
+        
+        if (response.ok) {
+            window.notify.success(
+                'Bon de vente créé !', 
+                `${quantite}x ${produit.nom} - Total: ${total.toLocaleString()}$ - Notification envoyée`
+            );
+            closeBonVenteModal();
+            
+            // Optionnel: sauvegarder localement pour les statistiques
+            saveBonVenteLocally({
+                id: `BV${Date.now()}`,
+                employe: employeNom,
+                produit: produit.nom,
+                quantite: quantite,
+                prixUnitaire: produit.prix,
+                total: total,
+                date: new Date().toISOString()
+            });
+            
+        } else {
+            throw new Error('Erreur lors de l\'envoi vers Discord');
+        }
+        
+    } catch (error) {
+        console.error('Erreur envoi Discord:', error);
+        window.notify.error(
+            'Erreur d\'envoi', 
+            'Le bon de vente n\'a pas pu être envoyé sur Discord. Vérifiez votre connexion.'
+        );
+    }
+});
+
+// Fonction pour sauvegarder localement (optionnel)
+function saveBonVenteLocally(bonVente) {
+    try {
+        const bonsVente = JSON.parse(localStorage.getItem('marlowe_bons_vente') || '[]');
+        bonsVente.push(bonVente);
+        
+        // Garder seulement les 100 derniers
+        if (bonsVente.length > 100) {
+            bonsVente.splice(0, bonsVente.length - 100);
+        }
+        
+        localStorage.setItem('marlowe_bons_vente', JSON.stringify(bonsVente));
+        console.log('✅ Bon de vente sauvegardé localement');
+    } catch (error) {
+        console.error('❌ Erreur sauvegarde locale:', error);
+    }
+}
