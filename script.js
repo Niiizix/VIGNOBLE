@@ -1479,24 +1479,46 @@ function DocumentsManager() {
 }
 
 DocumentsManager.prototype.loadTemplates = async function() {
-    await this.tryLoadDefaultTemplate();
-    await this.tryLoadFactureTemplate();
+    this.showTemplateStatus('🔄 Chargement des templates...', 'info');
+    
+    let templatesLoaded = 0;
+    let totalTemplates = 2;
+    
+    try {
+        await this.tryLoadDefaultTemplate();
+        templatesLoaded++;
+    } catch (error) {
+        console.error('Erreur template devis:', error);
+    }
+    
+    try {
+        await this.tryLoadFactureTemplate();
+        templatesLoaded++;
+    } catch (error) {
+        console.error('Erreur template facture:', error);
+    }
+    
+    // Message final
+    if (templatesLoaded === totalTemplates) {
+        this.showTemplateStatus('✅ Templates chargés avec succès', 'success');
+    } else if (templatesLoaded > 0) {
+        this.showTemplateStatus(`⚠️ ${templatesLoaded}/${totalTemplates} templates chargés`, 'warning');
+    } else {
+        this.showTemplateStatus('❌ Aucun template chargé', 'error');
+    }
 };
 
 DocumentsManager.prototype.tryLoadDefaultTemplate = async function() {
     try {
-        this.showTemplateStatus('🔄 Chargement du template...', 'info');
         const response = await fetch('../assets/template-devis.pdf');
         if (response.ok) {
             const blob = await response.blob();
             const arrayBuffer = await blob.arrayBuffer();
             templatePDF = await PDFLib.PDFDocument.load(arrayBuffer);
-            this.showTemplateStatus('✅ Template chargé avec succès', 'success');
         } else {
             throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
-        this.showTemplateStatus('❌ Template non trouvé', 'error');
     }
 };
 
@@ -1507,12 +1529,10 @@ DocumentsManager.prototype.tryLoadFactureTemplate = async function() {
             const blob = await response.blob();
             const arrayBuffer = await blob.arrayBuffer();
             templateFacturePDF = await PDFLib.PDFDocument.load(arrayBuffer);
-            this.showTemplateStatus('✅ Template facture chargé avec succès', 'success');
         } else {
             throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
-        this.showTemplateStatus('❌ Template facture non trouvé', 'error');
     }
 };
 
