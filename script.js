@@ -556,9 +556,7 @@ class PageManager {
                     const sessionSaved = SessionManager.saveSession(sessionUserData);
                     
                     if (sessionSaved) {
-                        if (window.notify) {
-                            window.notify.success('Connexion réussie !', 'Redirection vers l\'intranet...');
-                        }
+                        window.notify.success('Connexion réussie !', 'Redirection vers l\'intranet...');
                         const loginButton = document.getElementById('loginButton');
                         if (loginButton) {
                             loginButton.innerHTML = '<i class="fas fa-check" style="margin-right: 0.5rem;"></i>Connexion réussie !';
@@ -567,15 +565,15 @@ class PageManager {
                         setTimeout(() => {
                             window.location.href = '../intranet/dashboard.html';
                         }, 1000);
+                    } else {
+                        window.notify.error('Erreur de session', 'Impossible de sauvegarder la session.');
                     }
                 } else {
                     loginAttempts++;
                     const remainingAttempts = maxAttempts - loginAttempts;
                     
                     if (remainingAttempts > 0) {
-                        if (window.notify) {
-                            window.notify.error('Erreur de connexion', `Identifiants incorrects. ${remainingAttempts} tentative(s) restante(s).`);
-                        }
+                        window.notify.error('Identifiants incorrects', `${remainingAttempts} tentative(s) restante(s).`);
                         
                         const attemptsLeft = document.getElementById('attemptsLeft');
                         if (attemptsLeft) attemptsLeft.textContent = remainingAttempts;
@@ -587,18 +585,14 @@ class PageManager {
                     } else {
                         // Timeout
                         isTimedOut = true;
-                        if (window.notify) {
-                            window.notify.warning('Trop de tentatives', 'Veuillez patienter 60 secondes avant de réessayer.');
-                        }
+                        window.notify.warning('Trop de tentatives', 'Veuillez patienter 60 secondes avant de réessayer.');
                         
                         setTimeout(() => {
                             isTimedOut = false;
                             loginAttempts = 0;
                             const attemptsLeft = document.getElementById('attemptsLeft');
                             if (attemptsLeft) attemptsLeft.textContent = maxAttempts;
-                            if (window.notify) {
-                                window.notify.success('Timeout terminé', 'Vous pouvez maintenant vous reconnecter.');
-                            }
+                            window.notify.success('Timeout terminé', 'Vous pouvez maintenant vous reconnecter.');
                         }, 60000);
                     }
                     
@@ -607,9 +601,7 @@ class PageManager {
                 }
             } catch (error) {
                 console.error('❌ Erreur lors de la connexion:', error);
-                if (window.notify) {
-                    window.notify.error('Erreur système', 'Veuillez réessayer.');
-                }
+                window.notify.error('Erreur système', 'Veuillez réessayer.');
             }
         };
 
@@ -880,14 +872,14 @@ class PageManager {
                 const price = parseFloat(document.getElementById('productPrice').value) || 0;
                 
                 if (!name || stock < 0) {
-                    if (window.notify) window.notify.error('Erreur', 'Veuillez remplir correctement tous les champs.');
+                    window.notify.error('Erreur', 'Veuillez remplir correctement tous les champs.');
                     return;
                 }
 
                 const productId = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
                 
                 if (inventoryData[currentCategory] && inventoryData[currentCategory][productId]) {
-                    if (window.notify) window.notify.error('Erreur', 'Un produit avec ce nom existe déjà.');
+                    window.notify.error('Erreur', 'Un produit avec ce nom existe déjà.');
                     return;
                 }
 
@@ -901,13 +893,9 @@ class PageManager {
                 if (success) {
                     loadInventory();
                     closeModals();
-                    if (window.notify) {
-                        window.notify.success('Produit ajouté', `${name} a été ajouté à l'inventaire.`);
-                    }
+                    window.notify.success('Produit ajouté', `${name} a été ajouté à l'inventaire.`);
                 } else {
-                    if (window.notify) {
-                        window.notify.error('Erreur', 'Impossible d\'ajouter le produit.');
-                    }
+                    window.notify.error('Erreur', 'Impossible d\'ajouter le produit.');
                 }
             });
         }
@@ -923,7 +911,7 @@ class PageManager {
                 const note = document.getElementById('stockNote').value.trim();
                 
                 if (!productId || newStock < 0) {
-                    if (window.notify) window.notify.error('Erreur', 'Veuillez sélectionner un produit et entrer un stock valide.');
+                    window.notify.error('Erreur', 'Veuillez sélectionner un produit et entrer un stock valide.');
                     return;
                 }
 
@@ -938,13 +926,9 @@ class PageManager {
                         `Stock de ${productName} mis à jour: ${newStock.toLocaleString()} (${note})` :
                         `Stock de ${productName} mis à jour: ${newStock.toLocaleString()}`;
                     
-                    if (window.notify) {
-                        window.notify.success('Stock mis à jour', message);
-                    }
+                    window.notify.success('Stock mis à jour', message);
                 } else {
-                    if (window.notify) {
-                        window.notify.error('Erreur', 'Impossible de mettre à jour le stock.');
-                    }
+                    window.notify.error('Erreur', 'Impossible de mettre à jour le stock.');
                 }
             });
         }
@@ -1071,10 +1055,20 @@ class PageManager {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                
+                const confirmNotification = window.notify.info(
+                    'Confirmation de déconnexion', 
+                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                    10000
+                );
+                
+                window.addConfirmationButtons(confirmNotification, () => {
+                    window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
                     SessionManager.clearSession();
-                    window.location.href = '../index.html';
-                }
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 1000);
+                }, 'Déconnexion');
             });
         }
 
@@ -1195,13 +1189,9 @@ class PageManager {
                 const documentType = this.dataset.document;
                 
                 if (documentType === 'devis' || documentType === 'facture') {
-                    if (window.notify) {
-                        window.notify.info('Fonctionnalité', 'Génération de documents en développement');
-                    }
+                    window.notify.info('Fonctionnalité', 'Génération de documents en développement');
                 } else {
-                    if (window.notify) {
-                        window.notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
-                    }
+                    window.notify.info('En préparation', 'Cette fonctionnalité sera bientôt disponible !');
                 }
             });
         });
@@ -1211,10 +1201,20 @@ class PageManager {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                
+                const confirmNotification = window.notify.info(
+                    'Confirmation de déconnexion', 
+                    'Êtes-vous sûr de vouloir vous déconnecter ?', 
+                    10000
+                );
+                
+                window.addConfirmationButtons(confirmNotification, () => {
+                    window.notify.info('Déconnexion en cours', 'Redirection vers l\'accueil...');
                     SessionManager.clearSession();
-                    window.location.href = '../index.html';
-                }
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 1000);
+                }, 'Déconnexion');
             });
         }
     }
@@ -1340,7 +1340,7 @@ class PageManager {
 
                 if (newThresholds.matieres.critical >= newThresholds.matieres.warning || 
                     newThresholds.bouteilles.critical >= newThresholds.bouteilles.warning) {
-                    if (window.notify) window.notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
+                    window.notify.error('Erreur', 'Le seuil critique doit être inférieur au seuil de stock faible.');
                     return;
                 }
 
@@ -1350,7 +1350,7 @@ class PageManager {
                 }
                 
                 updateThresholdInfo();
-                if (window.notify) window.notify.success('Configuration mise à jour', 'Nouveaux seuils appliqués pour cette session.');
+                window.notify.success('Configuration mise à jour', 'Nouveaux seuils appliqués pour cette session.');
             });
         }
 
@@ -1370,7 +1370,7 @@ class PageManager {
                         window.globalConfig.thresholds = defaultThresholds;
                     }
                     loadConfiguration();
-                    if (window.notify) window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
+                    window.notify.info('Seuils réinitialisés', 'Valeurs par défaut restaurées.');
                 });
             });
         }
@@ -1489,13 +1489,32 @@ window.addConfirmationButtons = function(notification, onConfirm, confirmText = 
     notificationContent.appendChild(buttonsDiv);
     
     confirmBtn.addEventListener('click', () => {
-        if (window.notify) window.notify.remove(notification);
+        window.notify.remove(notification);
         onConfirm();
     });
     
     cancelBtn.addEventListener('click', () => {
-        if (window.notify) window.notify.remove(notification);
+        window.notify.remove(notification);
     });
+};
+
+// === FONCTION UTILITAIRE POUR REMPLACER CONFIRM() ===
+window.confirmAction = function(title, message, onConfirm, confirmText = 'Confirmer') {
+    const confirmNotification = window.notify.warning(title, message, 10000);
+    window.addConfirmationButtons(confirmNotification, onConfirm, confirmText);
+};
+
+// === FONCTION UTILITAIRE POUR REMPLACER ALERT() ===
+window.alertInfo = function(title, message) {
+    window.notify.info(title, message);
+};
+
+window.alertSuccess = function(title, message) {
+    window.notify.success(title, message);
+};
+
+window.alertError = function(title, message) {
+    window.notify.error(title, message);
 };
 
 // === INITIALISATION GLOBALE ===
