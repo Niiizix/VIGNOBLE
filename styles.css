@@ -2235,3 +2235,101 @@ input[type="checkbox"] {
         width: 0%;
     }
 }
+
+/* === STYLES BON DE LIVRAISON === */
+
+/* Modal Bon de Livraison */
+#bonLivraisonModal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+
+#bonLivraisonModal .modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+#bonLivraisonModal .modal-header {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#bonLivraisonModal .modal-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+#bonLivraisonModal .modal-close {
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: bold;
+    transition: opacity 0.3s ease;
+}
+
+#bonLivraisonModal .modal-close:hover {
+    opacity: 0.7;
+}
+
+/* Ligne de produit pour livraison */
+.produit-livraison-line {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.produit-livraison-line .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.produit-livraison-line .btn-remove-produit {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: fit-content;
+}
+
+.produit-livraison-line .btn-remove-produit:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+/* Animation pour les notifications de bon de livraison */
+.notification.bon-livraison {
+    border-left-color: #17a2b8;
+}
+
+.notification.bon-livraison .notification-icon {
+    color: #17a2b8;
+}
