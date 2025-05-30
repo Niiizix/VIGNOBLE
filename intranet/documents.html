@@ -94,12 +94,12 @@
 
                     <div class="document-card">
                         <div class="document-icon">
-                            <i class="fas fa-calendar-check"></i>
+                            <i class="fas fa-cash-register"></i>
                         </div>
-                        <h3>Contrat de Visite</h3>
-                        <p>Formalisez les réservations de visites avec conditions et tarification</p>
-                        <button class="cta-button btn-purple document-btn" data-document="visite">
-                            <i class="fas fa-plus"></i> Créer un Contrat
+                        <h3>Bon de Vente</h3>
+                        <p>Enregistrez une vente directe avec choix du produit et quantité. Notification automatique sur Discord</p>
+                        <button class="cta-button btn-warning document-btn" data-document="bon-vente">
+                            <i class="fas fa-plus"></i> Créer un Bon de Vente
                         </button>
                     </div>
                 </div>
@@ -185,6 +185,50 @@
             </div>
         </div>
     </section>
+
+    <!-- Modal Bon de Vente -->
+    <div id="bonVenteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cash-register"></i> Nouveau Bon de Vente</h3>
+                <span class="modal-close" id="closeBonVenteModal">&times;</span>
+            </div>
+            <form id="bonVenteForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Nom de l'employé *</label>
+                    <input type="text" id="employeNom" class="form-input" required readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Produit vendu *</label>
+                    <select id="produitVendu" class="form-select" required>
+                        <option value="">Sélectionnez un produit</option>
+                        <option value="marlowe-rouge">Marlowe Rouge Reserve - 450$</option>
+                        <option value="marlowe-blanc">Marlowe Blanc Premium - 380$</option>
+                        <option value="marlowe-prestige">Marlowe Prestige - 850$</option>
+                        <option value="marlowe-rose">Marlowe Rosé - 320$</option>
+                        <option value="marlowe-vintage">Marlowe Vintage - 1200$</option>
+                        <option value="coffret-degustation">Coffret Dégustation - 1800$</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantité *</label>
+                    <input type="number" id="quantiteVendue" class="form-input" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Total de la vente</label>
+                    <input type="text" id="totalVente" class="form-input" readonly>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="cta-button btn-secondary" id="cancelBonVente">Annuler</button>
+                    <button type="submit" class="cta-button btn-success">Enregistrer la Vente</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
