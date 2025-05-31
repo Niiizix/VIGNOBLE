@@ -1125,6 +1125,7 @@ function CommandesManager() {
 
 CommandesManager.prototype.loadProducts = function() {
     if (window.dbManager && window.dbManager.isReady) {
+        await window.dbManager.waitForReady();
         const products = window.dbManager.getProducts();
         Object.entries(products).forEach(function([key, product]) {
             this.produits[key] = {
@@ -1607,7 +1608,7 @@ window.openStockModal = function(category) {
 // === GESTIONNAIRE DE DOCUMENTS ===
 function DocumentsManager() {
     this.loadTemplates();
-    this.loadProducts();
+    await this.loadProducts();
 }
 
 DocumentsManager.prototype.loadTemplates = async function() {
