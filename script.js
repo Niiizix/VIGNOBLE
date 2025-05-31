@@ -415,7 +415,7 @@ window.getConfiguration = function() {
 };
 
 // === INITIALISATION DES PRODUITS ===
-window.initializeProducts = function() {
+window.initializeProducts = async function() {
     if (!window.dbManager || !window.dbManager.isReady) {
         setTimeout(window.initializeProducts, 100);
         return;
@@ -431,13 +431,14 @@ window.initializeProducts = function() {
     
     // Mettre à jour la variable globale
     const products = window.dbManager.getProducts();
-    produitsBonVente = {};
-    Object.entries(products).forEach(function([key, product]) {
-        produitsBonVente[key] = {
-            nom: product.name,
-            prix: product.price
-        };
-    });
+    if (typeof produitsBonVente !== 'undefined') {
+        Object.entries(products).forEach(function([key, product]) {
+            produitsBonVente[key] = {
+                nom: product.name,
+                prix: product.price
+            };
+        });
+    }
 };
 
 window.updateGlobalConfig = function(newConfig) {
@@ -503,7 +504,7 @@ window.alertError = function(title, message) {
 };
 
 // === INITIALISATION GLOBALE ===
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Initialisation Marlowe Vineyard...');
     
     // VÉRIFICATION SÉCURITÉ EN PREMIER
@@ -517,11 +518,15 @@ window.addEventListener('DOMContentLoaded', function() {
     
     window.pageManager = new PageManager();
 
+    // Attendre que la DB soit prête avant d'initialiser les produits
+    if (window.dbManager) {
+        await window.dbManager.waitForReady();
+    }
+    
     setTimeout(window.initializeProducts, 500);
     
     console.log('✅ Marlowe Vineyard initialisé avec succès!');
 });
-
 // === EVENT LISTENERS ADDITIONNELS ===
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal-close') || e.target.classList.contains('cancel-btn')) {
@@ -680,7 +685,13 @@ document.addEventListener('change', function(e) {
             }
         }
     }
-});/* === SCRIPT.JS - MARLOWE VINEYARD COMPLET === */
+});
+/* === SCRIPT.JS - MARLOWE VINEYARD COMPLET === */
+
+// === INITIALISATION SÉCURISÉE DES VARIABLES GLOBALES ===
+if (typeof produitsBonVente === 'undefined') {
+    var produitsBonVente = {};
+}
 
 // === SYSTÈME DE SESSION ===
 var SESSION_KEY = 'marlowe_user_session';
@@ -1123,16 +1134,17 @@ function CommandesManager() {
     this.loadCommandes();
 }
 
-CommandesManager.prototype.loadProducts = function() {
+CommandesManager.prototype.loadProducts = async function() {
     if (window.dbManager && window.dbManager.isReady) {
         await window.dbManager.waitForReady();
         const products = window.dbManager.getProducts();
+        const self = this;
         Object.entries(products).forEach(function([key, product]) {
-            this.produits[key] = {
+            self.produits[key] = {
                 nom: product.name,
                 prix: product.price
             };
-        }.bind(this));
+        });
     }
 };
 
@@ -1608,7 +1620,6 @@ window.openStockModal = function(category) {
 // === GESTIONNAIRE DE DOCUMENTS ===
 function DocumentsManager() {
     this.loadTemplates();
-    await this.loadProducts();
 }
 
 DocumentsManager.prototype.loadTemplates = async function() {
