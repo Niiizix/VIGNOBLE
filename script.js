@@ -414,6 +414,32 @@ window.getConfiguration = function() {
     };
 };
 
+// === INITIALISATION DES PRODUITS ===
+window.initializeProducts = function() {
+    if (!window.dbManager || !window.dbManager.isReady) {
+        setTimeout(window.initializeProducts, 100);
+        return;
+    }
+    
+    // Remplir tous les sélecteurs de produits
+    const productSelects = document.querySelectorAll('#produitVendu, .produit-livraison-select');
+    const optionsHTML = window.dbManager.getProductsAsOptions();
+    
+    productSelects.forEach(function(select) {
+        select.innerHTML = optionsHTML;
+    });
+    
+    // Mettre à jour la variable globale
+    const products = window.dbManager.getProducts();
+    produitsBonVente = {};
+    Object.entries(products).forEach(function([key, product]) {
+        produitsBonVente[key] = {
+            nom: product.name,
+            prix: product.price
+        };
+    });
+};
+
 window.updateGlobalConfig = function(newConfig) {
     Object.keys(newConfig).forEach(function(section) {
         if (window.globalConfig) {
@@ -490,6 +516,8 @@ window.addEventListener('DOMContentLoaded', function() {
     window.dbManager = new DatabaseManager();
     
     window.pageManager = new PageManager();
+
+    setTimeout(window.initializeProducts, 500);
     
     console.log('✅ Marlowe Vineyard initialisé avec succès!');
 });
@@ -3004,17 +3032,13 @@ DocumentsManager.prototype.addProduitLivraisonLine = function() {
     line.className = 'produit-livraison-line';
     line.dataset.id = lineId;
 
+    const optionsHTML = window.dbManager ? window.dbManager.getProductsAsOptions() : '<option value="">Chargement...</option>';
+
     line.innerHTML = `
         <div class="form-group">
             <label class="form-label">Produit</label>
             <select class="form-select produit-livraison-select" required>
-                <option value="">Sélectionnez un produit</option>
-                <option value="marlowe-rouge">Marlowe Rouge Reserve</option>
-                <option value="marlowe-blanc">Marlowe Blanc Premium</option>
-                <option value="marlowe-prestige">Marlowe Prestige</option>
-                <option value="marlowe-rose">Marlowe Rosé</option>
-                <option value="marlowe-vintage">Marlowe Vintage</option>
-                <option value="coffret-degustation">Coffret Dégustation</option>
+                ${optionsHTML}
             </select>
         </div>
         <div class="form-group">
