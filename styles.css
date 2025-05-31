@@ -2333,3 +2333,30 @@ input[type="checkbox"] {
 .notification.bon-livraison .notification-icon {
     color: #17a2b8;
 }
+
+/* === MODIFICATION DU BOUTON DELETE INVENTAIRE === */
+
+.delete-product-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    border: 1px solid #dc3545; /* Bordure rouge */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #ffffff; /* Fond blanc */
+    color: #dc3545; /* Icône rouge */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-product-btn:hover {
+    transform: scale(1.05);
+    background: #dc3545; /* Fond rouge au hover */
+    color: #ffffff; /* Icône blanche au hover */
+}
+
+.delete-product-btn i {
+    margin: 0;
+    color: inherit; /* Hérite de la couleur du parent */
+}
