@@ -2337,26 +2337,11 @@ input[type="checkbox"] {
 /* === MODIFICATION DU BOUTON DELETE INVENTAIRE === */
 
 .btn-small.btn-danger.delete-product-btn {
-    padding: 0.4rem 0.6rem !important;
-    font-size: 0.8rem !important;
-    border: 1px solid #dc3545 !important; /* Bordure rouge */
-    border-radius: 5px !important;
-    cursor: pointer;
-    transition: all 0.3s ease !important;
-    background: #ffffff !important; /* Fond blanc */
-    color: #dc3545 !important; /* Icône rouge */
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-small.btn-danger.delete-product-btn:hover {
-    transform: scale(1.05) !important;
-    background: #dc3545 !important; /* Fond rouge au hover */
-    color: #ffffff !important; /* Icône blanche au hover */
+    background: #dc3545 !important; /* Fond rouge fixe */
+    color: #ffffff !important; /* Icône blanche fixe */
+    border: 1px solid #dc3545 !important;
 }
 
 .btn-small.btn-danger.delete-product-btn i {
-    margin: 0;
-    color: inherit !important; /* Hérite de la couleur du parent */
+    color: inherit !important;
 }
