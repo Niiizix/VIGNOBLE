@@ -1039,18 +1039,49 @@ DatabaseManager.prototype.getConfiguration = function() {
     };
 };
 
+// === GESTION DES PRODUITS ===
+DatabaseManager.prototype.getAllProducts = function() {
+    const products = this.data.products || {};
+    const allProducts = {};
+    
+    // Fusionner tous les produits des différentes catégories
+    Object.values(products).forEach(function(category) {
+        Object.assign(allProducts, category);
+    });
+    
+    return allProducts;
+};
+
+DatabaseManager.prototype.getProducts = function() {
+    return this.getAllProducts();
+};
+
+DatabaseManager.prototype.getProductsByCategory = function(categoryName) {
+    return this.data.products?.[categoryName] || {};
+};
+
+DatabaseManager.prototype.getProduct = function(productId) {
+    const products = this.getProducts();
+    return products[productId] || null;
+};
+
+DatabaseManager.prototype.getProductsAsOptions = function() {
+    const products = this.getProducts();
+    let options = '<option value="">Sélectionnez un produit</option>';
+    
+    Object.entries(products).forEach(function([key, product]) {
+        options += `<option value="${key}">${product.name} - ${product.price}$</option>`;
+    });
+    
+    return options;
+};
+
 // === GESTIONNAIRE DE COMMANDES ===
 function CommandesManager() {
     this.DISCORD_WEBHOOK = 'https://l.webhook.party/hook/%2FM4rBgChCMU4C0h64KaEOZnDRAtwERxORTQ26Ys6%2BsiMGlLBJo3FQUJehclFhqZRoK51sIMpwIPlVGtQgawTjjH8udxL8Z%2Bpqh57S6pZtkybo8l5420APyeP%2FnhOj0fwOpF6hStUvNUY%2BzSIDjBsQ6lW4JFweXO5jxuhxAOK845Yw6tWXN5nnbpmzeT7DkejC%2FEIycugAJWINo%2B3zGkptzJGO%2FjoFAvF5kmoCCnO%2FP6Zfz54tRzfuHMckUvQUxGUicFd9zlGKytPaJ6cr5Ll%2F4TNerWzV1g7Ow6JASwAG1q23CwWU1RkH1NEY81A942QBtaZsy4NSodqA9EpDwFhLdmBMOMTbXyqgJuaoQ4X%2B74gqwXJvO3D2tV%2BctcrG%2FUSataMw9VjUpQ%3D/pPrmw%2FZCVchUkDLD';
     
-    this.produits = {
-        'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
-        'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
-        'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
-        'marlowe-rose': { nom: 'Marlowe Rose', prix: 320 },
-        'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
-        'coffret-degustation': { nom: 'Coffret Degustation', prix: 1800 }
-    };
+    this.produits = {};
+    this.loadProducts();
 
     this.commandes = [];
     this.commandeProductCounter = 0;
@@ -1063,6 +1094,18 @@ function CommandesManager() {
     this.currentPreparation = null;
     this.loadCommandes();
 }
+
+CommandesManager.prototype.loadProducts = function() {
+    if (window.dbManager && window.dbManager.isReady) {
+        const products = window.dbManager.getProducts();
+        Object.entries(products).forEach(function([key, product]) {
+            this.produits[key] = {
+                nom: product.name,
+                prix: product.price
+            };
+        }.bind(this));
+    }
+};
 
 CommandesManager.prototype.generateCommandeNumber = function() {
     const date = new Date();
@@ -1105,10 +1148,7 @@ CommandesManager.prototype.addCommandeProductLine = function() {
     productLine.className = 'product-line';
     productLine.dataset.id = this.commandeProductCounter;
     
-    let optionsHTML = '<option value="">Sélectionnez un produit</option>';
-    Object.entries(this.produits).forEach(([key, prod]) => {
-        optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}$</option>`;
-    });
+    let optionsHTML = window.dbManager ? window.dbManager.getProductsAsOptions() : '<option value="">Chargement...</option>';
     
     productLine.innerHTML = `
         <div class="product-line-header">
@@ -1470,14 +1510,7 @@ CommandesManager.prototype.displayCommandes = function() {
 var DISCORD_WEBHOOK_BON_VENTE = 'https://l.webhook.party/hook/%2FM4rBgChCMU4C0h64KaEOZnDRAtwERxORTQ26Ys6%2BsiMGlLBJo3FQUJehclFhqZRoK51sIMpwIPlVGtQgawTjjH8udxL8Z%2Bpqh57S6pZtkybo8l5420APyeP%2FnhOj0fwOpF6hStUvNUY%2BzSIDjBsQ6lW4JFweXO5jxuhxAOK845Yw6tWXN5nnbpmzeT7DkejC%2FEIycugAJWINo%2B3zGkptzJGO%2FjoFAvF5kmoCCnO%2FP6Zfz54tRzfuHMckUvQUxGUicFd9zlGKytPaJ6cr5Ll%2F4TNerWzV1g7Ow6JASwAG1q23CwWU1RkH1NEY81A942QBtaZsy4NSodqA9EpDwFhLdmBMOMTbXyqgJuaoQ4X%2B74gqwXJvO3D2tV%2BctcrG%2FUSataMw9VjUpQ%3D/pPrmw%2FZCVchUkDLD';
 var DISCORD_WEBHOOK_URL = 'https://l.webhook.party/hook/p8GEvGjZOXrEAnlh9Czg9Tc0iTQBwifuEMuxxUSXDviB6TigfRf2602NP8WKvfbOKbznpmCc84gFdsh3ReH%2BnwfMPy%2FQuxLaSOKoEhONeF2Sa%2BdlaQeZIF8HnyhTdm%2F139Gp1ZQNINg2u5wL4iv3Gnf4vhyNTH6f2v%2BeDX4gF2wk4Ggtz1JckA7wL2zzdEzp7kngu9sT97mMpEQ7hSGib3GfUgQ3XE4yHljVjprjK2vKD1WrJrbkCigxZhM5evlSs0rWFg4vxjo9ytsVdHnbv%2BXF%2FcNb%2BY9c%2Foyj0WNqRrV7WDawmXYGA7%2B1iwKAMhPxDJvGwfytR64FeOoSQdEEfHlk4wKErY6S4Cdvq3FHsDpfrF2Kr3vByaujn%2BhjOUxk51U%2Bf10knUI%3D/O39Ms6oV6RQnZDds';
 
-var produitsBonVente = {
-    'marlowe-rouge': { nom: 'Marlowe Rouge Reserve', prix: 450 },
-    'marlowe-blanc': { nom: 'Marlowe Blanc Premium', prix: 380 },
-    'marlowe-prestige': { nom: 'Marlowe Prestige', prix: 850 },
-    'marlowe-rose': { nom: 'Marlowe Rosé', prix: 320 },
-    'marlowe-vintage': { nom: 'Marlowe Vintage', prix: 1200 },
-    'coffret-degustation': { nom: 'Coffret Dégustation', prix: 1800 }
-};
+var produitsBonVente = {};
 
 // Variables PDF
 var templatePDF = null;
@@ -1546,6 +1579,7 @@ window.openStockModal = function(category) {
 // === GESTIONNAIRE DE DOCUMENTS ===
 function DocumentsManager() {
     this.loadTemplates();
+    this.loadProducts();
 }
 
 DocumentsManager.prototype.loadTemplates = async function() {
@@ -1684,10 +1718,7 @@ DocumentsManager.prototype.addProductLine = function() {
         buttonHTML = `<button type="button" class="btn-remove-product" onclick="window.pageManager.documentsManager.removeProductLine(${productCounter})"><i class="fas fa-trash"></i></button>`;
     }
 
-    let optionsHTML = '<option value="">Sélectionnez un produit</option>';
-    Object.entries(produitsBonVente).forEach(([key, prod]) => {
-        optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}</option>`;
-    });
+    let optionsHTML = window.dbManager ? window.dbManager.getProductsAsOptions() : '<option value="">Chargement...</option>';
 
     productLine.innerHTML = `
         <div class="product-line-header">
@@ -2662,10 +2693,7 @@ DocumentsManager.prototype.addFactureProductLine = function() {
         buttonHTML = `<button type="button" class="btn-remove-product" onclick="window.pageManager.documentsManager.removeFactureProductLine(${factureProductCounter})"><i class="fas fa-trash"></i></button>`;
     }
 
-    let optionsHTML = '<option value="">Sélectionnez un produit</option>';
-    Object.entries(produitsBonVente).forEach(([key, prod]) => {
-        optionsHTML += `<option value="${key}">${prod.nom} - ${prod.prix}</option>`;
-    });
+    let optionsHTML = window.dbManager ? window.dbManager.getProductsAsOptions() : '<option value="">Chargement...</option>';
 
     productLine.innerHTML = `
         <div class="product-line-header">
