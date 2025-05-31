@@ -153,4 +153,90 @@
     }
   },
   "lastUpdate": "2025-01-27T10:30:00Z"
+
+  "products": {
+    "wines": {
+      "marlowe-rouge": {
+        "id": "marlowe-rouge",
+        "name": "Marlowe Rouge",
+        "category": "wine",
+        "price": 150,
+        "description": "Un assemblage sophistiqué aux notes de fruits rouges et d'épices. Vieilli 18 mois en fûts de chêne français."
+      },
+      "marlowe-blanc": {
+        "id": "marlowe-blanc", 
+        "name": "Marlowe Blanc",
+        "category": "wine",
+        "price": 150,
+        "description": "Un blanc élégant aux arômes floraux et minéraux. Parfait pour accompagner les fruits de mer."
+      },
+      "marlowe-rose": {
+        "id": "marlowe-rose",
+        "name": "Marlowe Rosé",
+        "category": "wine", 
+        "price": 150,
+        "description": "Un rosé délicat aux nuances de pêche et de fruits rouges."
+      },
+      "marlowe-vintage": {
+        "id": "marlowe-vintage",
+        "name": "Marlowe Vintage",
+        "category": "wine",
+        "price": 1200,
+        "description": "Notre millésime exceptionnel, récompensé par les plus grands critiques."
+      },
+      "coffret-degustation": {
+        "id": "coffret-degustation",
+        "name": "Coffret Dégustation",
+        "category": "gift",
+        "price": 1800,
+        "description": "Un assortiment de nos meilleurs vins pour découvrir toute la richesse de notre gamme."
+      }
+    },
+    "specials": {
+      "marlowe-champagne": {
+        "id": "marlowe-champagne",
+        "name": "Marlowe Champagne",
+        "category": "specials",
+        "price": 300,
+        "description": "Un champagne d'exception aux bulles fines et persistantes. Assemblage de chardonnay et pinot noir pour une élégance raffinée."
+      },
+      "marlowe-cider": {
+        "id": "marlowe-cider",
+        "name": "Marlowe Cidre",
+        "category": "specials",
+        "price": 130,
+        "description": "Un cidre premium élaboré avec des pommes locales. Notes fraîches et acidulées avec une effervescence naturelle délicate."
+      }
+    },
+    "juices": {
+      "marlowe-white-grape": {
+        "id": "marlowe-white-grape",
+        "name": "Jus de raisin blanc Marlowe",
+        "category": "juices",
+        "price": 100,
+        "description": "Un jus de raisin blanc pur et naturel issu de nos vignes. Saveurs authentiques et fraîcheur préservée sans additifs."
+      },
+      "marlowe-red-grape": {
+        "id": "marlowe-red-grape",
+        "name": "Jus de raisin rouge Marlowe",
+        "category": "juices",
+        "price": 100,
+        "description": "Un jus de raisin rouge intense aux arômes fruités profonds. Élaboré à partir de nos cépages nobles pour une expérience gustative riche."
+      },
+      "marlowe-fruit-juice": {
+        "id": "marlowe-fruit-juice",
+        "name": "Jus de fruit Marlowe",
+        "category": "juices",
+        "price": 80,
+        "description": "Un mélange harmonieux de fruits frais de saison. Saveurs équilibrées et vitamines préservées pour une boisson rafraîchissante naturelle."
+      },
+      "marlowe-orange-juice": {
+        "id": "marlowe-orange-juice",
+        "name": "Jus d'orange Marlowe",
+        "category": "juices",
+        "price": 80,
+        "description": "Un jus d'orange frais pressé aux agrumes sélectionnés. Acidité parfaitement équilibrée et pulpe naturelle pour une fraîcheur authentique."
+      }
+    }
+  }
 }
