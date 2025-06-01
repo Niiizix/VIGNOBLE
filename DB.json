@@ -238,5 +238,22 @@
         "description": "Un jus d'orange frais pressé aux agrumes sélectionnés. Acidité parfaitement équilibrée et pulpe naturelle pour une fraîcheur authentique."
       }
     }
+  },
+  "bonVenteProducts": {
+  "vin-blanc": {
+    "name": "Vin blanc",
+    "prix": 100
+  },
+  "vin-rouge": {
+    "name": "Vin rouge", 
+    "prix": 100
+  },
+  "vin-rose": {
+    "name": "Vin rosé",
+    "prix": 100
+  },
+  "champagne": {
+    "name": "Champagne",
+    "prix": 130
   }
 }
