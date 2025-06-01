@@ -421,31 +421,35 @@ window.initializeProducts = async function() {
         return;
     }
     
-    // Remplir les sélecteurs de devis/factures avec tous les produits
-    const productSelects = document.querySelectorAll('.produit-livraison-select');
-    const optionsHTML = window.dbManager.getProductsAsOptions();
+    // POUR LES DEVIS/FACTURES : utiliser TOUS les produits DB
+    const productSelects = document.querySelectorAll('.produit-livraison-select, .product-select');
+    const allProductsHTML = window.dbManager.getProductsAsOptions();
     
     productSelects.forEach(function(select) {
-        select.innerHTML = optionsHTML;
+        // Ne pas toucher au sélecteur de bon de vente
+        if (select.id !== 'produitVendu') {
+            select.innerHTML = allProductsHTML;
+        }
     });
     
-    // Remplir spécifiquement le sélecteur de bon de vente
+    // POUR LE BON DE VENTE : utiliser UNIQUEMENT les produits spéciaux
     const bonVenteSelect = document.getElementById('produitVendu');
     if (bonVenteSelect) {
         bonVenteSelect.innerHTML = window.dbManager.getBonVenteProductsAsOptions();
     }
     
-    // Mettre à jour la variable globale avec les produits bon de vente
+    // Remplir la variable globale avec les produits bon de vente SEULEMENT
     const bonVenteProducts = window.dbManager.getBonVenteProducts();
     produitsBonVente = {};
     Object.entries(bonVenteProducts).forEach(function([key, product]) {
         produitsBonVente[key] = {
             nom: product.name,
-            prix: product.prix
+            prix: product.prix  // Attention: 'prix' pas 'price'
         };
     });
     
-    console.log('✅ Produits bon de vente chargés:', produitsBonVente);
+    console.log('✅ Produits initialisés:');
+    console.log('- Bon de vente:', produitsBonVente);
 };
 
 window.updateGlobalConfig = function(newConfig) {
@@ -1827,10 +1831,14 @@ DocumentsManager.prototype.removeProductLine = function(id) {
 DocumentsManager.prototype.updateProductPrice = function(id) {
     const select = document.querySelector(`select[data-id="${id}"]`);
     const priceInput = document.querySelector(`input.product-price[data-id="${id}"]`);
-    if (select.value) {
-        const prix = produitsBonVente[select.value].prix;
-        priceInput.value = `${prix}.00`;
-        this.updateLineTotal(id);
+    
+    if (select.value && window.dbManager) {
+        // Pour les devis, utiliser les vrais produits de la DB
+        const product = window.dbManager.getProduct(select.value);
+        if (product) {
+            priceInput.value = `${product.price}.00`;
+            this.updateLineTotal(id);
+        }
     } else {
         priceInput.value = '';
         this.updateLineTotal(id);
@@ -1841,11 +1849,15 @@ DocumentsManager.prototype.updateLineTotal = function(id) {
     const select = document.querySelector(`select[data-id="${id}"]`);
     const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
     const totalInput = document.querySelector(`input.product-total[data-id="${id}"]`);
-    if (select.value && quantityInput.value) {
-        const prix = produitsBonVente[select.value].prix;
-        const quantity = parseInt(quantityInput.value) || 0;
-        const total = prix * quantity;
-        totalInput.value = `${total.toLocaleString('en-US')}.00`;
+    
+    if (select.value && quantityInput.value && window.dbManager) {
+        // Pour les devis, utiliser les vrais produits de la DB
+        const product = window.dbManager.getProduct(select.value);
+        if (product) {
+            const quantity = parseInt(quantityInput.value) || 0;
+            const total = product.price * quantity;
+            totalInput.value = `${total.toLocaleString('en-US')}.00`;
+        }
     } else {
         totalInput.value = '';
     }
@@ -1854,16 +1866,22 @@ DocumentsManager.prototype.updateLineTotal = function(id) {
 
 DocumentsManager.prototype.updateTotals = function() {
     let sousTotal = 0;
+    
     document.querySelectorAll('.product-line').forEach(function(line) {
         const id = line.dataset.id;
         const select = document.querySelector(`select[data-id="${id}"]`);
         const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-        if (select && select.value && quantityInput && quantityInput.value) {
-            const prix = produitsBonVente[select.value].prix;
-            const quantity = parseInt(quantityInput.value) || 0;
-            sousTotal += prix * quantity;
+        
+        if (select && select.value && quantityInput && quantityInput.value && window.dbManager) {
+            // Pour les devis, utiliser les vrais produits de la DB
+            const product = window.dbManager.getProduct(select.value);
+            if (product) {
+                const quantity = parseInt(quantityInput.value) || 0;
+                sousTotal += product.price * quantity;
+            }
         }
     });
+    
     const tva = sousTotal * 0.21;
     const total = sousTotal + tva;
     
@@ -1887,20 +1905,25 @@ DocumentsManager.prototype.collectDevisData = function() {
     };
     devisData.numeroDevis = document.getElementById('numero-devis').value;
     devisData.produits = [];
+    
     document.querySelectorAll('.product-line').forEach(function(line) {
         const id = line.dataset.id;
         const select = document.querySelector(`select[data-id="${id}"]`);
         const quantityInput = document.querySelector(`input.product-quantity[data-id="${id}"]`);
-        if (select && select.value && quantityInput && quantityInput.value) {
-            const produit = produitsBonVente[select.value];
-            const quantity = parseInt(quantityInput.value);
-            const total = produit.prix * quantity;
-            devisData.produits.push({
-                nom: produit.nom,
-                prix: produit.prix,
-                quantite: quantity,
-                total: total
-            });
+        
+        if (select && select.value && quantityInput && quantityInput.value && window.dbManager) {
+            // Pour les devis, utiliser les vrais produits de la DB
+            const product = window.dbManager.getProduct(select.value);
+            if (product) {
+                const quantity = parseInt(quantityInput.value);
+                const total = product.price * quantity;
+                devisData.produits.push({
+                    nom: product.name,
+                    prix: product.price,
+                    quantite: quantity,
+                    total: total
+                });
+            }
         }
     });
 };
@@ -2901,7 +2924,8 @@ DocumentsManager.prototype.calculateBonVenteTotal = function() {
     const produitId = produitSelect.value;
     const quantite = parseInt(quantiteInput.value) || 0;
       
-    if (produitId && quantite > 0) {
+    // SÉCURISATION : vérifier que produitsBonVente existe et contient le produit
+    if (produitId && quantite > 0 && produitsBonVente && produitsBonVente[produitId]) {
         const prix = produitsBonVente[produitId].prix;
         const total = prix * quantite;
         totalInput.value = `${total.toLocaleString()}`;
