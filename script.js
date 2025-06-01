@@ -421,24 +421,31 @@ window.initializeProducts = async function() {
         return;
     }
     
-    // Remplir tous les sélecteurs de produits
-    const productSelects = document.querySelectorAll('#produitVendu, .produit-livraison-select');
+    // Remplir les sélecteurs de devis/factures avec tous les produits
+    const productSelects = document.querySelectorAll('.produit-livraison-select');
     const optionsHTML = window.dbManager.getProductsAsOptions();
     
     productSelects.forEach(function(select) {
         select.innerHTML = optionsHTML;
     });
     
-    // Mettre à jour la variable globale
-    const products = window.dbManager.getProducts();
-    if (typeof produitsBonVente !== 'undefined') {
-        Object.entries(products).forEach(function([key, product]) {
-            produitsBonVente[key] = {
-                nom: product.name,
-                prix: product.price
-            };
-        });
+    // Remplir spécifiquement le sélecteur de bon de vente
+    const bonVenteSelect = document.getElementById('produitVendu');
+    if (bonVenteSelect) {
+        bonVenteSelect.innerHTML = window.dbManager.getBonVenteProductsAsOptions();
     }
+    
+    // Mettre à jour la variable globale avec les produits bon de vente
+    const bonVenteProducts = window.dbManager.getBonVenteProducts();
+    produitsBonVente = {};
+    Object.entries(bonVenteProducts).forEach(function([key, product]) {
+        produitsBonVente[key] = {
+            nom: product.name,
+            prix: product.prix
+        };
+    });
+    
+    console.log('✅ Produits bon de vente chargés:', produitsBonVente);
 };
 
 window.updateGlobalConfig = function(newConfig) {
@@ -1110,6 +1117,21 @@ DatabaseManager.prototype.getProductsAsOptions = function() {
     
     Object.entries(products).forEach(function([key, product]) {
         options += `<option value="${key}">${product.name} - ${product.price}$</option>`;
+    });
+    
+    return options;
+};
+
+DatabaseManager.prototype.getBonVenteProducts = function() {
+    return this.data.bonVenteProducts || {};
+};
+
+DatabaseManager.prototype.getBonVenteProductsAsOptions = function() {
+    const products = this.getBonVenteProducts();
+    let options = '<option value="">Sélectionnez un produit</option>';
+    
+    Object.entries(products).forEach(function([key, product]) {
+        options += `<option value="${key}">${product.name} - ${product.prix}$</option>`;
     });
     
     return options;
