@@ -3066,11 +3066,13 @@ DocumentsManager.prototype.openBonLivraisonModal = function() {
         employeInput.value = currentUser.fullname || currentUser.username;
     }
 
-    // Réinitialiser le conteneur de produits
+    // CORRECTION : Réinitialiser le conteneur de produits
     const container = document.getElementById('produits-livraison-container');
     if (container) {
-        container.innerHTML = '';
+        container.innerHTML = ''; // Vider le conteneur
         this.addProduitLivraisonLine(); // Ajouter une première ligne
+    } else {
+        console.error('❌ Container produits-livraison-container introuvable !');
     }
         
     if (modal) modal.style.display = 'flex';
