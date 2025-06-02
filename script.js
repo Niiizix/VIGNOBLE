@@ -1416,27 +1416,27 @@ CommandesManager.prototype.createCommande = async function() {
                 color: 0x8B5A9F, // Couleur principale du site
                 fields: [
                     {
-                        name: "Numéro de commande :",
+                        name: "📋 Numéro de commande :",
                         value: `\`${commande.id}\``,
                         inline: false
                     },
                     {
-                        name: "Informations client :",
+                        name: "👤 Informations client :",
                         value: `**${clientNom}**\n${clientEmail || "Non fourni"}\n${clientAdresse}`,
                         inline: false
                     },
                     {
-                        name: "Informations livraison :",
+                        name: "🚚 Informations livraison :",
                         value: `**${dateLivraison}** à **${heureLivraison}**\n${adresseLivraison || clientAdresse}`,
                         inline: false
                     },
                     {
-                        name: "Produits commandés :",
+                        name: "🍷 Produits commandés :",
                         value: produits.map(p => `${p.nom}`).join('\n'),
                         inline: false
                     },
                     {
-                        name: "Total TTC :",
+                        name: "💰 Total TTC :",
                         value: `**${total.toLocaleString()}$**`,
                         inline: false
                     }
