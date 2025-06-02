@@ -1413,41 +1413,31 @@ CommandesManager.prototype.createCommande = async function() {
         const discordData = {
             embeds: [{
                 title: "🛍️ Nouvelle Commande",
-                color: 0x28a745,
+                color: 0x8B5A9F, // Couleur principale du site
                 fields: [
                     {
-                        name: "📋 Numéro de commande",
-                        value: commande.id,
-                        inline: true
-                    },
-                    {
-                        name: "👤 Client",
-                        value: clientNom,
-                        inline: true
-                    },
-                    {
-                        name: "📧 Email",
-                        value: clientEmail || "Non fourni",
-                        inline: true
-                    },
-                    {
-                        name: "📍 Adresse client",
-                        value: clientAdresse,
+                        name: "Numéro de commande :",
+                        value: `\`${commande.id}\``,
                         inline: false
                     },
                     {
-                        name: "🚚 Livraison prévue",
-                        value: `${dateLivraison} à ${heureLivraison}`,
-                        inline: true
+                        name: "Informations client :",
+                        value: `**${clientNom}**\n${clientEmail || "Non fourni"}\n${clientAdresse}`,
+                        inline: false
                     },
                     {
-                        name: "💰 Total TTC",
-                        value: `${total.toLocaleString()}$`,
-                        inline: true
+                        name: "Informations livraison :",
+                        value: `**${dateLivraison}** à **${heureLivraison}**\n${adresseLivraison || clientAdresse}`,
+                        inline: false
                     },
                     {
-                        name: "🍷 Produits commandés",
-                        value: produits.map(p => `• ${p.quantite}x ${p.nom} (${p.prix}$ x ${p.quantite} = ${p.total}$)`).join('\n'),
+                        name: "Produits commandés :",
+                        value: produits.map(p => `${p.nom}`).join('\n'),
+                        inline: false
+                    },
+                    {
+                        name: "Total TTC :",
+                        value: `**${total.toLocaleString()}$**`,
                         inline: false
                     }
                 ],
