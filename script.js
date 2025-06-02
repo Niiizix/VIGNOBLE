@@ -1422,7 +1422,7 @@ CommandesManager.prototype.createCommande = async function() {
                     },
                     {
                         name: "👤 Informations client :",
-                        value: `**${clientNom}**\n${clientEmail || "Non fourni"}\n${clientAdresse}`,
+                        value: `**${clientNom}**\n${clientEmail || "Non fourni"}\n${clientTelephone || "Non fourni"}\n${clientAdresse}`,
                         inline: false
                     },
                     {
