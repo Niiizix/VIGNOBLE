@@ -1143,7 +1143,7 @@ DatabaseManager.prototype.getBonVenteProductsAsOptions = function() {
 
 // === GESTIONNAIRE DE COMMANDES ===
 function CommandesManager() {
-    this.DISCORD_WEBHOOK = 'https://l.webhook.party/hook/%2FM4rBgChCMU4C0h64KaEOZnDRAtwERxORTQ26Ys6%2BsiMGlLBJo3FQUJehclFhqZRoK51sIMpwIPlVGtQgawTjjH8udxL8Z%2Bpqh57S6pZtkybo8l5420APyeP%2FnhOj0fwOpF6hStUvNUY%2BzSIDjBsQ6lW4JFweXO5jxuhxAOK845Yw6tWXN5nnbpmzeT7DkejC%2FEIycugAJWINo%2B3zGkptzJGO%2FjoFAvF5kmoCCnO%2FP6Zfz54tRzfuHMckUvQUxGUicFd9zlGKytPaJ6cr5Ll%2F4TNerWzV1g7Ow6JASwAG1q23CwWU1RkH1NEY81A942QBtaZsy4NSodqA9EpDwFhLdmBMOMTbXyqgJuaoQ4X%2B74gqwXJvO3D2tV%2BctcrG%2FUSataMw9VjUpQ%3D/pPrmw%2FZCVchUkDLD';
+    this.DISCORD_WEBHOOK_COMMANDES = 'https://l.webhook.party/hook/CdMZVeM6bua%2FdF0zhv8WKBBfzUky0btNjUrBR9NB%2FM7EYsfsbzNjIAGWaN21sCb%2BzTm4abJA7DPLME7py86sHWIaSibsojHvZD1vSBaRz5JJIsc1V9qb5wUu0sRV%2BUUpT5PLp7PQ28tMhtSoZf85gnjNkgqhrNJqBc1rPmqZs1gKBG9u%2FNKLxpOtsRdC7rN2Dye1mXLhxD9fA4b7IPwLK1hiTwRWGeEDtC0BarpzhPhfEKscOgjVT18bPOprKRTSWJMF0NFL73USUvohg7qlyQfZUt2mVJKqBHCRSEHY7HfH%2BKoOxlGomMSDGF0e9VcJMNUX2wwzvRUceXMkIlNReCcxTa4JrqmOQOf7dtJuwYnyc5e1dbpPW7njXkqLI5AssCSrj344YLo%3D/W40TmsArsDCTtUXF';
     
     this.produits = {};
     
@@ -1458,7 +1458,7 @@ CommandesManager.prototype.createCommande = async function() {
             }]
         };
 
-        const response = await fetch(this.DISCORD_WEBHOOK, {
+        const response = await fetch(this.DISCORD_WEBHOOK_COMMANDES, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1579,8 +1579,10 @@ CommandesManager.prototype.displayCommandes = function() {
 };
 
 // === GESTIONNAIRE DE DOCUMENTS - VARIABLES GLOBALES ===
-var DISCORD_WEBHOOK_BON_VENTE = 'https://l.webhook.party/hook/%2FM4rBgChCMU4C0h64KaEOZnDRAtwERxORTQ26Ys6%2BsiMGlLBJo3FQUJehclFhqZRoK51sIMpwIPlVGtQgawTjjH8udxL8Z%2Bpqh57S6pZtkybo8l5420APyeP%2FnhOj0fwOpF6hStUvNUY%2BzSIDjBsQ6lW4JFweXO5jxuhxAOK845Yw6tWXN5nnbpmzeT7DkejC%2FEIycugAJWINo%2B3zGkptzJGO%2FjoFAvF5kmoCCnO%2FP6Zfz54tRzfuHMckUvQUxGUicFd9zlGKytPaJ6cr5Ll%2F4TNerWzV1g7Ow6JASwAG1q23CwWU1RkH1NEY81A942QBtaZsy4NSodqA9EpDwFhLdmBMOMTbXyqgJuaoQ4X%2B74gqwXJvO3D2tV%2BctcrG%2FUSataMw9VjUpQ%3D/pPrmw%2FZCVchUkDLD';
-var DISCORD_WEBHOOK_URL = 'https://l.webhook.party/hook/p8GEvGjZOXrEAnlh9Czg9Tc0iTQBwifuEMuxxUSXDviB6TigfRf2602NP8WKvfbOKbznpmCc84gFdsh3ReH%2BnwfMPy%2FQuxLaSOKoEhONeF2Sa%2BdlaQeZIF8HnyhTdm%2F139Gp1ZQNINg2u5wL4iv3Gnf4vhyNTH6f2v%2BeDX4gF2wk4Ggtz1JckA7wL2zzdEzp7kngu9sT97mMpEQ7hSGib3GfUgQ3XE4yHljVjprjK2vKD1WrJrbkCigxZhM5evlSs0rWFg4vxjo9ytsVdHnbv%2BXF%2FcNb%2BY9c%2Foyj0WNqRrV7WDawmXYGA7%2B1iwKAMhPxDJvGwfytR64FeOoSQdEEfHlk4wKErY6S4Cdvq3FHsDpfrF2Kr3vByaujn%2BhjOUxk51U%2Bf10knUI%3D/O39Ms6oV6RQnZDds';
+var DISCORD_WEBHOOK_DEVIS = 'https://l.webhook.party/hook/NQc2GOhByf6RcMAER1Qyt0sjnHAAq9zuYWa01tPMMsWkEflKB0lVTAf5Ej8V%2BrjOKThGUQJvTiffNu2arFzAPPKcwgCaJJE1D9Yj1gxRTvAamptglz0t8VU1Y8t4idcHByY1y2xINj3lvi7%2F%2FE2goeVgJq2mzkwTP914WdtUvJmhRobOcwsC0IY80cFE9FdOK7KIAGqMGpucmXOQp8Yx%2FQJsVpb2tEKhwzRwygMdIzVWYcehCdtcWYEx8iiquJtA669NnsJiUmoftehq%2BMIiaPWD4P4PhvmtH%2BjqniDRBpiSEzlT3%2BHaBoBDwUocdYUQHi9F8WCsyE9AwDLqTB3U5ZHF5cZjsAoKiWfo12WXVLLOqVdYFF2gV4Ckn%2Btw4Z7GUCij4QAr%2FOs%3D/XuazlBlz8Jrh5uae';
+var DISCORD_WEBHOOK_FACTURES = 'https://l.webhook.party/hook/t1VmNpsBERncmqXitH7LjFlf7yxM6fICGJ2pSYl56bjyKkco3U9owiGcOjY6pXSGFqOsuVnDGJvPNqtqcJ0rXTu%2F%2FOmP%2BmTHdtwhznKhBFlfTGhbOyxnw1tjzkeKDoHxC0OfpNGCjB5LhpG2nH1dYUuIGb1vXnjwjKgh759w2cluAh6QPAAJcY5FN3PGAFbQ6O%2BKfXqGKIx4EmRz1kSoCJ6rW1FPovmZQ1GplbaCajHuMCHfjF6kDGXkefvJ4Z%2Bja2RaKjb2Kg75UFn7NXarDxb4kCcaE2F6yurHYIa4T57MkZHErqkpPcK6al4sdQU%2Figl1hWa2VLlgEZNIy86fshM6Wp2%2FZ3FtLS%2BVbFqynfYQMry6PRquvkEzHpQIcyHJRl02bhEoTqo%3D/sJhZEKypZovtLEB7';
+var DISCORD_WEBHOOK_BON_VENTE = 'https://l.webhook.party/hook/HvVu%2B%2FSX%2Bwgkq7Ve5gRN588UTfH%2Bn8ur3FTn8RCKhRvdmPYkWS3O6SPQAc9JSu4%2Fe8gjSW1KWuI%2FsAZR2B6I1ONM0LdBCvRxIYrbGLiev7DN4FAnSFXpBqMfDTPJWpexaFsV9zQGMznqSTQ%2Ba%2B%2BPs2YKtt%2BByrvabjb7Oe2LCGmjwkeByc7yHlVbp%2FRrmnZuUX5O5QlCbork8ibGPS6M%2BBgTkCS9ZK3GA34QpabgP6OIyOg80kWN7AvJpzRAZLydjdKD7Hhgu8VKlzlfZ18Ox4hEqDYtu6W%2BMLfgSQ1%2B6EmommAkXKDStiKwt5OMrICWNW%2Fn%2FKoBiqH2cbOccsZO%2Fwm%2FzcOOlyXji78OF2nCOVsdU9RryeoWJ64QKSz1FlBSQyjPkYNjOOk%3D/gpwhXTIhXz4vXCoq';
+var DISCORD_WEBHOOK_BON_LIVRAISON = 'https://l.webhook.party/hook/z027Qk10LFhXmO3kWUMACaK2bBc2ll3W556UlsfRDwjGJ6Pnx4IIEom4TWVyTy0AJfl3zXSPCrCcr06nNmxs%2FZOWoHHlJ%2Fxw8XQF91UpQ8LKARpoIZhKCu1Eqxu4dAJi%2BHE8Pjitb8VZMtXMjVcHpvOPBBrbFDwJ%2F2tqLpxxhe3Rafu8kyuZUw39PUB08sE7HhrLg84I0d%2FIN3Avjnsa4ifyx3K6V0rXYQVdFymKKls5dyQwJiWL7qP5fTfVGL9asL2LuiAX3dHF13l5RpMFd1OX0BdegJlXzC%2BzpswylOl5leTxtZdLsld4UUA5gh6gv%2BQeq9o%2FkUcHFVByShoRVQCV%2FUDA6o9p5s35WdBWgb81oI4nB9t7O1fvZpO7dD3V445gNK7rmKQ%3D/gnAHKA71mqVXtNDS';
 
 var produitsBonVente = {};
 
@@ -2216,7 +2218,7 @@ DocumentsManager.prototype.sendEmbedToDiscord = async function(devisData) {
             avatar_url: null
         };
 
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
+        const response = await fetch(DISCORD_WEBHOOK_DEVIS, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -2695,7 +2697,7 @@ DocumentsManager.prototype.sendFactureToDiscord = async function(factureData) {
             avatar_url: null
         };
 
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
+        const response = await fetch(DISCORD_WEBHOOK_FACTURES, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -3189,7 +3191,7 @@ DocumentsManager.prototype.submitBonLivraison = async function(formData) {
         
     try {
         // Utiliser le même webhook que les bons de vente
-        const response = await fetch(DISCORD_WEBHOOK_BON_VENTE, {
+        const response = await fetch(DISCORD_WEBHOOK_BON_LIVRAISON, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
